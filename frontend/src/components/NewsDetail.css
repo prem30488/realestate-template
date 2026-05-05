@@ -1,0 +1,147 @@
+/* ============================================================
+   NewsDetail — Premium Typography & Layout
+   ============================================================ */
+
+.news-detail-container {
+  background: #ffffff;
+  min-height: 100vh;
+  padding: 60px 0;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  transition: color 0.3s ease;
+}
+
+.back-btn:hover {
+  color: #4facfe;
+}
+
+.news-detail-content {
+  background: #ffffff;
+}
+
+.detail-image {
+  position: relative;
+  width: 100%;
+  height: 450px;
+  border-radius: 30px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-header {
+  margin-bottom: 30px;
+}
+
+.detail-title {
+  font-size: 42px;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.2;
+  margin-top: 10px;
+}
+
+.detail-body {
+  font-size: 18px;
+  color: #475569;
+  line-height: 1.8;
+}
+
+.detail-body .lead {
+  font-size: 22px;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 30px;
+}
+
+.detail-body blockquote {
+  margin: 40px 0;
+  padding: 30px;
+  background: #f8fafc;
+  border-left: 5px solid #4facfe;
+  border-radius: 0 20px 20px 0;
+  font-style: italic;
+  font-size: 20px;
+  color: #1e293b;
+}
+
+.detail-body blockquote cite {
+  display: block;
+  margin-top: 15px;
+  font-size: 14px;
+  font-weight: 700;
+  font-style: normal;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.detail-footer {
+  margin-top: 60px;
+  padding-top: 30px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.share-links {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.share-links span {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.share-links a {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.share-links a:hover {
+  background: #4facfe;
+  color: white;
+  transform: translateY(-3px);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .detail-image {
+    height: 300px;
+  }
+  .detail-title {
+    font-size: 32px;
+  }
+  .detail-body {
+    font-size: 16px;
+  }
+}

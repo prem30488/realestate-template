@@ -1,0 +1,58 @@
+/* ============================================================
+   OurBrands Section — Premium Logo Showcase
+   ============================================================ */
+
+.brands-section {
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+  float: left;
+  width: 100%;
+}
+
+.brand-carousel-wrapper {
+  padding: 0 15px;
+}
+
+.brand-item {
+  padding: 15px;
+}
+
+.brand-inner {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.brand-inner:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  border-color: #4facfe;
+}
+
+.brand-inner img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(100%);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.brand-inner:hover img {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+/* Slick adjustments */
+.brand-carousel .slick-track {
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,400 @@
+/* ============================================================
+   WhyUs Section — Premium Redesign
+   Dark theme · Glassmorphism · Gradient accents · Micro-animations
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Section Shell ─────────────────────────────────────────── */
+.whyus-section {
+  float: left;           /* match template's .section rule to stay in flow */
+  width: 100%;
+  position: relative;
+  background: #080d1a;
+  padding: 110px 0 100px;
+  overflow: hidden;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ── Decorative Orbs ───────────────────────────────────────── */
+.whyus-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.whyus-orb--1 {
+  width: 500px;
+  height: 500px;
+  top: -120px;
+  left: -150px;
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.18) 0%, transparent 70%);
+}
+
+.whyus-orb--2 {
+  width: 600px;
+  height: 600px;
+  bottom: -200px;
+  right: -180px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.18) 0%, transparent 70%);
+}
+
+.whyus-orb--3 {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(240, 147, 251, 0.08) 0%, transparent 70%);
+}
+
+/* ── Container ─────────────────────────────────────────────── */
+.whyus-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Section Header ────────────────────────────────────────── */
+.whyus-header {
+  text-align: center;
+  margin-bottom: 70px;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.whyus-header--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.whyus-eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #4facfe;
+  background: rgba(79, 172, 254, 0.1);
+  border: 1px solid rgba(79, 172, 254, 0.3);
+  padding: 6px 18px;
+  border-radius: 30px;
+  margin-bottom: 22px;
+}
+
+.whyus-heading {
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 20px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.whyus-heading__accent {
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Divider */
+.whyus-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 18px auto 26px;
+}
+
+.whyus-divider__line {
+  display: block;
+  width: 70px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.5));
+  border-radius: 2px;
+}
+
+.whyus-divider__line:last-child {
+  background: linear-gradient(90deg, rgba(79, 172, 254, 0.5), transparent);
+}
+
+.whyus-divider__diamond {
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  transform: rotate(45deg);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(79, 172, 254, 0.7);
+}
+
+.whyus-subheading {
+  font-size: 17px;
+  color: #94a3b8;
+  max-width: 580px;
+  margin: 0 auto;
+  font-weight: 300;
+  line-height: 1.75;
+}
+
+/* ── Cards Grid ────────────────────────────────────────────── */
+.whyus-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+  margin-bottom: 60px;
+}
+
+/* ── Individual Card ───────────────────────────────────────── */
+.whyus-card {
+  position: relative;
+  background: rgba(15, 23, 42, 0.6);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 36px 30px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  cursor: default;
+
+  /* Entrance animation */
+  opacity: 0;
+  transform: translateY(50px) scale(0.97);
+  transition:
+    opacity 0.6s ease var(--delay, 0s),
+    transform 0.6s cubic-bezier(0.23, 1, 0.32, 1) var(--delay, 0s),
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.whyus-card--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Hover glow overlay */
+.whyus-card__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, var(--glow, rgba(79,172,254,0.25)) 0%, transparent 65%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.whyus-card:hover .whyus-card__glow {
+  opacity: 1;
+}
+
+.whyus-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 40px var(--glow, rgba(79, 172, 254, 0.2));
+  transform: translateY(-8px) scale(1);
+}
+
+/* Icon */
+.whyus-card__icon-wrap {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.whyus-card:hover .whyus-card__icon-wrap {
+  transform: scale(1.12) rotate(-4deg);
+}
+
+.whyus-card__icon-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.whyus-card__icon-svg svg {
+  width: 28px;
+  height: 28px;
+  color: #fff;
+  stroke: #fff;
+}
+
+/* Stat number */
+.whyus-card__stat {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 4px;
+}
+
+.whyus-card__stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #475569;
+  margin-top: -4px;
+  margin-bottom: 6px;
+}
+
+/* Title */
+.whyus-card__title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Description */
+.whyus-card__desc {
+  font-size: 14.5px;
+  color: #64748b;
+  line-height: 1.75;
+  margin: 0;
+  flex-grow: 1;
+  font-weight: 300;
+}
+
+/* Bottom accent line */
+.whyus-card__line {
+  height: 3px;
+  border-radius: 3px;
+  width: 40px;
+  margin-top: 10px;
+  transition: width 0.4s ease;
+}
+
+.whyus-card:hover .whyus-card__line {
+  width: 100%;
+}
+
+/* ── CTA Strip ─────────────────────────────────────────────── */
+.whyus-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  background: rgba(15, 23, 42, 0.5);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(79, 172, 254, 0.15);
+  border-radius: 20px;
+  padding: 28px 36px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease 0.5s, transform 0.7s ease 0.5s;
+}
+
+.whyus-cta--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.whyus-cta__text {
+  font-size: 15px;
+  color: #94a3b8;
+  font-weight: 400;
+  line-height: 1.8;
+}
+
+.whyus-cta__number {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f1f5f9;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.whyus-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  color: #080d1a;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 50px;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 30px rgba(79, 172, 254, 0.4);
+  transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.whyus-cta__btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.whyus-cta__btn:hover {
+  box-shadow: 0 12px 40px rgba(79, 172, 254, 0.6);
+  transform: translateY(-3px);
+  color: #080d1a;
+}
+
+.whyus-cta__btn:hover svg {
+  transform: translateX(5px);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .whyus-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .whyus-section {
+    padding: 80px 0 70px;
+  }
+
+  .whyus-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .whyus-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+  }
+
+  .whyus-cta__btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .whyus-heading {
+    letter-spacing: -0.5px;
+  }
+}

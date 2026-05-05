@@ -1,0 +1,383 @@
+/* ==========================================================================
+   Premium UI Components Stylesheet
+   Features: Glassmorphism, Modern Typography, Vibrant Gradients, Micro-animations
+   ========================================================================== */
+
+/* Typography & General */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --premium-accent: #00f2fe;
+  --premium-accent-secondary: #4facfe;
+  --premium-bg: #0f172a;
+  --premium-card-bg: rgba(30, 41, 59, 0.7);
+  --premium-border: rgba(255, 255, 255, 0.125);
+  --premium-text: #f8fafc;
+  --premium-text-muted: #94a3b8;
+  --premium-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.dark-theme-bg {
+  background-color: var(--premium-bg);
+  color: var(--premium-text);
+  font-family: 'Outfit', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background Glow Effects */
+.dark-theme-bg::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dark-theme-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Headings */
+.premium-heading {
+  font-family: 'Outfit', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--premium-text);
+  margin-bottom: 15px;
+  background: -webkit-linear-gradient(45deg, var(--premium-accent-secondary), var(--premium-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.premium-heading-divider {
+  height: 4px;
+  width: 60px;
+  background: linear-gradient(90deg, var(--premium-accent-secondary), var(--premium-accent));
+  margin: 0 auto 20px auto;
+  border-radius: 2px;
+}
+
+.premium-subheading {
+  font-size: 18px;
+  color: var(--premium-text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 300;
+}
+
+/* ==========================================================================
+   Premium Card (Glassmorphism)
+   ========================================================================== */
+
+.premium-card {
+  background: var(--premium-card-bg);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--premium-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--premium-shadow);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.premium-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(79, 172, 254, 0.2);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.premium-card-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  height: 240px;
+}
+
+/* Badges */
+.premium-badges {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.badge.for-sale {
+  background: rgba(79, 172, 254, 0.85);
+  color: white;
+  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.4);
+}
+
+.badge.featured-badge {
+  background: rgba(255, 171, 0, 0.85);
+  color: white;
+  box-shadow: 0 4px 10px rgba(255, 171, 0, 0.4);
+}
+
+.badge i {
+  margin-right: 4px;
+}
+
+/* Card Body */
+.premium-card-body {
+  padding: 25px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.price-tag {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--premium-accent);
+  margin-bottom: 10px;
+}
+
+.property-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.property-title a {
+  color: var(--premium-text);
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+.property-title a:hover {
+  color: var(--premium-accent-secondary);
+}
+
+.property-location {
+  color: var(--premium-text-muted);
+  font-size: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.property-location i {
+  color: var(--premium-accent);
+  margin-right: 8px;
+}
+
+.property-amenities {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--premium-border);
+  margin-bottom: 20px;
+}
+
+.amenity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--premium-text-muted);
+  font-size: 14px;
+}
+
+.amenity i {
+  font-size: 18px;
+  color: var(--premium-text);
+  margin-bottom: 6px;
+}
+
+/* Card Footer */
+.premium-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.agent-info {
+  display: flex;
+  align-items: center;
+}
+
+.agent-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 2px solid var(--premium-accent);
+}
+
+.agent-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--premium-text);
+}
+
+/* Buttons */
+.premium-btn {
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+}
+
+.premium-btn i {
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+}
+
+.premium-btn:hover i {
+  transform: translateX(4px);
+}
+
+.primary-btn {
+  background: linear-gradient(90deg, var(--premium-accent-secondary), var(--premium-accent));
+  color: white;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.primary-btn:hover {
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--premium-text);
+  border: 2px solid var(--premium-accent-secondary);
+  padding: 12px 32px;
+  font-size: 16px;
+}
+
+.secondary-btn.outline-glow:hover {
+  background: rgba(79, 172, 254, 0.1);
+  box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
+}
+
+/* ==========================================================================
+   Premium Image Carousel
+   ========================================================================== */
+
+.premium-carousel-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.premium-carousel-container:hover .carousel-btn {
+  opacity: 1;
+}
+
+.premium-carousel-inner {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.premium-carousel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 23, 42, 0.5);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  font-size: 16px;
+}
+
+.carousel-btn:hover {
+  background: var(--premium-accent-secondary);
+}
+
+.prev-btn {
+  left: 10px;
+}
+
+.next-btn {
+  right: 10px;
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: white;
+  width: 20px;
+  border-radius: 4px;
+}
