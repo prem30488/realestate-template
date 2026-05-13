@@ -1,4 +1,5 @@
 import React from 'react';
+import { COMPANY_INFO } from '../constants/companyInfo';
 
 const Footer = () => {
   return (
@@ -7,12 +8,13 @@ const Footer = () => {
         <div className="container">
           <div className="row row-25">
             <div className="footer-widget col-lg-3 col-md-6 col-12 mb-40">
-              <img src="assets/images/logo-footer.png" alt="" />
-              <p>Khonike - Real Estate Bootstrap 5 Templatethe best theme for elit, sed do to eiumod tempor dolor sit amet, ctetur adipiscing elit seddo dolor sit amet.</p>
+              <img src={COMPANY_INFO.logoUrl} alt={COMPANY_INFO.name} />
+              <p>{COMPANY_INFO.name} - {COMPANY_INFO.seoDescription}</p>
               <div className="footer-social">
                 <a href="#" className="facebook"><i className="fa fa-facebook"></i></a>
                 <a href="#" className="twitter"><i className="fa fa-twitter"></i></a>
                 <a href="#" className="linkedin"><i className="fa fa-linkedin"></i></a>
+                <a href="https://www.instagram.com/njrealestate_gandhinagar?igsh=aW9hYTh2Y2I1bWpv" className="instagram"><i className="fa fa-instagram"></i></a>
                 <a href="#" className="google"><i className="fa fa-google-plus"></i></a>
                 <a href="#" className="pinterest"><i className="fa fa-pinterest-p"></i></a>
               </div>
@@ -20,9 +22,9 @@ const Footer = () => {
             <div className="footer-widget col-lg-3 col-md-6 col-12 mb-40">
               <h4 className="title"><span className="text">Contact us</span><span className="shape"></span></h4>
               <ul>
-                <li><i className="fa fa-map-o"></i><span>256, 1st AVE, Manchester 125 , Noth England</span></li>
-                <li><i className="fa fa-phone"></i><span><a href="#">+012 345 678 102</a><a href="#">+012 345 678 101</a></span></li>
-                <li><i className="fa fa-envelope-o"></i><span><a href="#">info@example.com</a><a href="#">www.example.com</a></span></li>
+                <li><i className="fa fa-map-o"></i><span>{COMPANY_INFO.address1}, {COMPANY_INFO.address2}</span></li>
+                <li><i className="fa fa-phone"></i><span><a href={`tel:${COMPANY_INFO.phone1}`}>{COMPANY_INFO.phone1}</a>{COMPANY_INFO.phone2 && <a href={`tel:${COMPANY_INFO.phone2}`}>{COMPANY_INFO.phone2}</a>}</span></li>
+                <li><i className="fa fa-envelope-o"></i><span><a href={`mailto:${COMPANY_INFO.email}`}>{COMPANY_INFO.email}</a><a href={COMPANY_INFO.websiteUrl}>{COMPANY_INFO.websiteUrl.replace(/^https?:\/\//, '')}</a></span></li>
               </ul>
             </div>
             <div className="footer-widget col-lg-3 col-md-6 col-12 mb-40">
@@ -61,7 +63,7 @@ const Footer = () => {
           <div className="row">
             <div className="col-12">
               <div className="copyright text-center">
-                <p>Copyright &copy;2025 <a href="#">Khonike</a>. All rights reserved.</p>
+                <p>Copyright &copy;2025 <a href="/">{COMPANY_INFO.name}</a>. All rights reserved.</p>
               </div>
             </div>
           </div>

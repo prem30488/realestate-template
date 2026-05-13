@@ -1,56 +1,24 @@
 import React from 'react';
 import PremiumCard from './PremiumCard';
 import './PremiumStyles.css';
+import { useHome } from '../context/HomeContext';
 
-const dummyProperties = [
-  {
-    id: 1,
-    title: "Luxury Glass Villa",
-    price: "$2,500,000",
-    location: "Beverly Hills, CA",
-    beds: 5,
-    baths: 4,
-    sqft: "4,500",
-    status: "For Sale",
-    images: [
-      "assets/images/property/property-1.jpg",
-      "assets/images/property/property-2.jpg",
-      "assets/images/property/property-3.jpg",
-    ]
-  },
-  {
-    id: 2,
-    title: "Modern Sky Penthouse",
-    price: "$1,850,000",
-    location: "Manhattan, NY",
-    beds: 3,
-    baths: 3,
-    sqft: "2,800",
-    status: "For Rent",
-    images: [
-      "assets/images/property/property-4.jpg",
-      "assets/images/property/property-5.jpg",
-      "assets/images/property/property-6.jpg",
-    ]
-  },
-  {
-    id: 3,
-    title: "Oceanfront Estate",
-    price: "$5,200,000",
-    location: "Miami Beach, FL",
-    beds: 7,
-    baths: 8,
-    sqft: "8,200",
-    status: "For Sale",
-    images: [
-      "assets/images/property/property-7.jpg",
-      "assets/images/property/property-8.jpg",
-      "assets/images/property/property-9.jpg",
-    ]
-  }
-];
+// Import Swiper React components
+import { Swiper, SwiperSlide } from 'swiper/react';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import 'swiper/css/autoplay';
+
+// import required modules
+import { Pagination, Navigation, Autoplay } from 'swiper/modules';
 
 const Featured = () => {
+  const { featured, loading } = useHome();
+
+  if (loading) return null; // Or a skeleton
+
   return (
     <section className="featured-section section pt-100 pb-100 dark-theme-bg">
       <div className="container">
@@ -61,13 +29,49 @@ const Featured = () => {
             <p className="premium-subheading">Discover our curated selection of exclusive real estate with modern architecture and breathtaking views.</p>
           </div>
         </div>
-        <div className="row">
-          {dummyProperties.map(property => (
-            <div className="col-lg-4 col-md-6 col-12 mb-40" key={property.id}>
-              <PremiumCard property={property} />
-            </div>
-          ))}
+        
+        <div className="featured-carousel-wrapper">
+          <Swiper
+            slidesPerView={1}
+            spaceBetween={30}
+            loop={true}
+            autoplay={{
+              delay: 4000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }}
+            pagination={{
+              clickable: true,
+              dynamicBullets: true,
+            }}
+            navigation={true}
+            breakpoints={{
+              640: {
+                slidesPerView: 1,
+                spaceBetween: 20,
+              },
+              768: {
+                slidesPerView: 2,
+                spaceBetween: 30,
+              },
+              1024: {
+                slidesPerView: 3,
+                spaceBetween: 30,
+              },
+            }}
+            modules={[Pagination, Navigation, Autoplay]}
+            className="featured-swiper"
+          >
+            {featured.map(property => (
+              <SwiperSlide key={property.id} style={{ height: 'auto' }}>
+                <div className="pb-50 h-100">
+                  <PremiumCard property={property} />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
+
         <div className="row mt-20">
           <div className="col-12 text-center">
             <button className="premium-btn secondary-btn outline-glow">View All Properties <i className="fa fa-long-arrow-right"></i></button>

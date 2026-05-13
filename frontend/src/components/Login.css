@@ -1,0 +1,217 @@
+/* Premium Login Styles */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.login-container {
+    background: rgba(255, 255, 255, 0.9);
+    width: 100%;
+    max-width: 450px;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Glassmorphism accent */
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 94, 20, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.login-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #f0f0f0;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #666;
+}
+
+.login-close:hover {
+    background: #ff5e14;
+    color: white;
+    transform: rotate(90deg);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.login-header p {
+    color: #777;
+    font-size: 14px;
+}
+
+.login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #444;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s;
+    outline: none;
+}
+
+.login-form input:focus {
+    border-color: #ff5e14;
+    box-shadow: 0 0 0 4px rgba(255, 94, 20, 0.1);
+}
+
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    cursor: pointer;
+}
+
+.remember-me input {
+    width: auto;
+}
+
+.forgot-password {
+    color: #ff5e14;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: #ff5e14;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(255, 94, 20, 0.3);
+}
+
+.login-btn:hover {
+    background: #e54d00;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 94, 20, 0.4);
+}
+.login-error {
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff3b3b;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: center;
+    border: 1px solid rgba(255, 59, 59, 0.2);
+    font-weight: 500;
+}
+
+.login-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.register-footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 14px;
+    color: #666;
+}
+
+.register-footer a {
+    color: #ff5e14;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.register-footer a:hover {
+    text-decoration: underline;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode compatibility if needed */
+@media (prefers-color-scheme: dark) {
+    .login-container {
+        background: rgba(30, 30, 30, 0.95);
+        color: white;
+    }
+    .login-header h2 { color: white; }
+    .login-header p { color: #aaa; }
+    .login-form label { color: #ccc; }
+    .login-form input { background: #2a2a2a; border-color: #444; color: white; }
+
+    .login-close { background: #333; color: #ccc; }
+}

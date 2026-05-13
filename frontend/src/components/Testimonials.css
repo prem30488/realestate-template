@@ -1,0 +1,217 @@
+/* ============================================================
+   Testimonials Section — Premium Redesign
+   Dark theme · Glassmorphism · Elegant Typography
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+.testimonials-section {
+  float: left;
+  width: 100%;
+  position: relative;
+  background: #050810;
+  padding: 120px 0;
+  overflow: hidden;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Decorative Orbs */
+.testimonials-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.testimonials-orb--1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.12) 0%, transparent 70%);
+}
+
+.testimonials-orb--2 {
+  width: 500px;
+  height: 500px;
+  bottom: -150px;
+  left: -150px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.1) 0%, transparent 70%);
+}
+
+.testimonials-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.testimonials-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.testimonials-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #4facfe;
+  margin-bottom: 15px;
+}
+
+.testimonials-heading {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.testimonials-heading span {
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.testimonial-slider-wrapper {
+  margin: 0 -15px;
+}
+
+.testimonial-item {
+  padding: 15px;
+  outline: none;
+}
+
+.testimonial-card {
+  background: rgba(30, 41, 59, 0.4);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 40px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 380px;
+}
+
+/* Slick Dots Styling */
+.testimonial-slider .slick-dots {
+  bottom: -60px;
+  display: flex !important;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.testimonial-slider .slick-dots li {
+  margin: 0 6px;
+}
+
+.testimonial-slider .slick-dots li button {
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(79, 172, 254, 0.3);
+  border-radius: 50%;
+  text-indent: -9999px;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.testimonial-slider .slick-dots li.slick-active button {
+  background: #4facfe;
+  width: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(79, 172, 254, 0.6);
+}
+
+.testimonial-card:hover {
+  transform: translateY(-12px);
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(79, 172, 254, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.testimonial-quote-icon {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  font-size: 60px;
+  color: rgba(79, 172, 254, 0.1);
+  font-family: serif;
+  line-height: 1;
+}
+
+.testimonial-stars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  color: #fbbf24;
+  font-size: 14px;
+}
+
+.testimonial-text {
+  font-size: 16px;
+  color: #cbd5e1;
+  line-height: 1.8;
+  margin-bottom: 30px;
+  font-style: italic;
+  font-weight: 300;
+}
+
+.testimonial-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.testimonial-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4facfe;
+}
+
+.testimonial-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonial-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.testimonial-role {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 400;
+}
+
+@media (max-width: 1024px) {
+  .testimonials-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+  .testimonials-section {
+    padding: 80px 0;
+  }
+}

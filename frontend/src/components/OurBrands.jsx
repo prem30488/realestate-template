@@ -1,16 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_BASE_URL } from '../constants';
 import './OurBrands.css';
 
-const brands = [
-  { id: 1, image: 'assets/images/brands/brand-1.png' },
-  { id: 2, image: 'assets/images/brands/brand-2.png' },
-  { id: 3, image: 'assets/images/brands/brand-3.png' },
-  { id: 4, image: 'assets/images/brands/brand-4.png' },
-  { id: 5, image: 'assets/images/brands/brand-5.png' },
-  { id: 6, image: 'assets/images/brands/brand-6.png' },
+const staticBrands = [
+  { id: 's1', image: 'assets/images/brands/brand-1.png' },
+  { id: 's2', image: 'assets/images/brands/brand-2.png' },
+  { id: 's3', image: 'assets/images/brands/brand-3.png' },
+  { id: 's4', image: 'assets/images/brands/brand-4.png' },
+  { id: 's5', image: 'assets/images/brands/brand-5.png' },
+  { id: 's6', image: 'assets/images/brands/brand-6.png' },
 ];
 
 const OurBrands = () => {
+  const [brands, setBrands] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/api/brands`)
+      .then(res => {
+        if (res.data && res.data.length > 0) {
+          setBrands(res.data);
+        } else {
+          setBrands(staticBrands);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching brands:', err);
+        setBrands(staticBrands);
+      });
+  }, []);
+
   useEffect(() => {
     let intervalId;
     const initSlider = () => {
@@ -19,47 +38,49 @@ const OurBrands = () => {
         if (slider.hasClass('slick-initialized')) {
           slider.slick('unslick');
         }
-        slider.slick({
-          arrows: false,
-          dots: false,
-          autoplay: true,
-          autoplaySpeed: 3000,
-          slidesToShow: 5,
-          slidesToScroll: 1,
-          responsive: [
-            {
-              breakpoint: 1200,
-              settings: {
-                slidesToShow: 4,
+        if (brands.length > 0) {
+          slider.slick({
+            arrows: false,
+            dots: false,
+            autoplay: true,
+            autoplaySpeed: 3000,
+            slidesToShow: Math.min(5, brands.length),
+            slidesToScroll: 1,
+            responsive: [
+              {
+                breakpoint: 1200,
+                settings: {
+                  slidesToShow: Math.min(4, brands.length),
+                }
+              },
+              {
+                breakpoint: 992,
+                settings: {
+                  slidesToShow: Math.min(3, brands.length),
+                }
+              },
+              {
+                breakpoint: 768,
+                settings: {
+                  slidesToShow: Math.min(2, brands.length),
+                }
+              },
+              {
+                breakpoint: 480,
+                settings: {
+                  slidesToShow: 1,
+                }
               }
-            },
-            {
-              breakpoint: 992,
-              settings: {
-                slidesToShow: 3,
-              }
-            },
-            {
-              breakpoint: 768,
-              settings: {
-                slidesToShow: 2,
-              }
-            },
-            {
-              breakpoint: 480,
-              settings: {
-                slidesToShow: 1,
-              }
-            }
-          ]
-        });
-        clearInterval(intervalId);
+            ]
+          });
+          clearInterval(intervalId);
+        }
       }
     };
 
     intervalId = setInterval(initSlider, 100);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [brands]);
 
   return (
     <section className="brands-section section pb-100">
@@ -78,7 +99,7 @@ const OurBrands = () => {
             {brands.map((brand) => (
               <div key={brand.id} className="brand-item">
                 <div className="brand-inner">
-                  <img src={brand.image} alt={`Partner ${brand.id}`} />
+                  <img src={brand.image} alt={brand.name || 'Partner'} />
                 </div>
               </div>
             ))}

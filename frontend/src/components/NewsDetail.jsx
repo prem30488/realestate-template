@@ -1,7 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './NewsDetail.css';
+import { API_BASE_URL } from '../constants';
 
-const NewsDetail = ({ news, onBack }) => {
+const NewsDetail = ({ news: initialNews, onBack }) => {
+  const [news, setNews] = useState(initialNews);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchFullDetails = async () => {
+      if (!initialNews?.id) return;
+      setLoading(true);
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/news/${initialNews.id}`);
+        setNews(response.data);
+      } catch (error) {
+        console.error('Error fetching full news details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFullDetails();
+  }, [initialNews?.id]);
+
   if (!news) return null;
 
   return (
@@ -16,11 +38,11 @@ const NewsDetail = ({ news, onBack }) => {
         </div>
 
         <div className="row">
-          <div className="col-lg-8 offset-lg-2">
+          <div className="col-lg-8">
             <div className="news-detail-content">
               <div className="detail-image">
                 <img src={news.image} alt={news.title} />
-                <span className={`news-badge ${news.category.toLowerCase().replace(' ', '-')}`}>
+                <span className={`news-badge ${news.category.toLowerCase().replace(/\s+/g, '-')}`}>
                   {news.category}
                 </span>
               </div>
@@ -32,26 +54,11 @@ const NewsDetail = ({ news, onBack }) => {
 
               <div className="detail-body">
                 <p className="lead">{news.excerpt}</p>
-                <p>{news.content}</p>
-                <p>
-                  Additional dummy content to make it a "detailed" page. 
-                  Real estate markets are constantly evolving, and transactions like this one 
-                  in {news.title.split(' in ')[1] || 'this location'} highlight the growing 
-                  demand for premium properties. Investors and homeowners alike are looking 
-                  for unique features, whether it's sustainable technology, architectural 
-                  significance, or prime location amenities.
-                </p>
-                <blockquote>
-                  "This transaction marks a significant milestone in the current quarter, 
-                  reflecting the robust health of the luxury segment."
-                  <cite>— Market Analyst</cite>
-                </blockquote>
-                <p>
-                  Moving forward, we expect to see more interest in properties that offer 
-                  a blend of comfort and functionality. Our team remains dedicated to 
-                  providing the best service for our clients, ensuring that every deal 
-                  is handled with the utmost professionalism.
-                </p>
+                <div className="main-content">
+                  {news.content.split('\n').map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
+                </div>
               </div>
 
               <div className="detail-footer">
@@ -60,6 +67,38 @@ const NewsDetail = ({ news, onBack }) => {
                   <a href="#"><i className="fa fa-facebook"></i></a>
                   <a href="#"><i className="fa fa-twitter"></i></a>
                   <a href="#"><i className="fa fa-linkedin"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-lg-4">
+            <div className="author-sidebar">
+              <div className="author-card">
+                <div className="author-header">
+                  <div className="author-avatar">
+                    <i className="fa fa-user-circle"></i>
+                  </div>
+                  <div className="author-info">
+                    <h4>Posted By</h4>
+                    <h3>{news.author?.username || 'Elite Real Estate'}</h3>
+                  </div>
+                </div>
+                <div className="author-contact">
+                  <p><i className="fa fa-envelope"></i> {news.author?.email || 'contact@realestate.com'}</p>
+                  <p><i className="fa fa-phone"></i> {news.author?.phoneNumber || '+91 98765 43210'}</p>
+                </div>
+                <button className="contact-author-btn">Contact Agent</button>
+              </div>
+
+              <div className="recent-posts-sidebar mt-4">
+                <h3>Related Insights</h3>
+                <div className="mini-post">
+                  <div className="mini-img"><img src="assets/images/property/property-1.jpg" alt="" /></div>
+                  <div className="mini-content">
+                    <h5>Market trends in 2024</h5>
+                    <span>May 12, 2024</span>
+                  </div>
                 </div>
               </div>
             </div>

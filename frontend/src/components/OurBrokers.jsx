@@ -1,62 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './OurBrokers.css';
-
-const brokers = [
-  {
-    name: 'Donald S. Jenkins',
-    role: 'Real Estate Agent',
-    image: 'assets/images/agent/agent-1.jpg',
-    phone: '+012 345 678 102',
-    email: 'donald@example.com',
-    social: {
-      facebook: '#',
-      twitter: '#',
-      linkedin: '#',
-      google: '#',
-    }
-  },
-  {
-    name: 'Elizaeth J. Ohara',
-    role: 'Real Estate Agent',
-    image: 'assets/images/agent/agent-2.jpg',
-    phone: '+012 345 678 102',
-    email: 'elizaeth@example.com',
-    social: {
-      facebook: '#',
-      twitter: '#',
-      linkedin: '#',
-      google: '#',
-    }
-  },
-  {
-    name: 'Marilyn M. Gills',
-    role: 'Real Estate Agent',
-    image: 'assets/images/agent/agent-3.jpg',
-    phone: '+012 345 678 102',
-    email: 'marilyn@example.com',
-    social: {
-      facebook: '#',
-      twitter: '#',
-      linkedin: '#',
-      google: '#',
-    }
-  },
-  {
-    name: 'Robert C. Edwards',
-    role: 'Real Estate Agent',
-    image: 'assets/images/agent/agent-4.jpg',
-    phone: '+012 345 678 102',
-    email: 'robert@example.com',
-    social: {
-      facebook: '#',
-      twitter: '#',
-      linkedin: '#',
-      google: '#',
-    }
-  },
-];
+import { COMPANY_INFO } from '../constants/companyInfo';
+import { API_BASE_URL } from '../constants';
 
 const OurBrokers = () => {
+  const [brokers, setBrokers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBrokers = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/brokers`);
+        setBrokers(response.data);
+      } catch (error) {
+        console.error('Error fetching brokers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrokers();
+  }, []);
+
   return (
     <section className="brokers-section section pt-100 pb-70">
       <div className="container">
@@ -71,29 +37,39 @@ const OurBrokers = () => {
         </div>
 
         <div className="row">
-          {brokers.map((broker, index) => (
-            <div key={index} className="col-lg-3 col-md-6 col-12 mb-30">
-              <div className="premium-broker-card">
-                <div className="broker-image">
-                  <img src={broker.image} alt={broker.name} />
-                  <div className="broker-social">
-                    <a href={broker.social.facebook} className="facebook"><i className="fa fa-facebook"></i></a>
-                    <a href={broker.social.twitter} className="twitter"><i className="fa fa-twitter"></i></a>
-                    <a href={broker.social.linkedin} className="linkedin"><i className="fa fa-linkedin"></i></a>
-                    <a href={broker.social.google} className="google"><i className="fa fa-google-plus"></i></a>
+          {loading ? (
+            <div className="col-12 text-center">
+              <p>Loading brokers...</p>
+            </div>
+          ) : brokers.length > 0 ? (
+            brokers.map((broker, index) => (
+              <div key={index} className="col-lg-3 col-md-6 col-12 mb-30">
+                <div className="premium-broker-card">
+                  <div className="broker-image">
+                    <img src={broker.photo || 'assets/images/agent/agent-1.jpg'} alt={broker.name} />
+                    <div className="broker-social">
+                      <a href={broker.facebook || '#'} className="facebook"><i className="fa fa-facebook"></i></a>
+                      <a href={broker.twitter || '#'} className="twitter"><i className="fa fa-twitter"></i></a>
+                      <a href={broker.linkedin || '#'} className="linkedin"><i className="fa fa-linkedin"></i></a>
+                      <a href={broker.instagram || '#'} className="instagram"><i className="fa fa-instagram"></i></a>
+                    </div>
                   </div>
-                </div>
-                <div className="broker-content">
-                  <h4 className="name">{broker.name}</h4>
-                  <span className="role">{broker.role}</span>
-                  <div className="contact-info">
-                    <p><i className="fa fa-phone"></i> {broker.phone}</p>
-                    <p><i className="fa fa-envelope-o"></i> {broker.email}</p>
+                  <div className="broker-content">
+                    <h4 className="name">{broker.name}</h4>
+                    <span className="role">{broker.designation || 'Real Estate Agent'}</span>
+                    <div className="contact-info">
+                      <p><i className="fa fa-phone"></i> {broker.phoneNumber || COMPANY_INFO.phone1}</p>
+                      <p><i className="fa fa-envelope-o"></i> {broker.email || 'contact@realestate.com'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="col-12 text-center">
+              <p>No brokers found.</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </section>
