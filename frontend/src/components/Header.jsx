@@ -1,47 +1,73 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 import axios from 'axios';
 
 import CitySelector from './CitySelector';
 import { useCity } from '../context/CityContext';
 import { COMPANY_INFO } from '../constants/companyInfo';
+import { API_BASE_URL } from '../constants';
 
 // Replace {city} placeholder with the selected city
 const interpolate = (text, city) => (text || '').replace(/\{city\}/g, city);
 
 // ── Render a link item ───────────────────────────────────────────────────────
-const NavLink = ({ item, city }) => (
-  <li>
-    <a href={interpolate(item.link, city)}>
-      {interpolate(item.title, city)}
-      {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
-    </a>
-  </li>
-);
+const NavLink = ({ item, city }) => {
+  const link = interpolate(item.link, city);
+  const isInternal = link.startsWith('/');
+  
+  return (
+    <li>
+      {isInternal ? (
+        <Link to={link}>
+          {interpolate(item.title, city)}
+          {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
+        </Link>
+      ) : (
+        <a href={link}>
+          {interpolate(item.title, city)}
+          {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
+        </a>
+      )}
+    </li>
+  );
+};
 
 // ── Render one mega-menu column (a section heading + its children) ──────────
-const MegaMenuColumn = ({ section, city }) => (
-  <div className="mega-menu-column">
-    <h6>{interpolate(section.title, city)}</h6>
-    <ul>
-      {(section.children || []).map(link => (
-        <NavLink key={link.id} item={link} city={city} />
-      ))}
-    </ul>
-  </div>
-);
+const MegaMenuColumn = ({ section, city }) => {
+  const isPropertyType = section.title.toLowerCase().includes('property type');
+  
+  return (
+    <div className={`mega-menu-column ${isPropertyType ? 'column-wide' : ''}`}>
+      <h6>{interpolate(section.title, city)}</h6>
+      <ul className={isPropertyType ? 'grid-2-cols' : ''}>
+        {(section.children || []).map(link => (
+          <NavLink key={link.id} item={link} city={city} />
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 // ── Render a top-level nav item ──────────────────────────────────────────────
 const NavItem = ({ item, city }) => {
   const hasChildren = item.children && item.children.length > 0;
   const hasDropdown = item.menuType === 'mega' || item.menuType === 'sub';
+  const link = interpolate(item.link, city);
+  const isInternal = link.startsWith('/');
 
-  const titleEl = (
-    <a href={interpolate(item.link, city)}>
+  const titleContent = (
+    <>
       {interpolate(item.title, city)}
       {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
       {hasDropdown && <i className="pe-7s-angle-down" />}
-    </a>
+    </>
+  );
+
+  const titleEl = isInternal ? (
+    <Link to={link}>{titleContent}</Link>
+  ) : (
+    <a href={link}>{titleContent}</a>
   );
 
   if (!hasChildren || !hasDropdown) {
@@ -96,36 +122,36 @@ const NavItem = ({ item, city }) => {
 const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
   <>
     {/* Buy Menu */}
-    <li className="has-mega-menu"><a href="#">Buy <i className="pe-7s-angle-down" /></a>
+    <li className="has-mega-menu"><Link to="/properties?status=Sell">Buy <i className="pe-7s-angle-down" /></Link>
       <div className="mega-menu">
         <div className="mega-menu-column">
           <h6>Popular Choices</h6>
           <ul>
-            <li><a href="#">Ready to Move</a></li>
-            <li><a href="#">Owner Properties</a></li>
-            <li><a href="#">Budget Homes</a></li>
-            <li><a href="#">Premium Homes</a></li>
-            <li><a href="#">Newly Launched <span className="badge-new">NEW</span></a></li>
+            <li><Link to="/properties?status=Sell">Ready to Move</Link></li>
+            <li><Link to="/properties?status=Sell">Owner Properties</Link></li>
+            <li><Link to="/properties?status=Sell&maxPrice=5000000">Budget Homes</Link></li>
+            <li><Link to="/properties?status=Sell&minPrice=10000000">Premium Homes</Link></li>
+            <li><Link to="/properties?status=Sell">Newly Launched <span className="badge-new">NEW</span></Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
           <h6>Property Types</h6>
           <ul>
-            <li><a href="#">Flats in {selectedCity}</a></li>
-            <li><a href="#">House for sale in {selectedCity}</a></li>
-            <li><a href="#">Villa in {selectedCity}</a></li>
-            <li><a href="#">Plot in {selectedCity}</a></li>
-            <li><a href="#">Office Space in {selectedCity}</a></li>
-            <li><a href="#">Commercial Space in {selectedCity}</a></li>
+            <li><Link to={`/properties?type=1&city=${selectedCity}&status=Sell`}>Flats in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=2&city=${selectedCity}&status=Sell`}>House for sale in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=5&city=${selectedCity}&status=Sell`}>Villa in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=16&city=${selectedCity}&status=Sell`}>Plot in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=11&city=${selectedCity}&status=Sell`}>Office Space in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=3&city=${selectedCity}&status=Sell`}>Commercial Space in {selectedCity}</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
           <h6>Budget</h6>
           <ul>
-            <li><a href="#">Under ₹ 50 Lac</a></li>
-            <li><a href="#">₹ 50 Lac - ₹ 1 Cr</a></li>
-            <li><a href="#">₹ 1 Cr - ₹ 1.5 Cr</a></li>
-            <li><a href="#">Above ₹ 1.5 Cr</a></li>
+            <li><Link to="/properties?maxPrice=5000000&status=Sell">Under ₹ 50 Lac</Link></li>
+            <li><Link to="/properties?minPrice=5000000&maxPrice=10000000&status=Sell">₹ 50 Lac - ₹ 1 Cr</Link></li>
+            <li><Link to="/properties?minPrice=10000000&maxPrice=15000000&status=Sell">₹ 1 Cr - ₹ 1.5 Cr</Link></li>
+            <li><Link to="/properties?minPrice=15000000&status=Sell">Above ₹ 1.5 Cr</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
@@ -134,7 +160,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
             <li><a href="#">Builders in {selectedCity}</a></li>
             <li><a href="#">Localities in {selectedCity}</a></li>
             <li><a href="#">Projects in {selectedCity}</a></li>
-            <li><a href="#">Find an Agent in {selectedCity}</a></li>
+            <li><Link to="/brokers">Find an Agent in {selectedCity}</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column column-wide">
@@ -143,45 +169,45 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
             <li><a href="#">Propworth</a></li>
             <li><a href="#">Rates &amp; Trends</a></li>
             <li><a href="#">Buy vs Rent</a></li>
-            <li><a href="#">Tips and Guides</a></li>
+            <li><Link to="/news">Tips and Guides</Link></li>
           </ul>
         </div>
       </div>
     </li>
 
     {/* Rent Menu */}
-    <li className="has-mega-menu"><a href="#">Rent <i className="pe-7s-angle-down" /></a>
+    <li className="has-mega-menu"><Link to="/properties?status=Rent">Rent <i className="pe-7s-angle-down" /></Link>
       <div className="mega-menu">
         <div className="mega-menu-column">
           <h6>Popular Choices</h6>
           <ul>
-            <li><a href="#">Owner Properties</a></li>
-            <li><a href="#">Verified Properties</a></li>
-            <li><a href="#">Furnished Homes</a></li>
-            <li><a href="#">Bachelor Friendly Homes</a></li>
-            <li><a href="#">Immediately Available</a></li>
+            <li><Link to="/properties?status=Rent">Owner Properties</Link></li>
+            <li><Link to="/properties?status=Rent">Verified Properties</Link></li>
+            <li><Link to="/properties?status=Rent">Furnished Homes</Link></li>
+            <li><Link to="/properties?status=Rent">Bachelor Friendly Homes</Link></li>
+            <li><Link to="/properties?status=Rent">Immediately Available</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
           <h6>Property Type</h6>
           <ul>
-            <li><a href="#">Flat for rent in {selectedCity}</a></li>
-            <li><a href="#">House for rent in {selectedCity}</a></li>
-            <li><a href="#">Villa for rent in {selectedCity}</a></li>
-            <li><a href="#">PG in {selectedCity}</a></li>
-            <li><a href="#">Office Space in {selectedCity}</a></li>
-            <li><a href="#">Commercial Space in {selectedCity}</a></li>
-            <li><a href="#">Coliving Space in {selectedCity}</a></li>
-            <li><a href="#">Student Hostels in {selectedCity}</a></li>
+            <li><Link to={`/properties?type=1&city=${selectedCity}&status=Rent`}>Flat for rent in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=2&city=${selectedCity}&status=Rent`}>House for rent in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=5&city=${selectedCity}&status=Rent`}>Villa for rent in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=1&city=${selectedCity}&status=Rent`}>PG in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=11&city=${selectedCity}&status=Rent`}>Office Space in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=3&city=${selectedCity}&status=Rent`}>Commercial Space in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=1&city=${selectedCity}&status=Rent`}>Coliving Space in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=1&city=${selectedCity}&status=Rent`}>Student Hostels in {selectedCity}</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
           <h6>Budget</h6>
           <ul>
-            <li><a href="#">Under ₹ 10,000</a></li>
-            <li><a href="#">₹ 10,000 - ₹ 15,000</a></li>
-            <li><a href="#">₹ 15,000 - ₹ 25,000</a></li>
-            <li><a href="#">Above ₹ 25,000</a></li>
+            <li><Link to="/properties?maxPrice=10000&status=Rent">Under ₹ 10,000</Link></li>
+            <li><Link to="/properties?minPrice=10000&maxPrice=15000&status=Rent">₹ 10,000 - ₹ 15,000</Link></li>
+            <li><Link to="/properties?minPrice=15000&maxPrice=25000&status=Rent">₹ 15,000 - ₹ 25,000</Link></li>
+            <li><Link to="/properties?minPrice=25000&status=Rent">Above ₹ 25,000</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
@@ -189,7 +215,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
           <ul>
             <li><a href="#">Localities</a></li>
             <li><a href="#">Buy Vs Rent</a></li>
-            <li><a href="#">Find an Agent</a></li>
+            <li><Link to="/brokers">Find an Agent</Link></li>
             <li><a href="#">Share Requirement</a></li>
           </ul>
         </div>
@@ -202,8 +228,8 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
         <div className="mega-menu-column">
           <h6>For Owner</h6>
           <ul>
-            <li><a href="#">Post Property <span className="badge-free">FREE</span></a></li>
-            <li><a href="#">My Dashboard</a></li>
+            <li><Link to="/my-properties">Post Property <span className="badge-free">FREE</span></Link></li>
+            <li><Link to="/dashboard">My Dashboard</Link></li>
           </ul>
           <div className="mega-menu-footer">
             <p className="footer-title">Sell / Rent Ad Packages</p>
@@ -213,7 +239,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
         <div className="mega-menu-column">
           <h6>For Agent &amp; Builder</h6>
           <ul>
-            <li><a href="#">My Dashboard</a></li>
+            <li><Link to="/dashboard">My Dashboard</Link></li>
             <li><a href="#">Ad Packages</a></li>
             <li><a href="#">iAdvantage</a></li>
             <li><a href="#">Developer Lounge</a></li>
@@ -224,7 +250,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
           <h6>Selling Tools</h6>
           <ul>
             <li><a href="#">Property Valuation</a></li>
-            <li><a href="#">Find an Agent</a></li>
+            <li><Link to="/brokers">Find an Agent</Link></li>
             <li><a href="#">Rates and Trends</a></li>
           </ul>
         </div>
@@ -268,7 +294,7 @@ const Header = ({ onLoginClick, user, onLogout }) => {
 
   // Fetch dynamic menu
   useEffect(() => {
-    axios.get('http://localhost:3000/api/menu')
+    axios.get(`${API_BASE_URL}/api/menu`)
       .then(res => setMenuItems(res.data))
       .catch(() => setMenuItems([])); // on error fall back to static
   }, []);
@@ -362,24 +388,24 @@ const Header = ({ onLoginClick, user, onLogout }) => {
                       </div>
                       <ul className="account-dropdown">
                         <li>
-                          <a href="/notifications">
+                          <Link to="/notifications">
                             <i className="pe-7s-bell" /> Notifications
                             <span className="count">3</span>
-                          </a>
+                          </Link>
                         </li>
-                        <li><a href="/settings"><i className="pe-7s-config" /> Settings</a></li>
                         <hr />
                         <li className="dropdown-header">
                           <span>&nbsp;&nbsp;My Activity</span>
                           <div className="header-line" />
                         </li>
-                        <li><a href="#"><i className="pe-7s-home" /> Requested Properties <span className="badge-new">NEW</span></a></li>
-                        <li><a href="#"><i className="pe-7s-phone" /> Contacted Properties</a></li>
-                        <li><a href="#"><i className="pe-7s-look" /> Viewed Properties</a></li>
-                        <li><a href="#"><i className="pe-7s-star" /> Shortlisted Properties</a></li>
+                        <li><Link to="/dashboard"><i className="pe-7s-graph1" /> Dashboard</Link></li>
+                        <li><Link to="/my-properties"><i className="pe-7s-map-marker" /> My Properties</Link></li>
+                        <li><Link to="/viewed-properties"><i className="pe-7s-look" /> Viewed Properties</Link></li>
+                        <li><Link to="/shortlist"><i className="pe-7s-star" /> Shortlisted Properties</Link></li>
                         <li><a href="#"><i className="pe-7s-search" /> Searches</a></li>
                         <hr />
-                        <li><a href="/profile"><i className="pe-7s-id" /> My Profile</a></li>
+                        <li><Link to="/profile"><i className="pe-7s-id" /> My Profile</Link></li>
+                        <li><Link to="/settings"><i className="pe-7s-config" /> Settings</Link></li>
                         <hr />
                         <li>
                           <a href="#" onClick={e => { e.preventDefault(); onLogout(); }}>

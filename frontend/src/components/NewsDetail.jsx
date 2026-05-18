@@ -64,9 +64,27 @@ const NewsDetail = ({ news: initialNews, onBack }) => {
               <div className="detail-footer">
                 <div className="share-links">
                   <span>Share this article:</span>
-                  <a href="#"><i className="fa fa-facebook"></i></a>
-                  <a href="#"><i className="fa fa-twitter"></i></a>
-                  <a href="#"><i className="fa fa-linkedin"></i></a>
+                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}&quote=${encodeURIComponent(news.title)}`} target="_blank" rel="noopener noreferrer">
+                    <i className="fa fa-facebook"></i>
+                  </a>
+                  <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(news.title)}`} target="_blank" rel="noopener noreferrer">
+                    <i className="fa fa-twitter"></i>
+                  </a>
+                  <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.origin)}&title=${encodeURIComponent(news.title)}`} target="_blank" rel="noopener noreferrer">
+                    <i className="fa fa-linkedin"></i>
+                  </a>
+                  {navigator.share && (
+                    <a href="#!" onClick={(e) => {
+                      e.preventDefault();
+                      navigator.share({
+                        title: news.title,
+                        text: `Check out this article: ${news.title}`,
+                        url: window.location.origin
+                      });
+                    }} style={{ cursor: 'pointer' }}>
+                      <i className="fa fa-share-alt"></i>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

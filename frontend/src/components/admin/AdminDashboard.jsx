@@ -143,7 +143,7 @@ const AdminDashboard = () => {
       {/* Stat Cards Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {statCards.map((card, i) => (
-          <Grid item xs={12} sm={6} md={3} key={i}>
+          <Grid xs={12} sm={6} md={3} key={i}>
             <StatCard {...card} loading={loading} />
           </Grid>
         ))}
@@ -152,7 +152,7 @@ const AdminDashboard = () => {
       {/* Bottom Panels */}
       <Grid container spacing={3}>
         {/* Content Health */}
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Paper sx={{ p: 3, borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', height: '100%' }}>
             <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: '#1a1a2e' }}>
               📊 Content Health
@@ -172,7 +172,7 @@ const AdminDashboard = () => {
         </Grid>
 
         {/* Recent Articles */}
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Paper sx={{ p: 3, borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', height: '100%' }}>
             <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: '#1a1a2e' }}>
               📰 Recent Articles
@@ -213,7 +213,7 @@ const AdminDashboard = () => {
         </Grid>
 
         {/* Recent Users */}
-        <Grid item xs={12} md={4}>
+        <Grid  xs={12} md={4}>
           <Paper sx={{ p: 3, borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', height: '100%' }}>
             <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: '#1a1a2e' }}>
               👥 Recent Users

@@ -4,13 +4,16 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import NewsDetail from './components/NewsDetail'
 import { Toaster, toast } from 'react-hot-toast';
+import { Box } from '@mui/material';
 import Login from './components/Login'
 import WhatsAppButton from './components/WhatsAppButton'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import UserDashboard from './components/UserDashboard'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import Home from './components/Home'
 import AdminLayout from './components/admin/AdminLayout'
 import AdminDashboard from './components/admin/AdminDashboard'
 import PropertiesManager from './components/admin/PropertiesManager'
+import MyPropertiesManager from './components/MyPropertiesManager'
 import GenericManager from './components/admin/GenericManager'
 import HomeManager from './components/admin/HomeManager'
 import MenuManager from './components/admin/MenuManager'
@@ -23,15 +26,32 @@ import NewsManager from './components/admin/NewsManagerNew'
 import TestimonialManager from './components/admin/TestimonialManager'
 import BrandManager from './components/admin/BrandManager'
 import UserManager from './components/admin/UserManager'
+import NewsletterManager from './components/admin/NewsletterManager'
+import FaqManager from './components/admin/FaqManager'
+import PropertiesList from './components/PropertiesList'
+import PropertyDetails from './components/PropertyDetails'
+import ShortlistedProperties from './components/ShortlistedProperties'
+import UserProfile from './components/UserProfile'
+import UserSettings from './components/UserSettings'
+import Notifications from './components/Notifications'
+import AdminSettings from './components/admin/AdminSettings'
+import ViewedProperties from './components/ViewedProperties'
 
 function App() {
+  const navigate = useNavigate();
   const [selectedNews, setSelectedNews] = useState(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
   const handleLoginSuccess = (userData) => {
+    localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     setIsLoginOpen(false);
+    if (userData.role === 'admin' || userData.role === 'superadmin') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   const handleLogout = () => {
@@ -56,6 +76,15 @@ function App() {
     return children;
   };
 
+  // Protected Route for any logged-in user
+  const ProtectedRoute = ({ children }) => {
+    if (!user) {
+      toast.error("Please login to access this page");
+      return <Navigate to="/" />;
+    }
+    return children;
+  };
+
   // Superadmin-only Route
   const SuperAdminRoute = ({ children }) => {
     if (!user || user.role !== 'superadmin') {
@@ -66,7 +95,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="App" translate="no">
       <Toaster
         position="top-center"
         containerStyle={{ zIndex: 999999 }}
@@ -86,6 +115,91 @@ function App() {
             <Footer />
             <WhatsAppButton />
           </>
+        } />
+
+        <Route path="/properties" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <PropertiesList />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/properties/:id" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <PropertyDetails onLoginRequired={() => setIsLoginOpen(true)} />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        {/* User Specific Routes */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <Box sx={{ bgcolor: '#f8fafc', minHeight: '90vh', pt: '100px' }}>
+              <UserDashboard />
+            </Box>
+            <Footer />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/my-properties" element={
+          <ProtectedRoute>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <Box sx={{ p: 4, minHeight: '80vh', bgcolor: '#f5f7fa', pt: '100px' }}>
+              <MyPropertiesManager />
+            </Box>
+            <Footer />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/shortlist" element={
+          <ProtectedRoute>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <ShortlistedProperties />
+            <Footer />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/viewed-properties" element={
+          <ProtectedRoute>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <ViewedProperties />
+            <Footer />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <Box sx={{ minHeight: '80vh', bgcolor: '#f5f7fa', pt: '100px' }}>
+              <UserProfile />
+            </Box>
+            <Footer />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <Box sx={{ minHeight: '80vh', bgcolor: '#f5f7fa', pt: '100px' }}>
+              <UserSettings />
+            </Box>
+            <Footer />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <Box sx={{ minHeight: '80vh', bgcolor: '#f5f7fa', pt: '100px' }}>
+              <Notifications />
+            </Box>
+            <Footer />
+          </ProtectedRoute>
         } />
 
         {/* Admin Dashboard Routes */}
@@ -108,7 +222,10 @@ function App() {
           <Route path="news-manager" element={<AdminRoute privilege="News"><NewsManager /></AdminRoute>} />
           <Route path="testimonials" element={<AdminRoute privilege="Testimonials"><TestimonialManager /></AdminRoute>} />
           <Route path="brands" element={<AdminRoute privilege="Brand"><BrandManager /></AdminRoute>} />
+          <Route path="newsletter" element={<AdminRoute privilege="Newsletter"><NewsletterManager /></AdminRoute>} />
+          <Route path="faqs" element={<AdminRoute privilege="FAQ"><FaqManager /></AdminRoute>} />
           <Route path="users" element={<SuperAdminRoute><UserManager /></SuperAdminRoute>} />
+          <Route path="settings" element={<AdminRoute privilege="Settings"><AdminSettings /></AdminRoute>} />
         </Route>
       </Routes>
 

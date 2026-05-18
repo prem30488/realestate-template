@@ -1,30 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CitySelector.css';
 import { useCity } from '../context/CityContext';
+import { API_BASE_URL } from '../constants';
 
 const CitySelector = () => {
   const { selectedCity, setSelectedCity } = useCity();
   const [isOpen, setIsOpen] = useState(false);
+  const [cities, setCities] = useState({
+    nearby: [],
+    popular: [],
+    others: []
+  });
 
-  const cities = {
-    nearby: ['Gandhinagar', 'Ahmedabad', 'Vadodara', 'Surat', 'Rajkot', 'Anand', 'Nadiad', 'Mehsana'],
-    popular: [
-      'Ahmedabad', 'Bangalore', 'Chennai', 'New Delhi', 'Mumbai',
-      'Pune', 'Hyderabad', 'Kolkata', 'Jaipur', 'Lucknow',
-      'Noida', 'Gurgaon', 'Thane', 'Indore', 'Bhopal'
-    ],
-    others: [
-      'Agra', 'Amritsar', 'Chandigarh', 'Coimbatore', 'Dehradun',
-      'Gwalior', 'Jabalpur', 'Jodhpur', 'Kanpur', 'Kochi',
-      'Madurai', 'Mysore', 'Nagpur', 'Nashik', 'Patna',
-      'Raipur', 'Ranchi', 'Solapur', 'Udaipur', 'Varanasi',
-      'Visakhapatnam', 'Vijayawada'
-    ]
-  };
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cities`);
+        const data = await response.json();
+        
+        const grouped = {
+          nearby: data.filter(c => c.isNearby).map(c => c.name),
+          popular: data.filter(c => c.isPopular).map(c => c.name),
+          others: data.filter(c => !c.isNearby && !c.isPopular).map(c => c.name)
+        };
+        
+        setCities(grouped);
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    };
+    
+    fetchCities();
+  }, []);
 
   const handleCitySelect = (city) => {
     setSelectedCity(city);
     setIsOpen(false);
+    window.location.reload();
   };
 
   return (

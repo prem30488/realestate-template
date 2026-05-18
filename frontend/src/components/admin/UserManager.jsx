@@ -31,6 +31,9 @@ const ALL_PRIVILEGES = [
   { key: 'News',         label: 'News Manager',         icon: '📰' },
   { key: 'Testimonials', label: 'Testimonials Manager', icon: '💬' },
   { key: 'Brand',        label: 'Brand Manager',        icon: '🏷️' },
+  { key: 'Newsletter',   label: 'Newsletter Manager',   icon: '📧' },
+  { key: 'FAQ',          label: 'FAQ Manager',          icon: '❓' },
+  { key: 'Settings',     label: 'Settings Manager',     icon: '🔧' },
 ];
 
 const ROLE_COLORS = {
@@ -245,7 +248,7 @@ const UserManager = () => {
         <TextField fullWidth variant="outlined" placeholder="Search by username or email..."
           value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment> }}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment> } }}
         />
       </Paper>
 
@@ -369,22 +372,22 @@ const UserManager = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
               <TextField fullWidth label="Username" required value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon fontSize="small" /></InputAdornment> }}
+                slotProps={{ input: { startAdornment: <InputAdornment position="start"><PersonIcon fontSize="small" /></InputAdornment> } }}
               />
               <TextField fullWidth label="Email" required type="email" value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                InputProps={{ startAdornment: <InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment> }}
+                slotProps={{ input: { startAdornment: <InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment> } }}
               />
               {!editingUser && (
                 <TextField fullWidth label="Password" type="password" value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   helperText="Leave blank to use default: Password@123"
-                  InputProps={{ startAdornment: <InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment> }}
+                  slotProps={{ input: { startAdornment: <InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment> } }}
                 />
               )}
               <TextField fullWidth label="Phone Number" value={formData.phoneNumber}
                 onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                InputProps={{ startAdornment: <InputAdornment position="start"><PhoneIcon fontSize="small" /></InputAdornment> }}
+                slotProps={{ input: { startAdornment: <InputAdornment position="start"><PhoneIcon fontSize="small" /></InputAdornment> } }}
               />
               <FormControl fullWidth>
                 <InputLabel>Role</InputLabel>
@@ -505,7 +508,7 @@ const UserManager = () => {
             onChange={(e) => setNewPassword(e.target.value)}
             sx={{ mt: 1 }}
             helperText="Minimum 6 characters"
-            InputProps={{ startAdornment: <InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment> }}
+            slotProps={{ input: { startAdornment: <InputAdornment position="start"><LockIcon fontSize="small" /></InputAdornment> } }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>

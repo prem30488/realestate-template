@@ -43,7 +43,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { API_BASE_URL } from '../../constants';
+import { API_BASE_URL } from '../constants';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -61,10 +61,8 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 const steps = ['Select Location', 'Address Details', 'Property Specifics', 'Images'];
 
-const PropertiesManager = ({ userMode: userModeProp }) => {
+const MyPropertiesManager = () => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
-  // Force userMode to true if not admin/superadmin
-  const userMode = userModeProp || (user?.role !== 'admin' && user?.role !== 'superadmin');
   
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -111,8 +109,8 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const endpoint = userMode ? `${API_BASE_URL}/api/my-properties` : `${API_BASE_URL}/api/admin/properties`;
-      console.log('PropertiesManager: userMode =', userMode, 'Fetching from:', endpoint);
+      const endpoint = `${API_BASE_URL}/api/my-properties`;
+      console.log('MyPropertiesManager: Fetching from:', endpoint);
       const response = await axios.get(endpoint, {
         params: {
           page: page + 1,
@@ -121,13 +119,9 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
         },
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (userMode) {
-        setProperties(response.data);
-        setTotalCount(response.data.length);
-      } else {
-        setProperties(response.data.properties);
-        setTotalCount(response.data.totalCount);
-      }
+      // The /api/my-properties endpoint returns a direct array
+      setProperties(response.data);
+      setTotalCount(response.data.length);
     } catch (error) {
       toast.error('Error fetching properties');
     } finally {
@@ -170,7 +164,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       fetchProperties();
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [page, rowsPerPage, searchTerm, userMode, user?.id]);
+  }, [page, rowsPerPage, searchTerm, user?.id]);
 
   useEffect(() => {
     axios.get(`${API_BASE_URL}/api/property-types`)
@@ -190,7 +184,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
   const handleToggleDelete = async (id, currentStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const endpoint = userMode ? `${API_BASE_URL}/api/my-properties/${id}/toggle-delete` : `${API_BASE_URL}/api/admin/properties/${id}/toggle-delete`;
+      const endpoint = `${API_BASE_URL}/api/my-properties/${id}/toggle-delete`;
       await axios.patch(endpoint, {
         isDeleted: !currentStatus
       }, {
@@ -207,7 +201,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
     if (window.confirm('Are you sure you want to permanently delete this property?')) {
       try {
         const token = localStorage.getItem('token');
-        const endpoint = userMode ? `${API_BASE_URL}/api/my-properties/${id}` : `${API_BASE_URL}/api/admin/properties/${id}`;
+        const endpoint = `${API_BASE_URL}/api/my-properties/${id}`;
         await axios.delete(endpoint, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -282,11 +276,11 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
       if (editingId) {
-        const endpoint = userMode ? `${API_BASE_URL}/api/my-properties/${editingId}` : `${API_BASE_URL}/api/admin/properties/${editingId}`;
+        const endpoint = `${API_BASE_URL}/api/my-properties/${editingId}`;
         await axios.put(endpoint, formData, config);
         toast.success('Property updated successfully');
       } else {
-        const endpoint = userMode ? `${API_BASE_URL}/api/my-properties` : `${API_BASE_URL}/api/admin/properties`;
+        const endpoint = `${API_BASE_URL}/api/my-properties`;
         await axios.post(endpoint, formData, config);
         toast.success('Property added successfully');
       }
@@ -362,16 +356,16 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       case 1:
         return (
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid  xs={12}>
+            <Grid xs={12}>
               <TextField fullWidth label="Property Title" variant="outlined" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
             </Grid>
-            <Grid  xs={12}>
+            <Grid xs={12}>
               <TextField fullWidth label="Location/Area Name" variant="outlined" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} />
             </Grid>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <TextField fullWidth label="City" variant="outlined" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
             </Grid>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <TextField fullWidth label="State" variant="outlined" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} />
             </Grid>
           </Grid>
@@ -379,35 +373,35 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       case 2:
         return (
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <TextField select fullWidth label="Property Type" value={formData.typeId} onChange={(e) => setFormData({...formData, typeId: e.target.value})}>
                 {propertyTypes.map((type) => (
                   <MenuItem key={type.id} value={type.id}>{type.name}</MenuItem>
                 ))}
               </TextField>
             </Grid>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <TextField select fullWidth label="Status" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
                 <MenuItem value="For Sale">For Sale</MenuItem>
                 <MenuItem value="For Rent">For Rent</MenuItem>
               </TextField>
             </Grid>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <TextField fullWidth label="Price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
             </Grid>
-            <Grid  xs={6}>
+            <Grid xs={6}>
               <TextField fullWidth label="Area (SqFt)" type="number" value={formData.area} onChange={(e) => setFormData({...formData, area: e.target.value})} />
             </Grid>
-            <Grid  xs={4}>
+            <Grid xs={4}>
               <TextField fullWidth label="Bedrooms" type="number" value={formData.no_of_bedrooms} onChange={(e) => setFormData({...formData, no_of_bedrooms: e.target.value})} />
             </Grid>
-            <Grid  xs={4}>
+            <Grid xs={4}>
               <TextField fullWidth label="Bathrooms" type="number" value={formData.no_of_bathrooms} onChange={(e) => setFormData({...formData, no_of_bathrooms: e.target.value})} />
             </Grid>
-            <Grid  xs={4}>
+            <Grid xs={4}>
               <TextField fullWidth label="Garage" type="number" value={formData.no_of_garage} onChange={(e) => setFormData({...formData, no_of_garage: e.target.value})} />
             </Grid>
-            <Grid  xs={12}>
+            <Grid xs={12}>
               <TextField 
                 fullWidth 
                 label="Property Description" 
@@ -518,7 +512,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>Properties Manager</Typography>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>My Properties</Typography>
         <Button variant="contained" startIcon={<AddIcon />} sx={{ bgcolor: '#6a11cb' }} onClick={() => setOpen(true)}>
           Add Property
         </Button>
@@ -553,7 +547,6 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
               <TableCell>Price</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Status</TableCell>
-              {!userMode && <TableCell>Posted By</TableCell>}
               <TableCell>Active</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -575,13 +568,6 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
                     variant="outlined" 
                   />
                 </TableCell>
-                {!userMode && (
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {property.owner?.username || 'System'}
-                    </Typography>
-                  </TableCell>
-                )}
                 <TableCell>
                   <Switch 
                     checked={!property.isDeleted} 
@@ -707,4 +693,4 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
   );
 };
 
-export default PropertiesManager;
+export default MyPropertiesManager;

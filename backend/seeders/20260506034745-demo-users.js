@@ -24,6 +24,7 @@ module.exports = {
         role: 'admin',
         phoneNumber: '0987654321',
         isBlocked: false,
+        privileges: JSON.stringify(['Properties', 'Home', 'Menu', 'Slider', 'Search', 'Service', 'FunFact', 'Broker', 'Insta Video', 'News', 'Testimonials', 'Brand', 'Newsletter', 'FAQ', 'Settings']),
         createdAt: new Date(),
         updatedAt: new Date()
       },

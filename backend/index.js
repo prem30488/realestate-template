@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, sequelize } = require('./models');
+const { User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, sequelize } = require('./models');
 const { Op } = require('sequelize');
 const initDb = require('./initDb');
 
@@ -129,7 +129,13 @@ app.get('/api/home/data', async (req, res) => {
       order: [['updatedAt', 'DESC']],
       include: [
         { model: PropertyImage, as: 'images' },
-        { model: PropertyType, as: 'propertyType' }
+        { model: PropertyType, as: 'propertyType' },
+        {
+          model: User,
+          as: 'owner',
+          attributes: [],
+          where: { role: 'user' }
+        }
       ],
       limit: 10
     });
@@ -139,7 +145,13 @@ app.get('/api/home/data', async (req, res) => {
       order: [['createdAt', 'DESC']],
       include: [
         { model: PropertyImage, as: 'images' },
-        { model: PropertyType, as: 'propertyType' }
+        { model: PropertyType, as: 'propertyType' },
+        {
+          model: User,
+          as: 'owner',
+          attributes: [],
+          where: { role: 'user' }
+        }
       ],
       limit: 6
     });
@@ -168,10 +180,10 @@ app.get('/api/home/data', async (req, res) => {
 app.get('/api/news/:id', async (req, res) => {
   try {
     const news = await Article.findByPk(req.params.id, {
-      include: [{ 
-        model: User, 
-        as: 'author', 
-        attributes: ['username', 'email', 'phoneNumber'] 
+      include: [{
+        model: User,
+        as: 'author',
+        attributes: ['username', 'email', 'phoneNumber']
       }]
     });
     if (!news) return res.status(404).json({ error: 'News not found' });
@@ -195,22 +207,40 @@ app.get('/api/news', async (req, res) => {
   }
 });
 
-// Get properties by city with pagination and search
+// Get properties with pagination and filters (type, status, city)
 app.get('/api/properties', async (req, res) => {
-  const { city, search, page = 1, limit = 10 } = req.query;
+  const { city, search, type, status, page = 1, limit = 10 } = req.query;
   const offset = (page - 1) * limit;
 
   try {
-    const where = {};
+    const where = { isDeleted: false };
+    
     if (city) {
-      where.city = city;
+      where.city = { [Op.iLike]: `%${city}%` };
     }
+
+    if (type) {
+      where.typeId = type;
+    }
+
+    if (status) {
+      // Map status from URL (Rent, Sell, Buy) to DB ENUM ('For Rent', 'For Sale')
+      let dbStatus = status;
+      if (status.toLowerCase() === 'rent') dbStatus = 'For Rent';
+      if (status.toLowerCase() === 'sell' || status.toLowerCase() === 'buy') dbStatus = 'For Sale';
+      where.status = dbStatus;
+    }
+
     if (search) {
-      where[Op.or] = [
-        { title: { [Op.iLike]: `%${search}%` } },
-        { location: { [Op.iLike]: `%${search}%` } },
-        { city: { [Op.iLike]: `%${search}%` } },
-        { status: { [Op.iLike]: `%${search}%` } }
+      where[Op.and] = [
+        { isDeleted: false },
+        {
+          [Op.or]: [
+            { title: { [Op.iLike]: `%${search}%` } },
+            { location: { [Op.iLike]: `%${search}%` } },
+            { city: { [Op.iLike]: `%${search}%` } }
+          ]
+        }
       ];
     }
 
@@ -218,7 +248,13 @@ app.get('/api/properties', async (req, res) => {
       where,
       include: [
         { model: PropertyImage, as: 'images' },
-        { model: PropertyType, as: 'propertyType' }
+        { model: PropertyType, as: 'propertyType' },
+        {
+          model: User,
+          as: 'owner',
+          attributes: ['username', 'id', 'role'],
+          where: { role: 'user' }
+        }
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -233,6 +269,33 @@ app.get('/api/properties', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching properties:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get single property details with amenities
+app.get('/api/properties/:id', async (req, res) => {
+  try {
+    const property = await Property.findByPk(req.params.id, {
+      include: [
+        { model: PropertyImage, as: 'images' },
+        { model: PropertyType, as: 'propertyType' },
+        { model: User, as: 'owner', attributes: ['username', 'email', 'phoneNumber'] },
+        { 
+          model: Amenity, 
+          as: 'amenities',
+          through: { attributes: [] }
+        }
+      ]
+    });
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    res.json(property);
+  } catch (error) {
+    console.error('Error fetching property details:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -293,8 +356,422 @@ app.get('/api/property-types', async (req, res) => {
   }
 });
 
+// Get cities
+app.get('/api/cities', async (req, res) => {
+  try {
+    const cities = await City.findAll({
+      order: [['order', 'ASC'], ['name', 'ASC']]
+    });
+    res.json(cities);
+  } catch (error) {
+    console.error('Error fetching cities:', error);
+    res.status(500).json({ error: 'Error fetching cities' });
+  }
+});
+
+// Get single city by name
+app.get('/api/cities/:name', async (req, res) => {
+  try {
+    const city = await City.findOne({
+      where: { name: { [Op.iLike]: req.params.name } }
+    });
+    if (!city) return res.status(404).json({ error: 'City not found' });
+    res.json(city);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching city details' });
+  }
+});
+
+// --- USER PROPERTY MANAGEMENT ---
+
+// Get current user's properties
+app.get('/api/my-properties', authenticateToken, async (req, res) => {
+  const { search } = req.query;
+
+  try {
+    // Basic filter: must be the owner and not deleted
+    let where = {
+      posted_by: req.user.id,
+      isDeleted: false
+    };
+
+    // If there's a search term, add it as an AND condition
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { location: { [Op.iLike]: `%${search}%` } },
+        { city: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    const properties = await Property.findAll({
+      where,
+      include: [
+        { model: PropertyImage, as: 'images' },
+        { model: PropertyType, as: 'propertyType' },
+        { model: User, as: 'owner', attributes: ['username', 'id'] }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Final security check: double verify in memory if needed (though Sequelize should handle it)
+    const filteredProperties = properties.filter(p => p.posted_by === req.user.id);
+
+    res.json(filteredProperties);
+  } catch (error) {
+    console.error('Error fetching my properties:', error);
+    res.status(500).json({ error: 'Error fetching your properties' });
+  }
+});
+
+// Post a new property (any logged in user)
+app.post('/api/my-properties', authenticateToken, async (req, res) => {
+  try {
+    const { images, ...propertyData } = req.body;
+    propertyData.posted_by = req.user.id;
+    propertyData.isDeleted = false;
+
+    const cleanData = {
+      ...propertyData,
+      price: propertyData.price ? parseFloat(propertyData.price) : 0,
+      area: propertyData.area ? parseFloat(propertyData.area) : 0,
+      no_of_bedrooms: propertyData.no_of_bedrooms ? parseInt(propertyData.no_of_bedrooms) : 0,
+      no_of_bathrooms: propertyData.no_of_bathrooms ? parseInt(propertyData.no_of_bathrooms) : 0,
+      no_of_garage: propertyData.no_of_garage ? parseInt(propertyData.no_of_garage) : 0,
+      latitude: propertyData.latitude ? parseFloat(propertyData.latitude) : 23.2156,
+      longitude: propertyData.longitude ? parseFloat(propertyData.longitude) : 72.6369,
+    };
+
+    const property = await Property.create(cleanData);
+
+    if (images && images.length > 0) {
+      const imageData = images.map(img => ({
+        propertyId: property.id,
+        imageUrl: typeof img === 'string' ? img : img.imageUrl
+      })).filter(img => img.imageUrl && img.imageUrl.trim() !== '');
+
+      if (imageData.length > 0) {
+        await PropertyImage.bulkCreate(imageData);
+      }
+    }
+
+    res.status(201).json(property);
+  } catch (error) {
+    res.status(500).json({ error: 'Error posting property', details: error.message });
+  }
+});
+
+// Update own property
+app.put('/api/my-properties/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { images, propertyType, ...propertyData } = req.body;
+
+    const property = await Property.findOne({ where: { id, posted_by: req.user.id } });
+    if (!property) return res.status(403).json({ message: 'Access denied: You can only update your own properties' });
+
+    delete propertyData.id;
+    delete propertyData.posted_by; // Prevent changing ownership
+
+    const cleanData = {
+      ...propertyData,
+      price: propertyData.price ? parseFloat(propertyData.price) : 0,
+      area: propertyData.area ? parseFloat(propertyData.area) : 0,
+      no_of_bedrooms: propertyData.no_of_bedrooms ? parseInt(propertyData.no_of_bedrooms) : 0,
+      no_of_bathrooms: propertyData.no_of_bathrooms ? parseInt(propertyData.no_of_bathrooms) : 0,
+      no_of_garage: propertyData.no_of_garage ? parseInt(propertyData.no_of_garage) : 0,
+      latitude: propertyData.latitude ? parseFloat(propertyData.latitude) : 23.2156,
+      longitude: propertyData.longitude ? parseFloat(propertyData.longitude) : 72.6369,
+    };
+
+    await Property.update(cleanData, { where: { id } });
+
+    if (images) {
+      await PropertyImage.destroy({ where: { propertyId: id } });
+      const imageData = images.map(img => ({
+        propertyId: id,
+        imageUrl: typeof img === 'string' ? img : img.imageUrl
+      })).filter(img => img.imageUrl && img.imageUrl.trim() !== '');
+
+      if (imageData.length > 0) {
+        await PropertyImage.bulkCreate(imageData);
+      }
+    }
+
+    res.json({ message: 'Property updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating property' });
+  }
+});
+
+// Toggle visibility/delete for own property
+app.patch('/api/my-properties/:id/toggle-delete', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isDeleted } = req.body;
+
+    const property = await Property.findOne({ where: { id, posted_by: req.user.id } });
+    if (!property) return res.status(403).json({ message: 'Access denied' });
+
+    await Property.update({ isDeleted }, { where: { id } });
+    res.json({ message: 'Property status updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating property status' });
+  }
+});
+
+// Permanent delete own property
+app.delete('/api/my-properties/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const property = await Property.findOne({ where: { id, posted_by: req.user.id } });
+    if (!property) return res.status(403).json({ message: 'Access denied' });
+
+    await Property.destroy({ where: { id } });
+    res.json({ message: 'Property deleted permanently' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting property' });
+  }
+});
+
+// --- SHORTLIST MANAGEMENT ---
+
+// Get current user's shortlist
+app.get('/api/shortlist', authenticateToken, async (req, res) => {
+  try {
+    const shortlisted = await Shortlist.findAll({
+      where: { userId: req.user.id },
+      include: [
+        {
+          model: Property,
+          as: 'property',
+          include: [
+            { model: PropertyImage, as: 'images' },
+            { model: PropertyType, as: 'propertyType' }
+          ]
+        }
+      ]
+    });
+    res.json(shortlisted.map(s => s.property));
+  } catch (error) {
+    console.error('Shortlist fetch error:', error);
+    res.status(500).json({ error: 'Error fetching shortlist' });
+  }
+});
+
+// Add to shortlist
+app.post('/api/shortlist/:propertyId', authenticateToken, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const [shortlist, created] = await Shortlist.findOrCreate({
+      where: { userId: req.user.id, propertyId }
+    });
+    res.json({ message: created ? 'Added to shortlist' : 'Already in shortlist', shortlist });
+  } catch (error) {
+    res.status(500).json({ error: 'Error adding to shortlist' });
+  }
+});
+
+// Remove from shortlist
+app.delete('/api/shortlist/:propertyId', authenticateToken, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    await Shortlist.destroy({
+      where: { userId: req.user.id, propertyId }
+    });
+    res.json({ message: 'Removed from shortlist' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error removing from shortlist' });
+  }
+});
+
+// Check if property is in shortlist
+app.get('/api/shortlist/check/:propertyId', authenticateToken, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const existing = await Shortlist.findOne({
+      where: { userId: req.user.id, propertyId }
+    });
+    res.json({ isShortlisted: !!existing });
+  } catch (error) {
+    res.status(500).json({ error: 'Error checking shortlist status' });
+  }
+});
+
+// --- VIEWED PROPERTIES MANAGEMENT ---
+
+// Get current user's viewed properties
+app.get('/api/viewed-properties', authenticateToken, async (req, res) => {
+  try {
+    const viewed = await ViewedProperty.findAll({
+      where: { userId: req.user.id },
+      include: [
+        {
+          model: Property,
+          as: 'property',
+          include: [
+            { model: PropertyImage, as: 'images' },
+            { model: PropertyType, as: 'propertyType' }
+          ]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(viewed.map(v => ({ ...v.property.toJSON(), viewedAt: v.createdAt })));
+  } catch (error) {
+    console.error('Viewed properties fetch error:', error);
+    res.status(500).json({ error: 'Error fetching viewed properties' });
+  }
+});
+
+// Mark property as viewed
+app.post('/api/viewed-properties/:propertyId', authenticateToken, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const [viewed, created] = await ViewedProperty.findOrCreate({
+      where: { userId: req.user.id, propertyId }
+    });
+    if (!created) {
+      // Update updatedAt timestamp to reflect most recent view
+      viewed.changed('updatedAt', true);
+      await viewed.save();
+    }
+    res.json({ message: 'Property recorded as viewed', viewed });
+  } catch (error) {
+    res.status(500).json({ error: 'Error recording viewed property' });
+  }
+});
+
+// Check if property is viewed
+app.get('/api/viewed-properties/check/:propertyId', authenticateToken, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const existing = await ViewedProperty.findOne({
+      where: { userId: req.user.id, propertyId }
+    });
+    res.json({ isViewed: !!existing });
+  } catch (error) {
+    res.status(500).json({ error: 'Error checking viewed status' });
+  }
+});
+
+// --- REVIEWS & FAQ MANAGEMENT ---
+
+// Get reviews for a property
+app.get('/api/properties/:id/reviews', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reviews = await Review.findAll({
+      where: { propertyId: id },
+      include: [{ model: User, as: 'user', attributes: ['id', 'username'] }],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(reviews);
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    res.status(500).json({ error: 'Error fetching reviews' });
+  }
+});
+
+// Add review for a property
+app.post('/api/properties/:id/reviews', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+    if (!rating || !comment) {
+      return res.status(400).json({ error: 'Rating and comment are required' });
+    }
+    const review = await Review.create({
+      propertyId: id,
+      userId: req.user.id,
+      rating: parseInt(rating),
+      comment
+    });
+    const reviewWithUser = await Review.findByPk(review.id, {
+      include: [{ model: User, as: 'user', attributes: ['id', 'username'] }]
+    });
+    res.json({ message: 'Review added successfully', review: reviewWithUser });
+  } catch (error) {
+    console.error('Error adding review:', error);
+    res.status(500).json({ error: 'Error adding review' });
+  }
+});
+
+// Get FAQs for a property
+app.get('/api/properties/:id/faqs', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const faqs = await PropertyFaq.findAll({
+      where: { propertyId: id, isDeleted: false },
+      order: [['createdAt', 'ASC']]
+    });
+    res.json(faqs);
+  } catch (error) {
+    console.error('Error fetching FAQs:', error);
+    res.status(500).json({ error: 'Error fetching FAQs' });
+  }
+});
+
+// Add FAQ for a property
+app.post('/api/properties/:id/faqs', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { question, answer } = req.body;
+    if (!question || !answer) {
+      return res.status(400).json({ error: 'Question and answer are required' });
+    }
+    const faq = await PropertyFaq.create({
+      propertyId: id,
+      question,
+      answer
+    });
+    res.json({ message: 'FAQ added successfully', faq });
+  } catch (error) {
+    console.error('Error adding FAQ:', error);
+    res.status(500).json({ error: 'Error adding FAQ' });
+  }
+});
+
 // Admin Routes
-app.patch('/api/admin/properties/:id/toggle-delete', async (req, res) => {
+// Get all properties for admin (paginated)
+app.get('/api/admin/properties', authenticateToken, authorizeManager('Properties'), async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
+  try {
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { location: { [Op.iLike]: `%${search}%` } },
+        { city: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    const { count, rows } = await Property.findAndCountAll({
+      where,
+      include: [
+        { model: PropertyImage, as: 'images' },
+        { model: PropertyType, as: 'propertyType' },
+        { model: User, as: 'owner', attributes: ['username', 'id'] }
+      ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json({
+      properties: rows,
+      totalCount: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching admin properties' });
+  }
+});
+
+app.patch('/api/admin/properties/:id/toggle-delete', authenticateToken, authorizeManager('Properties'), async (req, res) => {
   try {
     const { id } = req.params;
     const { isDeleted } = req.body;
@@ -305,10 +782,10 @@ app.patch('/api/admin/properties/:id/toggle-delete', async (req, res) => {
   }
 });
 
-app.post('/api/admin/properties', authenticateToken, async (req, res) => {
+app.post('/api/admin/properties', authenticateToken, authorizeManager('Properties'), async (req, res) => {
   try {
     const { images, ...propertyData } = req.body;
-    
+
     // Ensure posted_by is set
     if (!propertyData.posted_by) {
       propertyData.posted_by = req.user.id;
@@ -327,18 +804,18 @@ app.post('/api/admin/properties', authenticateToken, async (req, res) => {
     };
 
     const property = await Property.create(cleanData);
-    
+
     if (images && images.length > 0) {
       const imageData = images.map(img => ({
         propertyId: property.id,
         imageUrl: typeof img === 'string' ? img : img.imageUrl
       })).filter(img => img.imageUrl && img.imageUrl.trim() !== '');
-      
+
       if (imageData.length > 0) {
         await PropertyImage.bulkCreate(imageData);
       }
     }
-    
+
     res.status(201).json(property);
   } catch (error) {
     console.error('Detailed Error creating property:', error);
@@ -346,11 +823,11 @@ app.post('/api/admin/properties', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/admin/properties/:id', authenticateToken, async (req, res) => {
+app.put('/api/admin/properties/:id', authenticateToken, authorizeManager('Properties'), async (req, res) => {
   try {
     const { id } = req.params;
     const { images, propertyType, ...propertyData } = req.body;
-    
+
     // Clean up propertyData
     delete propertyData.id;
     delete propertyData.createdAt;
@@ -369,19 +846,19 @@ app.put('/api/admin/properties/:id', authenticateToken, async (req, res) => {
     };
 
     await Property.update(cleanData, { where: { id } });
-    
+
     if (images) {
       await PropertyImage.destroy({ where: { propertyId: id } });
       const imageData = images.map(img => ({
         propertyId: id,
         imageUrl: typeof img === 'string' ? img : img.imageUrl
       })).filter(img => img.imageUrl && img.imageUrl.trim() !== '');
-      
+
       if (imageData.length > 0) {
         await PropertyImage.bulkCreate(imageData);
       }
     }
-    
+
     res.json({ message: 'Property updated successfully' });
   } catch (error) {
     console.error('Detailed Error updating property:', error);
@@ -389,11 +866,11 @@ app.put('/api/admin/properties/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/admin/properties/:id', async (req, res) => {
+app.delete('/api/admin/properties/:id', authenticateToken, authorizeManager('Properties'), async (req, res) => {
   try {
     const { id } = req.params;
     await Property.destroy({ where: { id } });
-    res.json({ message: 'Property deleted permanently' });
+    res.json({ message: 'Property deleted' });
   } catch (error) {
     res.status(500).json({ error: 'Error deleting property' });
   }
@@ -422,6 +899,16 @@ app.get('/api/admin/properties/:id/amenities', authenticateToken, async (req, re
       }]
     });
     if (!property) return res.status(404).json({ error: 'Property not found' });
+
+    // Access check: Owner OR Superadmin OR Admin with Properties privilege
+    const user = await User.findByPk(req.user.id);
+    const isAdmin = user.role === 'superadmin' || (user.role === 'admin' && user.privileges?.includes('Properties'));
+    const isOwner = property.posted_by === user.id;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ message: 'Access denied: You do not own this property' });
+    }
+
     res.json(property.amenities);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching property amenities' });
@@ -433,7 +920,16 @@ app.post('/api/admin/properties/:id/amenities', authenticateToken, async (req, r
     const { amenityIds } = req.body;
     const property = await Property.findByPk(req.params.id);
     if (!property) return res.status(404).json({ error: 'Property not found' });
-    
+
+    // Access check: Owner OR Superadmin OR Admin with Properties privilege
+    const user = await User.findByPk(req.user.id);
+    const isAdmin = user.role === 'superadmin' || (user.role === 'admin' && user.privileges?.includes('Properties'));
+    const isOwner = property.posted_by === user.id;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ message: 'Access denied: You do not own this property' });
+    }
+
     await property.setAmenities(amenityIds);
     res.json({ message: 'Amenities updated successfully' });
   } catch (error) {
@@ -449,12 +945,12 @@ app.get('/api/admin/news', authenticateToken, async (req, res) => {
 
   try {
     const where = {};
-    
+
     // Check if user is superadmin or has 'News' privilege
     const user = await User.findByPk(req.user.id);
-    const hasFullAccess = user.role === 'superadmin' || 
-                         (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
-    
+    const hasFullAccess = user.role === 'superadmin' ||
+      (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
+
     if (!hasFullAccess) {
       // Regular users or admins without privilege see only their own data
       where.posted_by = req.user.id;
@@ -467,7 +963,7 @@ app.get('/api/admin/news', authenticateToken, async (req, res) => {
       ];
     }
 
-    const { count, rows } = await Article.findAndCountAll({ 
+    const { count, rows } = await Article.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -507,9 +1003,9 @@ app.put('/api/admin/news/:id', authenticateToken, async (req, res) => {
 
     // Check ownership unless superadmin or privileged admin
     const user = await User.findByPk(req.user.id);
-    const hasFullAccess = user.role === 'superadmin' || 
-                         (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
-    
+    const hasFullAccess = user.role === 'superadmin' ||
+      (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
+
     if (!hasFullAccess && article.posted_by !== req.user.id) {
       return res.status(403).json({ error: 'You can only edit your own news' });
     }
@@ -529,9 +1025,9 @@ app.patch('/api/admin/news/:id/toggle-delete', authenticateToken, async (req, re
     if (!article) return res.status(404).json({ error: 'Article not found' });
 
     const user = await User.findByPk(req.user.id);
-    const hasFullAccess = user.role === 'superadmin' || 
-                         (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
-    
+    const hasFullAccess = user.role === 'superadmin' ||
+      (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
+
     if (!hasFullAccess && article.posted_by !== req.user.id) {
       return res.status(403).json({ error: 'You can only modify your own news' });
     }
@@ -550,9 +1046,9 @@ app.delete('/api/admin/news/:id', authenticateToken, async (req, res) => {
     if (!article) return res.status(404).json({ error: 'Article not found' });
 
     const user = await User.findByPk(req.user.id);
-    const hasFullAccess = user.role === 'superadmin' || 
-                         (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
-    
+    const hasFullAccess = user.role === 'superadmin' ||
+      (user.role === 'admin' && user.privileges && user.privileges.includes('News'));
+
     if (!hasFullAccess && article.posted_by !== req.user.id) {
       return res.status(403).json({ error: 'You can only delete your own news' });
     }
@@ -578,7 +1074,7 @@ app.patch('/api/admin/:model/:id/toggle-delete', async (req, res) => {
     'testimonials': Testimonial,
     'brands': Brand
   };
-  
+
   try {
     const ModelClass = modelsMap[model];
     if (!ModelClass) return res.status(404).json({ error: 'Model not found' });
@@ -643,11 +1139,11 @@ app.get('/api/admin/brokers', authenticateToken, authorizeManager('Broker'), asy
         { email: { [Op.iLike]: `%${search}%` } }
       ];
     }
-    const { count, rows } = await Broker.findAndCountAll({ 
+    const { count, rows } = await Broker.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      order: [['id', 'DESC']] 
+      order: [['id', 'DESC']]
     });
     res.json({
       brokers: rows,
@@ -723,11 +1219,11 @@ app.get('/api/admin/services', authenticateToken, authorizeManager('Service'), a
         { description: { [Op.iLike]: `%${search}%` } }
       ];
     }
-    const { count, rows } = await Service.findAndCountAll({ 
+    const { count, rows } = await Service.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      order: [['id', 'DESC']] 
+      order: [['id', 'DESC']]
     });
     res.json({
       services: rows,
@@ -803,11 +1299,11 @@ app.get('/api/admin/funfacts', authenticateToken, authorizeManager('FunFact'), a
         { value: { [Op.iLike]: `%${search}%` } }
       ];
     }
-    const { count, rows } = await FunFact.findAndCountAll({ 
+    const { count, rows } = await FunFact.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      order: [['id', 'DESC']] 
+      order: [['id', 'DESC']]
     });
     res.json({
       funfacts: rows,
@@ -864,8 +1360,8 @@ app.delete('/api/admin/funfacts/:id', authenticateToken, authorizeManager('FunFa
 // Testimonial Management Routes (Admin Only) with Pagination
 app.get('/api/testimonials', async (req, res) => {
   try {
-    const testimonials = await Testimonial.findAll({ 
-      where: { isDeleted: false }, 
+    const testimonials = await Testimonial.findAll({
+      where: { isDeleted: false },
       order: [['id', 'DESC']],
       limit: 10
     });
@@ -888,11 +1384,11 @@ app.get('/api/admin/testimonials', authenticateToken, authorizeManager('Testimon
         { designation: { [Op.iLike]: `%${search}%` } }
       ];
     }
-    const { count, rows } = await Testimonial.findAndCountAll({ 
+    const { count, rows } = await Testimonial.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      order: [['id', 'DESC']] 
+      order: [['id', 'DESC']]
     });
     res.json({
       testimonials: rows,
@@ -954,11 +1450,11 @@ app.get('/api/admin/brands', authenticateToken, authorizeManager('Brand'), async
     if (search) {
       where.name = { [Op.iLike]: `%${search}%` };
     }
-    const { count, rows } = await Brand.findAndCountAll({ 
+    const { count, rows } = await Brand.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      order: [['id', 'DESC']] 
+      order: [['id', 'DESC']]
     });
     res.json({
       brands: rows,
@@ -1022,11 +1518,11 @@ app.get('/api/admin/instareels', authenticateToken, authorizeManager('Insta Vide
         { title: { [Op.iLike]: `%${search}%` } }
       ];
     }
-    const { count, rows } = await InstaReel.findAndCountAll({ 
+    const { count, rows } = await InstaReel.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: parseInt(offset),
-      order: [['id', 'DESC']] 
+      order: [['id', 'DESC']]
     });
     res.json({
       reels: rows,
@@ -1115,22 +1611,22 @@ app.patch('/api/admin/home-components/:id/toggle-deleted', async (req, res) => {
 
 app.post('/api/admin/home-components/reset', async (req, res) => {
   const defaultComponents = [
-    { name: 'Header',                 displayName: 'Header / Navigation',  order: 1,  is_deleted: false },
-    { name: 'HeroSlider',             displayName: 'Hero Slider',           order: 2,  is_deleted: false },
-    { name: 'Search',                 displayName: 'Search Bar',            order: 3,  is_deleted: false },
-    { name: 'CityMap',                displayName: 'City Map',              order: 4,  is_deleted: false },
-    { name: 'Featured',               displayName: 'Featured Properties',   order: 5,  is_deleted: false },
-    { name: 'Latest',                 displayName: 'Latest Properties',     order: 6,  is_deleted: false },
-    { name: 'WhyUs',                  displayName: 'Why Us Section',        order: 7,  is_deleted: false },
-    { name: 'OurServices',            displayName: 'Our Services',          order: 8,  is_deleted: false },
-    { name: 'FunFact',                displayName: 'Fun Facts',             order: 9,  is_deleted: false },
-    { name: 'OurBrokers',             displayName: 'Our Brokers',           order: 10, is_deleted: false },
-    { name: 'InstagramVideoCarousel', displayName: 'Instagram Feed',        order: 11, is_deleted: false },
-    { name: 'LatestNews',             displayName: 'Latest News',           order: 12, is_deleted: false },
-    { name: 'Testimonials',           displayName: 'Testimonials',          order: 13, is_deleted: false },
-    { name: 'OurBrands',              displayName: 'Our Brands',            order: 14, is_deleted: false },
-    { name: 'Footer',                 displayName: 'Footer',                order: 15, is_deleted: false },
-    { name: 'WhatsAppButton',         displayName: 'WhatsApp Float Button', order: 16, is_deleted: false }
+    { name: 'Header', displayName: 'Header / Navigation', order: 1, is_deleted: false },
+    { name: 'HeroSlider', displayName: 'Hero Slider', order: 2, is_deleted: false },
+    { name: 'Search', displayName: 'Search Bar', order: 3, is_deleted: false },
+    { name: 'CityMap', displayName: 'City Map', order: 4, is_deleted: false },
+    { name: 'Featured', displayName: 'Featured Properties', order: 5, is_deleted: false },
+    { name: 'Latest', displayName: 'Latest Properties', order: 6, is_deleted: false },
+    { name: 'WhyUs', displayName: 'Why Us Section', order: 7, is_deleted: false },
+    { name: 'OurServices', displayName: 'Our Services', order: 8, is_deleted: false },
+    { name: 'FunFact', displayName: 'Fun Facts', order: 9, is_deleted: false },
+    { name: 'OurBrokers', displayName: 'Our Brokers', order: 10, is_deleted: false },
+    { name: 'InstagramVideoCarousel', displayName: 'Instagram Feed', order: 11, is_deleted: false },
+    { name: 'LatestNews', displayName: 'Latest News', order: 12, is_deleted: false },
+    { name: 'Testimonials', displayName: 'Testimonials', order: 13, is_deleted: false },
+    { name: 'OurBrands', displayName: 'Our Brands', order: 14, is_deleted: false },
+    { name: 'Footer', displayName: 'Footer', order: 15, is_deleted: false },
+    { name: 'WhatsAppButton', displayName: 'WhatsApp Float Button', order: 16, is_deleted: false }
   ];
 
   try {
@@ -1152,9 +1648,9 @@ app.post('/api/admin/home-components/reset', async (req, res) => {
 // Public Home Components Route
 app.get('/api/home-components', async (req, res) => {
   try {
-    const components = await HomeComponent.findAll({ 
+    const components = await HomeComponent.findAll({
       where: { is_deleted: false },
-      order: [['order', 'ASC']] 
+      order: [['order', 'ASC']]
     });
     res.json(components);
   } catch (error) {
@@ -1185,7 +1681,7 @@ app.get('/api/admin/users', authenticateToken, authorizeSuperAdmin, async (req, 
     if (search) {
       where[Op.or] = [
         { username: { [Op.iLike]: `%${search}%` } },
-        { email:    { [Op.iLike]: `%${search}%` } }
+        { email: { [Op.iLike]: `%${search}%` } }
       ];
     }
     const { count, rows } = await User.findAndCountAll({
@@ -1386,7 +1882,7 @@ app.post('/api/admin/menu/reset', async (req, res) => {
       const [[{ id }]] = await sequelize.query(
         `INSERT INTO "MenuItems" (title, link, "parentId", "itemType", "menuType", badge, "order", "isDeleted", "createdAt", "updatedAt")
          VALUES ($1,$2,$3,$4,$5,$6,$7,false,$8,$9) RETURNING id`,
-        { bind: [data.title, data.link||'#', parentId, data.itemType||'link', data.menuType||null, data.badge||null, data.order||0, now, now] }
+        { bind: [data.title, data.link || '#', parentId, data.itemType || 'link', data.menuType || null, data.badge || null, data.order || 0, now, now] }
       );
       for (const child of (data.children || [])) await createItem(child, id);
     };
@@ -1507,6 +2003,247 @@ app.get('/api/admin/dashboard/stats', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Dashboard stats error:', error);
     res.status(500).json({ error: 'Error fetching dashboard stats' });
+  }
+});
+
+// ── Newsletter ───────────────────────────────────────────────────────────────
+
+app.post('/api/newsletter/subscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    
+    const [subscriber, created] = await Subscriber.findOrCreate({
+      where: { email },
+      defaults: { isActive: true }
+    });
+    
+    if (!created && !subscriber.isActive) {
+      subscriber.isActive = true;
+      await subscriber.save();
+    }
+    
+    res.json({ message: 'Thank you for subscribing to our newsletter!' });
+  } catch (error) {
+    console.error('Subscription error:', error);
+    res.status(500).json({ error: 'Error subscribing to newsletter' });
+  }
+});
+
+app.get('/api/admin/newsletter/subscribers', authenticateToken, authorizeManager('Newsletter'), async (req, res) => {
+  try {
+    const subscribers = await Subscriber.findAll({ order: [['createdAt', 'DESC']] });
+    res.json(subscribers);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching subscribers' });
+  }
+});
+
+app.get('/api/admin/newsletter/templates', authenticateToken, authorizeManager('Newsletter'), async (req, res) => {
+  try {
+    const templates = await EmailTemplate.findAll({ order: [['createdAt', 'DESC']] });
+    res.json(templates);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching templates' });
+  }
+});
+
+app.post('/api/admin/newsletter/templates', authenticateToken, authorizeManager('Newsletter'), async (req, res) => {
+  try {
+    const { name, subject, body } = req.body;
+    const template = await EmailTemplate.create({ name, subject, body });
+    res.status(201).json(template);
+  } catch (error) {
+    res.status(500).json({ error: 'Error creating template' });
+  }
+});
+
+app.put('/api/admin/newsletter/templates/:id', authenticateToken, authorizeManager('Newsletter'), async (req, res) => {
+  try {
+    const { name, subject, body } = req.body;
+    await EmailTemplate.update({ name, subject, body }, { where: { id: req.params.id } });
+    res.json({ message: 'Template updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating template' });
+  }
+});
+
+app.delete('/api/admin/newsletter/templates/:id', authenticateToken, authorizeManager('Newsletter'), async (req, res) => {
+  try {
+    await EmailTemplate.destroy({ where: { id: req.params.id } });
+    res.json({ message: 'Template deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting template' });
+  }
+});
+
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
+
+app.post('/api/admin/newsletter/send', authenticateToken, authorizeManager('Newsletter'), async (req, res) => {
+  try {
+    const { subscriberIds, templateId, customSubject, customBody } = req.body;
+    
+    if (!subscriberIds || subscriberIds.length === 0) {
+      return res.status(400).json({ error: 'No subscribers selected' });
+    }
+
+    const subscribers = await Subscriber.findAll({
+      where: {
+        id: subscriberIds,
+        isActive: true
+      }
+    });
+
+    if (subscribers.length === 0) {
+      return res.status(400).json({ error: 'No active subscribers found for the selected IDs' });
+    }
+
+    const emailPromises = subscribers.map(sub => {
+      return transporter.sendMail({
+        from: `"NJ Real Estate" <${process.env.GMAIL_USER}>`,
+        to: sub.email,
+        subject: customSubject,
+        html: customBody,
+      });
+    });
+
+    // Run in background so the UI doesn't hang
+    Promise.allSettled(emailPromises).then(results => {
+      const failed = results.filter(r => r.status === 'rejected');
+      if (failed.length > 0) {
+        console.error(`${failed.length} emails failed to send:`, failed.map(f => f.reason));
+      } else {
+        console.log('All emails sent successfully.');
+      }
+    });
+
+    res.json({ message: 'Email sending process started successfully!' });
+  } catch (error) {
+    console.error('Error sending emails:', error);
+    res.status(500).json({ error: 'Error sending emails' });
+  }
+});
+
+// FAQ Management Routes (Admin Only)
+app.get('/api/admin/faqs', authenticateToken, authorizeManager('FAQ'), async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
+  try {
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { question: { [Op.iLike]: `%${search}%` } },
+        { answer: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+    const { count, rows } = await PropertyFaq.findAndCountAll({
+      where,
+      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'location', 'city'] }],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [['createdAt', 'DESC']]
+    });
+    res.json({
+      faqs: rows,
+      totalCount: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    console.error('Error fetching admin FAQs:', error);
+    res.status(500).json({ error: 'Error fetching FAQs' });
+  }
+});
+
+app.post('/api/admin/faqs', authenticateToken, authorizeManager('FAQ'), async (req, res) => {
+  try {
+    const { propertyId, question, answer } = req.body;
+    if (!propertyId || !question || !answer) {
+      return res.status(400).json({ error: 'Property ID, question, and answer are required' });
+    }
+    const faq = await PropertyFaq.create(req.body);
+    const faqWithProp = await PropertyFaq.findByPk(faq.id, {
+      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'location', 'city'] }]
+    });
+    res.status(201).json(faqWithProp);
+  } catch (error) {
+    console.error('Error creating FAQ:', error);
+    res.status(500).json({ error: 'Error creating FAQ' });
+  }
+});
+
+app.put('/api/admin/faqs/:id', authenticateToken, authorizeManager('FAQ'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    await PropertyFaq.update(req.body, { where: { id } });
+    const updated = await PropertyFaq.findByPk(id, {
+      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'location', 'city'] }]
+    });
+    res.json({ message: 'FAQ updated successfully', faq: updated });
+  } catch (error) {
+    console.error('Error updating FAQ:', error);
+    res.status(500).json({ error: 'Error updating FAQ' });
+  }
+});
+
+app.patch('/api/admin/faqs/:id/toggle-delete', authenticateToken, authorizeManager('FAQ'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isDeleted } = req.body;
+    await PropertyFaq.update({ isDeleted }, { where: { id } });
+    res.json({ message: 'FAQ status updated successfully' });
+  } catch (error) {
+    console.error('Error updating FAQ status:', error);
+    res.status(500).json({ error: 'Error updating FAQ status' });
+  }
+});
+
+app.delete('/api/admin/faqs/:id', authenticateToken, authorizeManager('FAQ'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    await PropertyFaq.destroy({ where: { id } });
+    res.json({ message: 'FAQ deleted permanently' });
+  } catch (error) {
+    console.error('Error deleting FAQ:', error);
+    res.status(500).json({ error: 'Error deleting FAQ' });
+  }
+});
+
+// Admin Settings Routes
+app.get('/api/admin/settings', authenticateToken, authorizeManager('Settings'), async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = await Settings.create({});
+    }
+    res.json(settings);
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ error: 'Server error fetching settings' });
+  }
+});
+
+app.put('/api/admin/settings', authenticateToken, authorizeManager('Settings'), async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = await Settings.create(req.body);
+    } else {
+      await settings.update(req.body);
+    }
+    res.json(settings);
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ error: 'Server error updating settings' });
   }
 });
 

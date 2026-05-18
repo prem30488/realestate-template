@@ -290,7 +290,7 @@ const InstaReelManager = () => {
         </DialogTitle>
         <DialogContent sx={{ px: 3 }}>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Reel Title" 
@@ -302,7 +302,7 @@ const InstaReelManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Video URL" 
@@ -315,7 +315,7 @@ const InstaReelManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Thumbnail URL" 

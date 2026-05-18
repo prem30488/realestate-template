@@ -1,38 +1,57 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useCity } from '../context/CityContext';
+import { API_BASE_URL } from '../constants';
 
 const Search = () => {
-  useEffect(() => {
-    let intervalId;
-    const initSearchPlugins = () => {
-      if (window.$) {
-        if (window.$.fn.niceSelect) {
-          window.$('.nice-select').niceSelect();
-        }
-        if (window.$.fn.slider && window.$('#search-price-range').length) {
-          const $searchPriceRange = window.$('#search-price-range');
-          // Check if already initialized to avoid re-init bugs
-          if (!$searchPriceRange.hasClass('ui-slider')) {
-            $searchPriceRange.slider({
-              range: true,
-              min: 0,
-              max: 100000,
-              values: [12500, 75000],
-              slide: function (event, ui) {
-                $searchPriceRange.find('.ui-slider-handle:eq(0)').html('<span>' + '$' + ui.values[0] + '</span>');
-                $searchPriceRange.find('.ui-slider-handle:eq(1)').html('<span>' + '$' + ui.values[1] + '</span>');
-              }
-            });
-            $searchPriceRange.find('.ui-slider-handle:eq(0)').html('<span>' + '$' + $searchPriceRange.slider("values", 0) + '</span>');
-            $searchPriceRange.find('.ui-slider-handle:eq(1)').html('<span>' + '$' + $searchPriceRange.slider("values", 1) + '</span>');
-          }
-        }
-        clearInterval(intervalId);
-      }
-    };
+  const { selectedCity } = useCity();
+  const navigate = useNavigate();
 
-    intervalId = setInterval(initSearchPlugins, 100);
-    return () => clearInterval(intervalId);
+  const [cities, setCities] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+
+  const [filters, setFilters] = useState({
+    location: '',
+    city: '',
+    type: '',
+    status: '',
+    bedrooms: '',
+    bathrooms: '',
+  });
+
+  // Pre-fill city from CityContext whenever selectedCity changes
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, city: selectedCity }));
+  }, [selectedCity]);
+
+  // Fetch cities and property types from API
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/cities`)
+      .then(r => r.json())
+      .then(data => setCities(data))
+      .catch(() => {});
+
+    fetch(`${API_BASE_URL}/api/property-types`)
+      .then(r => r.json())
+      .then(data => setPropertyTypes(data))
+      .catch(() => {});
   }, []);
+
+  const handleChange = (e) => {
+    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (filters.location) params.set('search', filters.location);
+    if (filters.city)     params.set('city', filters.city);
+    if (filters.type)     params.set('type', filters.type);
+    if (filters.status)   params.set('status', filters.status);
+    if (filters.bedrooms) params.set('bedrooms', filters.bedrooms);
+    if (filters.bathrooms) params.set('bathrooms', filters.bathrooms);
+    navigate(`/properties?${params.toString()}`);
+  };
 
   return (
     <div className="search-section section pt-100 pt-lg-80 pt-md-70 pt-sm-60 pt-xs-50 pb-100 pb-lg-80 pb-md-70 pb-sm-60 pb-xs-50">
@@ -47,121 +66,141 @@ const Search = () => {
         <div className="row">
           <div className="col-12">
             <div className="property-search">
-              <form action="#">
+              <form onSubmit={handleSearch}>
                 <div className="row">
 
-
+                  {/* Location Text */}
                   <div className="col-lg-3 col-md-6 col-12 mb-25">
                     <div className="search-item">
                       <div className="icon"></div>
-                      <input type="text" placeholder="location" />
+                      <input
+                        type="text"
+                        name="location"
+                        placeholder="Location / Title"
+                        value={filters.location}
+                        onChange={handleChange}
+                      />
                     </div>
                   </div>
 
-
+                  {/* City — pre-filled from CityContext */}
                   <div className="col-lg-3 col-md-6 col-12 mb-25">
                     <div className="search-item">
-                      <select className="nice-select" title="city">
-                        <option value="1">Any City</option>
-                        <option value="2">New Delhi</option>
-                        <option value="3">Mumbai</option>
-                        <option value="4">Bangaluru</option>
-                        <option value="5">Hyderabad</option>
-                        <option value="6">Gurugram</option>
-                        <option value="7">Gandhinagar</option>
-                        <option value="8">Ahmedabad</option>
-                        <option value="9">Surat</option>
+                      <select
+                        name="city"
+                        value={filters.city}
+                        onChange={handleChange}
+                        style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: '#666', cursor: 'pointer' }}
+                      >
+                        <option value="">Any City</option>
+                        {cities.length > 0
+                          ? cities.map(c => (
+                              <option key={c.id} value={c.name}>{c.name}</option>
+                            ))
+                          : (
+                            // Fallback static list if API not available
+                            <>
+                              <option value="Gandhinagar">Gandhinagar</option>
+                              <option value="Ahmedabad">Ahmedabad</option>
+                              <option value="Surat">Surat</option>
+                              <option value="Mumbai">Mumbai</option>
+                              <option value="New Delhi">New Delhi</option>
+                              <option value="Bengaluru">Bengaluru</option>
+                              <option value="Hyderabad">Hyderabad</option>
+                              <option value="Gurugram">Gurugram</option>
+                            </>
+                          )
+                        }
                       </select>
                     </div>
                   </div>
 
+                  {/* Property Type */}
                   <div className="col-lg-3 col-md-6 col-12 mb-25">
                     <div className="search-item">
-                      <select className="nice-select" title="Property Type">
-                        <option value="1">Any Type</option>
-                        <option value="2">Apartment</option>
-                        <option value="3">House</option>
-                        <option value="4">Commercial</option>
-                        <option value="5">Garage</option>
-                        <option value="6">Villa</option>
-                        <option value="7">Penthouse</option>
-                        <option value="8">Townhouse</option>
-                        <option value="9">Duplex</option>
-                        <option value="10">Studio</option>
-                        <option value="11">Restaurent</option>
-                        <option value="12">Office</option>
-                        <option value="13">Shop</option>
-                        <option value="14">Showroom</option>
-                        <option value="15">Hotel</option>
-                        <option value="16">Building</option>
-                        <option value="17">Agriculture</option>
-                        <option value="18">Industry</option>
-                        <option value="19">Farm House</option>
-                        <option value="20">Factory</option>
-                        <option value="21">Godown</option>
-                        <option value="22">Warehouse</option>
-                        <option value="23">Shop-cum-Office</option>
-
+                      <select
+                        name="type"
+                        value={filters.type}
+                        onChange={handleChange}
+                        style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: '#666', cursor: 'pointer' }}
+                      >
+                        <option value="">Any Type</option>
+                        {propertyTypes.length > 0
+                          ? propertyTypes.map(t => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))
+                          : (
+                            <>
+                              <option value="1">Apartment</option>
+                              <option value="2">House</option>
+                              <option value="3">Commercial</option>
+                              <option value="5">Villa</option>
+                              <option value="11">Office</option>
+                              <option value="16">Plot</option>
+                            </>
+                          )
+                        }
                       </select>
                     </div>
                   </div>
 
+                  {/* Status */}
                   <div className="col-lg-3 col-md-6 col-12 mb-25">
                     <div className="search-item">
-                      <select className="nice-select" title="Status">
-                        <option value="1">Any Status</option>
-                        <option value="2">For Rent</option>
-                        <option value="3">For Sale</option>
+                      <select
+                        name="status"
+                        value={filters.status}
+                        onChange={handleChange}
+                        style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: '#666', cursor: 'pointer' }}
+                      >
+                        <option value="">Any Status</option>
+                        <option value="Rent">For Rent</option>
+                        <option value="Sell">For Sale</option>
                       </select>
                     </div>
                   </div>
 
+                  {/* Bedrooms */}
                   <div className="col-lg-3 col-md-6 col-12 mb-25">
                     <div className="search-item">
-                      <select className="nice-select" title="Bedrooms">
-                        <option value="1">Bedrooms</option>
-                        <option value="2">1</option>
-                        <option value="3">2</option>
-                        <option value="4">3</option>
-                        <option value="5">4</option>
-                        <option value="6">5</option>
-                        <option value="7">6</option>
-                        <option value="8">7</option>
-                        <option value="9">8</option>
-                        <option value="10">9</option>
-                        <option value="11">10+</option>
+                      <select
+                        name="bedrooms"
+                        value={filters.bedrooms}
+                        onChange={handleChange}
+                        style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: '#666', cursor: 'pointer' }}
+                      >
+                        <option value="">Bedrooms</option>
+                        {[1,2,3,4,5,6,7,8,9].map(n => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                        <option value="10">10+</option>
                       </select>
                     </div>
                   </div>
 
+                  {/* Bathrooms */}
                   <div className="col-lg-3 col-md-6 col-12 mb-25">
                     <div className="search-item">
-                      <select className="nice-select" title="Bathrooms">
-                        <option value="1">Bathrooms</option>
-                        <option value="2">1</option>
-                        <option value="3">2</option>
-                        <option value="4">3</option>
-                        <option value="5">4</option>
-                        <option value="6">5</option>
-                        <option value="7">6</option>
-                        <option value="8">7</option>
-                        <option value="9">8</option>
-                        <option value="10">9</option>
-                        <option value="11">10+</option>
+                      <select
+                        name="bathrooms"
+                        value={filters.bathrooms}
+                        onChange={handleChange}
+                        style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: '#666', cursor: 'pointer' }}
+                      >
+                        <option value="">Bathrooms</option>
+                        {[1,2,3,4,5,6,7,8,9].map(n => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                        <option value="10">10+</option>
                       </select>
                     </div>
                   </div>
 
-                  <div className="col-lg-3 col-md-6 col-12 mb-25">
-                    <div className="search-item">
-                      <h4 className="title">Price Range</h4>
-                      <div id="search-price-range"></div>
-                    </div>
+                  {/* Search Button */}
+                  <div className="col-lg-3 col-md-6 col-12 mb-25 text-center" style={{ display: 'flex', alignItems: 'center' }}>
+                    <button type="submit" className="btn w-100">Search</button>
                   </div>
 
-                  <div className="col-lg-3 col-md-6 col-12 mb-25 text-center">
-                    <button className="btn w-100">Search</button>
-                  </div>
                 </div>
               </form>
             </div>

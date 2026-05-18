@@ -328,7 +328,7 @@ const NewsManager = () => {
         </DialogTitle>
         <DialogContent sx={{ px: 3 }}>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
-            <Grid item xs={12} md={8}>
+            <Grid  xs={12} md={8}>
               <TextField 
                 fullWidth 
                 label="Article Title" 
@@ -340,7 +340,7 @@ const NewsManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid  xs={12} md={4}>
               <TextField 
                 fullWidth 
                 label="Category" 
@@ -353,7 +353,7 @@ const NewsManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Image URL" 
@@ -365,7 +365,7 @@ const NewsManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Excerpt" 
@@ -379,7 +379,7 @@ const NewsManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Content" 

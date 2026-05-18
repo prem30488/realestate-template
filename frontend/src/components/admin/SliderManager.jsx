@@ -257,34 +257,34 @@ const SliderManager = () => {
         </DialogTitle>
         <DialogContent sx={{ px: 3 }}>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={8}>
+            <Grid  xs={12} md={8}>
               <TextField fullWidth label="Title" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid  xs={12} md={4}>
               <TextField fullWidth label="Type (e.g. Apartment, Villa)" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField fullWidth label="Location" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid  xs={12} md={4}>
               <TextField fullWidth label="Price Unit" value={formData.priceUnit} onChange={(e) => setFormData({...formData, priceUnit: e.target.value})} placeholder="e.g. Starting at" />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid  xs={12} md={4}>
               <TextField fullWidth label="Price" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid  xs={12} md={4}>
               <TextField fullWidth label="Area" value={formData.area} onChange={(e) => setFormData({...formData, area: e.target.value})} />
             </Grid>
-            <Grid item xs={4}>
+            <Grid  xs={4}>
               <TextField fullWidth label="Beds" type="number" value={formData.beds} onChange={(e) => setFormData({...formData, beds: e.target.value})} />
             </Grid>
-            <Grid item xs={4}>
+            <Grid  xs={4}>
               <TextField fullWidth label="Baths" type="number" value={formData.baths} onChange={(e) => setFormData({...formData, baths: e.target.value})} />
             </Grid>
-            <Grid item xs={4}>
+            <Grid  xs={4}>
               <TextField fullWidth label="Garage" type="number" value={formData.garage} onChange={(e) => setFormData({...formData, garage: e.target.value})} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Image URL" 
@@ -295,7 +295,7 @@ const SliderManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Link URL" 

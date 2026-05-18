@@ -35,6 +35,8 @@ import {
   Comment as TestimonialIcon,
   BrandingWatermark as BrandIcon,
   AdminPanelSettings as AdminIcon,
+  Email as NewsletterIcon,
+  QuestionAnswer as FaqIcon,
   ExitToApp as LogoutIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material';
@@ -79,7 +81,10 @@ const AdminLayout = ({ user, onLogout }) => {
     { text: 'News Manager', icon: <NewsIcon />, path: '/admin/news-manager' },
     { text: 'Testimonials Manager', icon: <TestimonialIcon />, path: '/admin/testimonials' },
     { text: 'Brand Manager', icon: <BrandIcon />, path: '/admin/brands' },
+    { text: 'Newsletter Manager', icon: <NewsletterIcon />, path: '/admin/newsletter' },
+    { text: 'FAQ Manager', icon: <FaqIcon />, path: '/admin/faqs' },
     { text: 'Privilege/User Manager', icon: <AdminIcon />, path: '/admin/users' },
+    { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
   ];
 
   // Filter menu items based on privileges if not superadmin

@@ -1,0 +1,108 @@
+.amenity-large {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+/* White theme overrides */
+.white-theme-bg .amenity-large {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+
+.white-theme-bg .amenity-large:hover {
+    background: #e8f0fe;
+    border-color: #2563eb;
+}
+
+.white-theme-bg .amenity-large svg {
+    color: #2563eb;
+}
+
+.white-theme-bg .amenity-large h6,
+.white-theme-bg .amenity-large .MuiTypography-h6 {
+    color: #000 !important;
+}
+
+.white-theme-bg .amenity-large .MuiTypography-body2 {
+    color: #555 !important;
+}
+
+.amenity-large:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--premium-accent);
+}
+
+.amenity-large svg {
+    color: var(--premium-accent);
+    margin-bottom: 10px;
+}
+
+.amenity-large .MuiTypography-h6 {
+    font-weight: 700;
+    color: white;
+}
+
+.property-details-gallery {
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+/* Custom list items for amenities */
+.MuiListItem-root {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.MuiListItemText-primary {
+    font-weight: 500;
+}
+
+/* Agent Card Styles */
+.agent-contact-buttons .MuiButton-root {
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.agent-contact-buttons .whatsapp-btn {
+    background-color: #25D366;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .premium-heading {
+        font-size: 32px !important;
+    }
+    
+    .price-tag {
+        font-size: 28px !important;
+    }
+}
+
+.property-description {
+    line-height: 1.8;
+    color: var(--premium-text-muted);
+    font-size: 1.1rem;
+}
+
+.amenity-section-title {
+    color: var(--premium-accent);
+    font-weight: 700 !important;
+    margin-bottom: 1.5rem !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem !important;
+}
+
+/* Ensure amenities grid is clean */
+.amenities-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+}

@@ -100,6 +100,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       defaultValue: 0
     },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

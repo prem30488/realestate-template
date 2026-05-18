@@ -305,7 +305,7 @@ const ServiceManager = () => {
         </DialogTitle>
         <DialogContent sx={{ px: 3 }}>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Service Title" 
@@ -317,7 +317,7 @@ const ServiceManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 multiline
@@ -328,7 +328,7 @@ const ServiceManager = () => {
                 placeholder="Describe what this service is about..."
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Icon Name" 
@@ -340,7 +340,7 @@ const ServiceManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Image URL" 

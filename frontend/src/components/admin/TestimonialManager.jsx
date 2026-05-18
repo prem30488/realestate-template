@@ -312,7 +312,7 @@ const TestimonialManager = () => {
         </DialogTitle>
         <DialogContent sx={{ px: 3 }}>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Client Name" 
@@ -324,7 +324,7 @@ const TestimonialManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Designation / Company" 
@@ -335,7 +335,7 @@ const TestimonialManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Photo URL" 
@@ -347,7 +347,7 @@ const TestimonialManager = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <Typography variant="caption" color="textSecondary" sx={{ mb: 1, display: 'block' }}>Rating</Typography>
               <Rating 
                 value={formData.rating} 
@@ -355,7 +355,7 @@ const TestimonialManager = () => {
                 size="large"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Testimonial Content" 

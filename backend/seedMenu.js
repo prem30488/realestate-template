@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sequelize } = require('./models');
+const { sequelize, PropertyType } = require('./models');
 const { QueryInterface } = require('sequelize');
 const defaultMenu = require('./seedMenu.default.js');
 
@@ -49,6 +49,36 @@ async function seed() {
       )
     `);
     console.log('MenuItems table created.');
+
+    // Fetch dynamic property types
+    const propertyTypes = await PropertyType.findAll({ 
+      where: { isDeleted: false },
+      order: [['name', 'ASC']]
+    });
+    const buyTypes = propertyTypes.map((pt, index) => ({
+      title: `${pt.name} in {city}`,
+      link: `/properties?type=${pt.id}&city={city}`,
+      order: index + 1
+    }));
+    const rentTypes = propertyTypes.map((pt, index) => ({
+      title: `${pt.name} for rent in {city}`,
+      link: `/properties?type=${pt.id}&status=Rent&city={city}`,
+      order: index + 1
+    }));
+
+    // Inject into Buy menu (order 1)
+    const buyMenu = defaultMenu.find(m => m.order === 1);
+    if (buyMenu) {
+      const ptSection = buyMenu.children.find(c => c.title === 'Property Types');
+      if (ptSection) ptSection.children = buyTypes;
+    }
+
+    // Inject into Rent menu (order 2)
+    const rentMenu = defaultMenu.find(m => m.order === 2);
+    if (rentMenu) {
+      const ptSection = rentMenu.children.find(c => c.title === 'Property Type');
+      if (ptSection) ptSection.children = rentTypes;
+    }
 
     for (const navItem of defaultMenu) {
       await createItem(null, navItem, null);

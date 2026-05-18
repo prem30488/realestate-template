@@ -1,0 +1,94 @@
+.property-list-card {
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.property-list-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.property-badges {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 2;
+    display: flex;
+    gap: 8px;
+}
+
+.price-tag {
+    background: -webkit-linear-gradient(45deg, var(--premium-accent-secondary), var(--premium-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800 !important;
+}
+
+/* Override price-tag for white theme */
+.white-theme-bg .price-tag {
+    background: -webkit-linear-gradient(45deg, #1a56db, #2563eb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.property-location {
+    display: flex;
+    align-items: center;
+    color: #444;
+}
+
+.property-amenities-mini {
+    color: #555;
+}
+
+/* Property card text in white theme */
+.white-theme-bg .property-list-card .MuiTypography-root {
+    color: #000 !important;
+}
+
+.white-theme-bg .property-list-card .MuiTypography-body2 {
+    color: #555 !important;
+}
+
+.white-theme-bg .property-list-card .property-title a {
+    color: #000;
+    text-decoration: none;
+}
+
+.white-theme-bg .property-list-card .property-title a:hover {
+    color: #1a56db;
+}
+
+.map-view-container {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Leaflet popups */
+.leaflet-popup-content-wrapper {
+    background: #ffffff !important;
+    color: #000 !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px !important;
+}
+
+.leaflet-popup-tip {
+    background: #ffffff !important;
+}
+
+.filter-section {
+    position: sticky;
+    top: 100px;
+}
+
+/* Pagination Styling */
+.white-theme-bg .MuiPagination-root .MuiPaginationItem-root {
+    color: #000;
+    border-color: #e2e8f0;
+}
+
+.white-theme-bg .MuiPagination-root .Mui-selected {
+    background: linear-gradient(90deg, #1a56db, #2563eb) !important;
+    color: white !important;
+}

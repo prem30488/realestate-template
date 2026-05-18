@@ -224,12 +224,14 @@ const BrokerManager = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
-              </InputAdornment>
-            )
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              )
+            }
           }}
         />
       </Paper>
@@ -330,7 +332,7 @@ const BrokerManager = () => {
         <DialogContent sx={{ px: 3 }}>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
             {/* Basic Info */}
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Full Name" 
@@ -339,7 +341,7 @@ const BrokerManager = () => {
                 required
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Designation" 
@@ -348,110 +350,128 @@ const BrokerManager = () => {
                 placeholder="e.g. Senior Real Estate Agent"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Email Address" 
                 value={formData.email} 
                 onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Phone Number" 
                 value={formData.phoneNumber} 
                 onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})} 
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><PhoneIcon fontSize="small" /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><PhoneIcon fontSize="small" /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
             
             {/* Professional Info */}
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Experience" 
                 value={formData.experience} 
                 onChange={(e) => setFormData({...formData, experience: e.target.value})} 
                 placeholder="e.g. 5+ Years"
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><WorkIcon fontSize="small" /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><WorkIcon fontSize="small" /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Specialization" 
                 value={formData.specialization} 
                 onChange={(e) => setFormData({...formData, specialization: e.target.value})} 
                 placeholder="e.g. Luxury Villas, Commercial"
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><SpecializationIcon fontSize="small" /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><SpecializationIcon fontSize="small" /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
             
-            <Grid item xs={12}>
+            <Grid  xs={12}>
               <TextField 
                 fullWidth 
                 label="Photo URL" 
                 value={formData.photo} 
                 onChange={(e) => setFormData({...formData, photo: e.target.value})}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><PhotoIcon fontSize="small" /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><PhotoIcon fontSize="small" /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
 
             {/* Social Links */}
-            <Grid item xs={12}><Typography variant="subtitle2" sx={{ fontWeight: 700, mb: -1 }}>Social Media Profiles</Typography></Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12}><Typography variant="subtitle2" sx={{ fontWeight: 700, mb: -1 }}>Social Media Profiles</Typography></Grid>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Facebook URL" 
                 value={formData.facebook} 
                 onChange={(e) => setFormData({...formData, facebook: e.target.value})} 
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><FacebookIcon fontSize="small" sx={{ color: '#1877F2' }} /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><FacebookIcon fontSize="small" sx={{ color: '#1877F2' }} /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Twitter URL" 
                 value={formData.twitter} 
                 onChange={(e) => setFormData({...formData, twitter: e.target.value})} 
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><TwitterIcon fontSize="small" sx={{ color: '#1DA1F2' }} /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><TwitterIcon fontSize="small" sx={{ color: '#1DA1F2' }} /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="LinkedIn URL" 
                 value={formData.linkedin} 
                 onChange={(e) => setFormData({...formData, linkedin: e.target.value})} 
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><LinkedInIcon fontSize="small" sx={{ color: '#0A66C2' }} /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><LinkedInIcon fontSize="small" sx={{ color: '#0A66C2' }} /></InputAdornment>
+                  }
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid  xs={12} md={6}>
               <TextField 
                 fullWidth 
                 label="Instagram URL" 
                 value={formData.instagram} 
                 onChange={(e) => setFormData({...formData, instagram: e.target.value})} 
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><InstagramIcon fontSize="small" sx={{ color: '#E4405F' }} /></InputAdornment>
+                slotProps={{
+                  input: {
+                    startAdornment: <InputAdornment position="start"><InstagramIcon fontSize="small" sx={{ color: '#E4405F' }} /></InputAdornment>
+                  }
                 }}
               />
             </Grid>

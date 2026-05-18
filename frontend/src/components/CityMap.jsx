@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './CityMap.css';
 import { useCity } from '../context/CityContext';
+import { API_BASE_URL } from '../constants';
 
 // Fix for Leaflet default icon issue in React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -32,29 +33,35 @@ const CityMap = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProperties = async () => {
+        const fetchCityAndProperties = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://localhost:3000/api/properties?city=${selectedCity}&limit=100`);
+                // Fetch city coordinates
+                const cityRes = await fetch(`${API_BASE_URL}/api/cities/${encodeURIComponent(selectedCity)}`);
+                if (cityRes.ok) {
+                    const cityData = await cityRes.json();
+                    if (cityData.latitude && cityData.longitude) {
+                        setMapCenter([parseFloat(cityData.latitude), parseFloat(cityData.longitude)]);
+                    }
+                }
+
+                // Fetch properties
+                const response = await fetch(`${API_BASE_URL}/api/properties?city=${selectedCity}&limit=100`);
                 const data = await response.json();
                 setProperties(data.properties || []);
 
-                // Update map center based on city
-                if (selectedCity.toLowerCase() === 'gandhinagar') {
-                    setMapCenter([23.2156, 72.6369]);
-                } else if (selectedCity.toLowerCase() === 'ahmedabad') {
-                    setMapCenter([23.0225, 72.5714]);
-                } else if (data.properties && data.properties.length > 0 && data.properties[0].latitude && data.properties[0].longitude) {
+                // Fallback: If city not found or has no coords, but properties have them
+                if (!mapCenter && data.properties && data.properties.length > 0 && data.properties[0].latitude && data.properties[0].longitude) {
                     setMapCenter([parseFloat(data.properties[0].latitude), parseFloat(data.properties[0].longitude)]);
                 }
             } catch (error) {
-                console.error('Error fetching properties for map:', error);
+                console.error('Error fetching data for map:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProperties();
+        fetchCityAndProperties();
     }, [selectedCity]);
 
     return (
