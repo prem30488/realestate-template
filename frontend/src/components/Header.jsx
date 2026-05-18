@@ -269,6 +269,9 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
       </ul>
     </li>
 
+    <li><Link to="/about">About Us</Link></li>
+    <li><Link to="/contact">Contact Us</Link></li>
+
     <li className="has-sub-menu"><a href="#">Help <i className="pe-7s-angle-down" /></a>
       <ul className="sub-menu">
         <li><a href="#">Help Center</a></li>

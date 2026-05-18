@@ -1,4 +1,4 @@
-const { Article, HeroSlider, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, sequelize } = require('./models');
+const { Article, HeroSlider, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, TeamMember, sequelize } = require('./models');
 
 async function seedData() {
   try {
@@ -13,6 +13,8 @@ async function seedData() {
     await InstaReel.destroy({ where: {}, truncate: true, cascade: true });
     await Testimonial.destroy({ where: {}, truncate: true, cascade: true });
     await Brand.destroy({ where: {}, truncate: true, cascade: true });
+    await TeamMember.destroy({ where: {}, truncate: true, cascade: true });
+    await Amenity.destroy({ where: {}, truncate: true, cascade: true });
     
     console.log('Tables truncated and synced.');
 
@@ -239,6 +241,57 @@ async function seedData() {
 
     await Amenity.bulkCreate(amenities);
     console.log('Amenities seeded.');
+
+    // Seed Visionary Team Members
+    const teamMembers = [
+      {
+        name: 'Alexander Sterling',
+        designation: 'Founder & Chief Visionary Officer',
+        photo: 'assets/images/agent/agent-1.jpg',
+        bio: 'With over 20 years of luxury real estate development experience, Alexander is the guiding force behind our high-performance culture and state-of-the-art developments.',
+        facebook: '#',
+        twitter: '#',
+        linkedin: '#',
+        instagram: '#',
+        order: 1
+      },
+      {
+        name: 'Victoria Vance',
+        designation: 'Managing Director & Head of Residential',
+        photo: 'assets/images/agent/agent-2.jpg',
+        bio: 'Victoria is a master of market positioning and design coordination, having overseen more than $1.5B in residential sales across premium metros.',
+        facebook: '#',
+        twitter: '#',
+        linkedin: '#',
+        instagram: '#',
+        order: 2
+      },
+      {
+        name: 'Marcus Thorne',
+        designation: 'Director of Smart Tech & Sustainability',
+        photo: 'assets/images/agent/agent-3.jpg',
+        bio: 'Marcus leads our ecological and tech initiatives, ensuring every property integrates next-gen smart features and conforms to absolute sustainability standards.',
+        facebook: '#',
+        twitter: '#',
+        linkedin: '#',
+        instagram: '#',
+        order: 3
+      },
+      {
+        name: 'Sophia Mercer',
+        designation: 'Principal Architect',
+        photo: 'assets/images/agent/agent-4.jpg',
+        bio: "Sophia's design philosophy merges organic materials with bold modernist features, crafting spaces that speak to both form and functional brilliance.",
+        facebook: '#',
+        twitter: '#',
+        linkedin: '#',
+        instagram: '#',
+        order: 4
+      }
+    ];
+
+    await TeamMember.bulkCreate(teamMembers);
+    console.log('Team members seeded.');
 
     console.log('Seed completed successfully!');
     process.exit(0);

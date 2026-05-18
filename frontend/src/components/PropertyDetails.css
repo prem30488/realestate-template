@@ -17,11 +17,11 @@
 
 .white-theme-bg .amenity-large:hover {
     background: #e8f0fe;
-    border-color: #2563eb;
+    border-color: var(--color-primary);
 }
 
 .white-theme-bg .amenity-large svg {
-    color: #2563eb;
+    color: var(--color-primary);
 }
 
 .white-theme-bg .amenity-large h6,

@@ -17,8 +17,8 @@
 }
 
 .city-selector:hover, .city-selector.open {
-    background: #ff5e14;
-    border-color: #ff5e14;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .city-selector:hover .selected-city, .city-selector.open .selected-city {
@@ -31,7 +31,7 @@
     gap: 10px;
     font-weight: 700;
     font-size: 13px;
-    color: #ff5e14;
+    color: var(--color-primary);
     white-space: nowrap;
     text-transform: capitalize;
 }
@@ -126,7 +126,7 @@
 }
 
 .city-section ul li:hover {
-    color: #ff5e14;
+    color: var(--color-primary);
 }
 
 .grid-cols {

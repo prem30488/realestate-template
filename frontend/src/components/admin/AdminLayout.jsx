@@ -38,7 +38,9 @@ import {
   Email as NewsletterIcon,
   QuestionAnswer as FaqIcon,
   ExitToApp as LogoutIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Palette as PaletteIcon,
+  Groups as TeamIcon
 } from '@mui/icons-material';
 
 const drawerWidth = 260;
@@ -77,6 +79,7 @@ const AdminLayout = ({ user, onLogout }) => {
     { text: 'Service Manager', icon: <ServiceIcon />, path: '/admin/services' },
     { text: 'FunFact Manager', icon: <FunFactIcon />, path: '/admin/funfacts' },
     { text: 'Broker Manager', icon: <BrokerIcon />, path: '/admin/brokers' },
+    { text: 'Team Manager', icon: <TeamIcon />, path: '/admin/team' },
     { text: 'Insta Video Manager', icon: <InstaIcon />, path: '/admin/insta' },
     { text: 'News Manager', icon: <NewsIcon />, path: '/admin/news-manager' },
     { text: 'Testimonials Manager', icon: <TestimonialIcon />, path: '/admin/testimonials' },
@@ -84,6 +87,7 @@ const AdminLayout = ({ user, onLogout }) => {
     { text: 'Newsletter Manager', icon: <NewsletterIcon />, path: '/admin/newsletter' },
     { text: 'FAQ Manager', icon: <FaqIcon />, path: '/admin/faqs' },
     { text: 'Privilege/User Manager', icon: <AdminIcon />, path: '/admin/users' },
+    { text: 'Theme Settings', icon: <PaletteIcon />, path: '/admin/theme-settings' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
   ];
 
@@ -92,8 +96,8 @@ const AdminLayout = ({ user, onLogout }) => {
     ? menuItems 
     : menuItems.filter(item => {
         if (item.path === '/admin') return true;
-        // Privilege/User Manager is superadmin only — never show to plain admins
-        if (item.path === '/admin/users') return false;
+        // Privilege/User Manager & Theme Settings are superadmin only — never show to plain admins
+        if (item.path === '/admin/users' || item.path === '/admin/theme-settings') return false;
         const privilegeKey = item.text.replace(' Manager', '').trim();
         return user?.privileges?.includes(privilegeKey);
       });

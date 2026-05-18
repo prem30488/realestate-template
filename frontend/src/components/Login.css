@@ -58,7 +58,7 @@
 }
 
 .login-close:hover {
-    background: #ff5e14;
+    background: var(--color-primary);
     color: white;
     transform: rotate(90deg);
 }
@@ -103,7 +103,7 @@
 }
 
 .login-form input:focus {
-    border-color: #ff5e14;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 4px rgba(255, 94, 20, 0.1);
 }
 
@@ -128,7 +128,7 @@
 }
 
 .forgot-password {
-    color: #ff5e14;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 600;
 }
@@ -140,7 +140,7 @@
 .login-btn {
     width: 100%;
     padding: 14px;
-    background: #ff5e14;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 12px;
@@ -183,7 +183,7 @@
 }
 
 .register-footer a {
-    color: #ff5e14;
+    color: var(--color-primary);
     font-weight: 700;
     text-decoration: none;
 }

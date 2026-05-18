@@ -5,7 +5,8 @@ import "react-datetime/css/react-datetime.css";
 import 'react-s-alert/dist/s-alert-default.css';
 import 'react-s-alert/dist/s-alert-css-effects/slide.css';
 import '../App.css';
-import { getAppSettings } from '../util/APIUtils';
+import axios from 'axios';
+import { API_BASE_URL } from '../constants';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  GLOBAL DESIGN TOKEN SYSTEM
@@ -1023,7 +1024,8 @@ const ThemeWrapper = ({ children }) => {
     // Sync with database on mount
     const syncWithDB = async () => {
       try {
-        const settings = await getAppSettings();
+        const res = await axios.get(`${API_BASE_URL}/api/settings`);
+        const settings = res.data;
         if (settings && settings.app_theme && settings.app_theme !== activeThemeName) {
           localStorage.setItem('app_theme', settings.app_theme);
           setActiveThemeName(settings.app_theme);

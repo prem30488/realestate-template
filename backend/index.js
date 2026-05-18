@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, sequelize } = require('./models');
+const { User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, TeamMember, sequelize } = require('./models');
 const { Op } = require('sequelize');
 const initDb = require('./initDb');
 
@@ -204,6 +204,22 @@ app.get('/api/news', async (req, res) => {
     res.json(news);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching news' });
+  }
+});
+
+// Get public settings (including theme)
+app.get('/api/settings', async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = await Settings.create({});
+    }
+    const settingsJSON = settings.toJSON();
+    delete settingsJSON.smtpPassword;
+    res.json(settingsJSON);
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ error: 'Server error fetching settings' });
   }
 });
 
@@ -1196,6 +1212,94 @@ app.delete('/api/admin/brokers/:id', authenticateToken, authorizeManager('Broker
     res.status(500).json({ error: 'Error deleting broker' });
   }
 });
+
+// --- TEAM MEMBER MANAGEMENT ROUTES ---
+
+// Public Team Members Route
+app.get('/api/team-members', async (req, res) => {
+  try {
+    const team = await TeamMember.findAll({
+      where: { isDeleted: false },
+      order: [['order', 'ASC'], ['id', 'ASC']]
+    });
+    res.json(team);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching team members' });
+  }
+});
+
+// Team Member Management Routes (Admin Only) with Pagination & Search
+app.get('/api/admin/team', authenticateToken, authorizeManager('Team'), async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
+  try {
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { designation: { [Op.iLike]: `%${search}%` } },
+        { bio: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+    const { count, rows } = await TeamMember.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [['order', 'ASC'], ['id', 'DESC']]
+    });
+    res.json({
+      teamMembers: rows,
+      totalCount: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    console.error('Error fetching team members:', error);
+    res.status(500).json({ error: 'Error fetching team members' });
+  }
+});
+
+app.post('/api/admin/team', authenticateToken, authorizeManager('Team'), async (req, res) => {
+  try {
+    const teamMember = await TeamMember.create(req.body);
+    res.status(201).json(teamMember);
+  } catch (error) {
+    res.status(500).json({ error: 'Error creating team member' });
+  }
+});
+
+app.put('/api/admin/team/:id', authenticateToken, authorizeManager('Team'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    await TeamMember.update(req.body, { where: { id } });
+    res.json({ message: 'Team member updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating team member' });
+  }
+});
+
+app.patch('/api/admin/team/:id/toggle-delete', authenticateToken, authorizeManager('Team'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isDeleted } = req.body;
+    await TeamMember.update({ isDeleted }, { where: { id } });
+    res.json({ message: 'Team member status updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating team member status' });
+  }
+});
+
+app.delete('/api/admin/team/:id', authenticateToken, authorizeManager('Team'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    await TeamMember.destroy({ where: { id } });
+    res.json({ message: 'Team member deleted permanently' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting team member' });
+  }
+});
+
 
 // Service Management Routes (Admin Only) with Pagination
 app.get('/api/services', async (req, res) => {
@@ -2244,6 +2348,139 @@ app.put('/api/admin/settings', authenticateToken, authorizeManager('Settings'), 
   } catch (error) {
     console.error('Error updating settings:', error);
     res.status(500).json({ error: 'Server error updating settings' });
+  }
+});
+
+// Public Contact Submission Route
+app.post('/api/contact', async (req, res) => {
+  const { name, email, phone, comment, toEmail } = req.body;
+
+  if (!name || !email || !comment) {
+    return res.status(400).json({ error: 'Name, email and comment are required fields.' });
+  }
+
+  // Fallback defaults pulling from companyInfo.js static specifications
+  let targetEmail = toEmail || 'prem30488@gmail.com';
+  let siteName = 'N. J. Properties';
+  let siteAddress = 'Gandhinagar - Kudasan Rd, Kudasan, Gandhinagar, Gujarat 382419';
+  let sitePhone = '+91 9624259046';
+
+  // Load dynamic settings from database Settings table
+  try {
+    const dbSettings = await Settings.findOne();
+    if (dbSettings) {
+      if (!toEmail && dbSettings.contactEmail && dbSettings.contactEmail !== 'contact@realestate.com') {
+        targetEmail = dbSettings.contactEmail;
+      }
+      if (dbSettings.siteName && dbSettings.siteName !== 'Real Estate Platform') {
+        siteName = dbSettings.siteName;
+      }
+      if (dbSettings.address && dbSettings.address !== '123 Real Estate Blvd, City, Country') {
+        siteAddress = dbSettings.address;
+      }
+      if (dbSettings.contactPhone && dbSettings.contactPhone !== '+1 234 567 8900') {
+        sitePhone = dbSettings.contactPhone;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching dynamic settings in /api/contact:', err);
+  }
+
+  console.log('--- RECEIVED DYNAMIC CONTACT MESSAGE ---');
+  console.log(`Name: ${name}`);
+  console.log(`Email: ${email}`);
+  console.log(`Phone: ${phone || 'N/A'}`);
+  console.log(`Comment: ${comment}`);
+  console.log(`Recipient: ${targetEmail}`);
+  console.log('----------------------------------------');
+
+  try {
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+      await transporter.sendMail({
+        from: `"${siteName} Inbound Desk" <${process.env.GMAIL_USER}>`,
+        to: targetEmail,
+        subject: `New Customer Inquiry: ${name} via ${siteName}`,
+        html: `
+          <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; padding: 50px 20px; color: #334155; margin: 0; -webkit-font-smoothing: antialiased;">
+            <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;">
+              <!-- Professional Header -->
+              <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding: 35px 40px; border-bottom: 4px solid #a855f7;">
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #a855f7; font-weight: 700; display: block; margin-bottom: 6px;">Customer Inbound Gateway</span>
+                <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">${siteName} Inbound Inquiry</h2>
+              </div>
+              
+              <!-- Content Body -->
+              <div style="padding: 40px;">
+                <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.6; color: #475569;">
+                  Hello Team,<br/><br/>
+                  A prospective customer has initiated an inquiry through the digital gateway of <strong>${siteName}</strong>. 
+                  Below are the verified client credentials and request details:
+                </p>
+                
+                <!-- Lead Table Grid -->
+                <div style="background: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px; overflow: hidden; margin-bottom: 30px;">
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="background: #fafafa;">
+                      <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; color: #64748b; width: 140px;">Client Name</td>
+                      <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 700; color: #0f172a;">${name}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; color: #64748b;">Email Address</td>
+                      <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 700; color: #4f46e5;">
+                        <a href="mailto:${email}" style="color: #4f46e5; text-decoration: none;">${email}</a>
+                      </td>
+                    </tr>
+                    <tr style="background: #fafafa;">
+                      <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; color: #64748b;">Phone Number</td>
+                      <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 700; color: #0f172a;">${phone || 'Not Provided'}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 20px; font-size: 13px; font-weight: 600; color: #64748b;">Submission Time</td>
+                      <td style="padding: 14px 20px; font-size: 13px; font-weight: 500; color: #475569;">${new Date().toLocaleString()}</td>
+                    </tr>
+                  </table>
+                </div>
+                
+                <!-- Client Inquiry Remarks Section -->
+                <div style="background-color: #faf5ff; border-left: 4px solid #a855f7; padding: 25px; border-radius: 4px 12px 12px 4px; margin-bottom: 35px;">
+                  <h4 style="margin: 0 0 10px 0; font-size: 12px; font-weight: 800; color: #6b21a8; text-transform: uppercase; letter-spacing: 1px;">Customer Message</h4>
+                  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #4b1a7a; font-style: italic;">
+                    "${comment.replace(/\n/g, '<br/>')}"
+                  </p>
+                </div>
+                
+                <!-- Reply Instant Action CTA -->
+                <div style="text-align: center;">
+                  <a href="mailto:${email}" style="display: inline-block; background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; padding: 14px 35px; font-size: 13px; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2); letter-spacing: 0.5px; transition: all 0.2s;">
+                    Reply to ${name} Instantly
+                  </a>
+                </div>
+              </div>
+              
+              <!-- Professional Signature Footer -->
+              <div style="background-color: #f8fafc; padding: 30px 40px; border-top: 1px solid #e2e8f0; text-align: center;">
+                <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 700; color: #1e293b;">${siteName}</p>
+                <p style="margin: 0 0 12px 0; font-size: 12px; color: #64748b; line-height: 1.4;">${siteAddress} | Helpline: ${sitePhone}</p>
+                <p style="margin: 0; font-size: 11px; color: #94a3b8;">
+                  This transaction correspondence has been dispatched automatically in response to your platform settings. <br/>
+                  &copy; 2026 ${siteName}. All Rights Reserved.
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+      });
+      return res.status(200).json({ message: 'Message sent successfully! Our team will get back to you shortly.' });
+    } else {
+      return res.status(200).json({ 
+        message: 'Message received successfully! (Simulation Mode: Node Mailer not configured in environment)' 
+      });
+    }
+  } catch (error) {
+    console.error('Nodemailer error in /api/contact:', error);
+    return res.status(200).json({ 
+      message: 'Message received successfully! (Notice: Email dispatch server was offline, logged in terminal)' 
+    });
   }
 });
 

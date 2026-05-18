@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { CityProvider } from './context/CityContext'
 import { HomeProvider } from './context/HomeContext'
+import ThemeWrapper from './styleguide/ThemeWrapper'
 
 import { BrowserRouter } from 'react-router-dom'
 
@@ -12,7 +13,9 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <CityProvider>
         <HomeProvider>
-          <App />
+          <ThemeWrapper>
+            <App />
+          </ThemeWrapper>
         </HomeProvider>
       </CityProvider>
     </BrowserRouter>

@@ -94,9 +94,10 @@ const CityMap = () => {
                                             >
                                                 <Popup>
                                                     <div className="property-popup">
-                                                        {property.images && property.images.length > 0 && (
-                                                            <img src={property.images[0].imagePath} alt={property.title} />
-                                                        )}
+                                                        <img 
+                                                            src={property.images?.[0]?.imageUrl || 'https://picsum.photos/200/120'} 
+                                                            alt={property.title} 
+                                                        />
                                                         <h3>{property.title}</h3>
                                                         <p>{property.location}</p>
                                                         <div className="price">₹ {parseFloat(property.price).toLocaleString('en-IN')}</div>

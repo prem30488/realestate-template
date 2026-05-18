@@ -24,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     smtpUser: { type: DataTypes.STRING, defaultValue: 'apikey' },
     smtpPassword: { type: DataTypes.STRING, defaultValue: 'password123' },
     googleAnalyticsId: { type: DataTypes.STRING, defaultValue: 'G-XXXXXXX' },
-    currency: { type: DataTypes.STRING, defaultValue: 'USD' }
+    currency: { type: DataTypes.STRING, defaultValue: 'USD' },
+    app_theme: { type: DataTypes.STRING, defaultValue: 'Default' }
   }, {
     sequelize,
     modelName: 'Settings',

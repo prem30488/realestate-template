@@ -26,6 +26,9 @@ import NewsManager from './components/admin/NewsManagerNew'
 import TestimonialManager from './components/admin/TestimonialManager'
 import BrandManager from './components/admin/BrandManager'
 import UserManager from './components/admin/UserManager'
+import AboutUs from './components/AboutUs'
+import ContactUs from './components/ContactUs'
+import TeamManager from './components/admin/TeamManager'
 import NewsletterManager from './components/admin/NewsletterManager'
 import FaqManager from './components/admin/FaqManager'
 import PropertiesList from './components/PropertiesList'
@@ -35,6 +38,7 @@ import UserProfile from './components/UserProfile'
 import UserSettings from './components/UserSettings'
 import Notifications from './components/Notifications'
 import AdminSettings from './components/admin/AdminSettings'
+import ThemeSettings from './components/admin/ThemeSettings'
 import ViewedProperties from './components/ViewedProperties'
 
 function App() {
@@ -135,6 +139,24 @@ function App() {
           </>
         } />
 
+        <Route path="/about" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <AboutUs />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/contact" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <ContactUs />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
         {/* User Specific Routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
@@ -217,6 +239,7 @@ function App() {
           <Route path="services" element={<AdminRoute privilege="Service"><ServiceManager /></AdminRoute>} />
           <Route path="funfacts" element={<AdminRoute privilege="FunFact"><FunFactManager /></AdminRoute>} />
           <Route path="brokers" element={<AdminRoute privilege="Broker"><BrokerManager /></AdminRoute>} />
+          <Route path="team" element={<AdminRoute privilege="Team"><TeamManager /></AdminRoute>} />
           <Route path="insta" element={<AdminRoute privilege="Insta Video"><InstaReelManager /></AdminRoute>} />
           <Route path="news" element={<Navigate to="/admin/news-manager" />} />
           <Route path="news-manager" element={<AdminRoute privilege="News"><NewsManager /></AdminRoute>} />
@@ -225,6 +248,7 @@ function App() {
           <Route path="newsletter" element={<AdminRoute privilege="Newsletter"><NewsletterManager /></AdminRoute>} />
           <Route path="faqs" element={<AdminRoute privilege="FAQ"><FaqManager /></AdminRoute>} />
           <Route path="users" element={<SuperAdminRoute><UserManager /></SuperAdminRoute>} />
+          <Route path="theme-settings" element={<SuperAdminRoute><ThemeSettings /></SuperAdminRoute>} />
           <Route path="settings" element={<AdminRoute privilege="Settings"><AdminSettings /></AdminRoute>} />
         </Route>
       </Routes>

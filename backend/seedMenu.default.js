@@ -115,4 +115,12 @@ module.exports = [
       { title: 'Chat with Us',  link: '#', itemType: 'link', order: 3, children: [] },
     ]
   },
+  {
+    title: 'About Us', link: '/about', itemType: 'nav', menuType: null, badge: null, order: 7,
+    children: []
+  },
+  {
+    title: 'Contact Us', link: '/contact', itemType: 'nav', menuType: null, badge: null, order: 8,
+    children: []
+  },
 ];

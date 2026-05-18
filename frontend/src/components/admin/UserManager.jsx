@@ -27,6 +27,7 @@ const ALL_PRIVILEGES = [
   { key: 'Service',      label: 'Service Manager',      icon: '⚙️' },
   { key: 'FunFact',      label: 'Fun Facts Manager',    icon: '📊' },
   { key: 'Broker',       label: 'Broker Manager',       icon: '👔' },
+  { key: 'Team',         label: 'Team Manager',         icon: '👥' },
   { key: 'Insta Video',  label: 'Insta Video Manager',  icon: '📱' },
   { key: 'News',         label: 'News Manager',         icon: '📰' },
   { key: 'Testimonials', label: 'Testimonials Manager', icon: '💬' },
