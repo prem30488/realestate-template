@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/models/city.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1779272681299,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1779272681299,
+            "name": "Commit-0",
+            "content": "'use strict';\nconst { Model } = require('sequelize');\n\nmodule.exports = (sequelize, DataTypes) => {\n  class City extends Model {\n    static associate(models) {\n      City.hasMany(models.Locality, {\n        foreignKey: 'city_id',\n        as: 'localities'\n      });\n    }\n  }\n  City.init({\n    name: {\n      type: DataTypes.STRING,\n      allowNull: false,\n      unique: true\n    },\n    latitude: {\n      type: DataTypes.DECIMAL(10, 8),\n      allowNull: true\n    },\n    longitude: {\n      type: DataTypes.DECIMAL(11, 8),\n      allowNull: true\n    },\n    isPopular: {\n      type: DataTypes.BOOLEAN,\n      defaultValue: false\n    },\n    isNearby: {\n      type: DataTypes.BOOLEAN,\n      defaultValue: false\n    },\n    order: {\n      type: DataTypes.INTEGER,\n      defaultValue: 0\n    }\n  }, {\n    sequelize,\n    modelName: 'City',\n  });\n  return City;\n};\n"
+        }
+    ]
+}

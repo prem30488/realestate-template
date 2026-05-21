@@ -57,7 +57,7 @@ async function seed() {
     });
     const buyTypes = propertyTypes.map((pt, index) => ({
       title: `${pt.name} in {city}`,
-      link: `/properties?type=${pt.id}&city={city}`,
+      link: `/properties?type=${pt.id}&status=Sell&city={city}`,
       order: index + 1
     }));
     const rentTypes = propertyTypes.map((pt, index) => ({

@@ -3,11 +3,24 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const { PropertyType, Amenity, User } = require('../models');
+    const { PropertyType, Amenity, User, Locality, City } = require('../models');
 
     const types = await PropertyType.findAll();
     const amenities = await Amenity.findAll();
     const users = await User.findAll();
+    
+    // Fetch cities to get their IDs
+    const cityGandhinagar = await City.findOne({ where: { name: 'Gandhinagar' } });
+    const cityAhmedabad = await City.findOne({ where: { name: 'Ahmedabad' } });
+    
+    // Fetch localities for both cities
+    const localitiesG = cityGandhinagar ? await Locality.findAll({ where: { city_id: cityGandhinagar.id } }) : [];
+    const localitiesA = cityAhmedabad ? await Locality.findAll({ where: { city_id: cityAhmedabad.id } }) : [];
+
+    const cityLocalities = {
+      'Gandhinagar': localitiesG,
+      'Ahmedabad': localitiesA
+    };
 
     if (types.length === 0 || users.length === 0) {
       console.log('No types or users found. Please run seeders for those first.');
@@ -29,6 +42,12 @@ module.exports = {
           const area = Math.floor(Math.random() * (5000 - 500) + 500);
           const status = Math.random() > 0.5 ? 'For Sale' : 'For Rent';
 
+          const furnishingOptions = ['semi-furnished', 'full-furnished', 'none'];
+          const availabilityOptions = ['Immediate', '1 month', '2 months', '3 months', '6 months', '1 year'];
+
+          const locs = cityLocalities[city] || [];
+          const randomLoc = locs.length > 0 ? locs[Math.floor(Math.random() * locs.length)] : null;
+
           propertiesData.push({
             id: propertyId,
             typeId: type.id,
@@ -38,13 +57,19 @@ module.exports = {
             title: `${type.name} in ${city} #${i}`,
             status: status,
             price: price,
-            location: `${city} Sector ${Math.floor(Math.random() * 30 + 1)}`,
+            locality_id: randomLoc ? randomLoc.id : null,
             area: area,
             no_of_bedrooms: Math.floor(Math.random() * 5 + 1),
             no_of_bathrooms: Math.floor(Math.random() * 4 + 1),
             posted_by: users[Math.floor(Math.random() * users.length)].id,
             featured: Math.random() > 0.8,
             no_of_garage: Math.floor(Math.random() * 3),
+            verified: Math.random() > 0.4,
+            furnishing_type: furnishingOptions[Math.floor(Math.random() * furnishingOptions.length)],
+            bachelor_friendly: Math.random() > 0.5,
+            availability: availabilityOptions[Math.floor(Math.random() * availabilityOptions.length)],
+            family_friendly: Math.random() > 0.5,
+            live_in_friendly: Math.random() > 0.6,
             createdAt: new Date(),
             updatedAt: new Date()
           });

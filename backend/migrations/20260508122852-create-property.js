@@ -86,6 +86,30 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: 0
       },
+      verified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      furnishing_type: {
+        type: Sequelize.STRING,
+        defaultValue: 'none'
+      },
+      bachelor_friendly: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      availability: {
+        type: Sequelize.STRING,
+        defaultValue: 'Immediate'
+      },
+      family_friendly: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      live_in_friendly: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

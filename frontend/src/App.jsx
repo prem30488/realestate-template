@@ -26,6 +26,8 @@ import NewsManager from './components/admin/NewsManagerNew'
 import TestimonialManager from './components/admin/TestimonialManager'
 import BrandManager from './components/admin/BrandManager'
 import UserManager from './components/admin/UserManager'
+import BuilderManager from './components/admin/BuilderManager'
+import LocalitiesManager from './components/admin/LocalitiesManager'
 import AboutUs from './components/AboutUs'
 import ContactUs from './components/ContactUs'
 import TeamManager from './components/admin/TeamManager'
@@ -40,6 +42,8 @@ import Notifications from './components/Notifications'
 import AdminSettings from './components/admin/AdminSettings'
 import ThemeSettings from './components/admin/ThemeSettings'
 import ViewedProperties from './components/ViewedProperties'
+import BuildersList from './components/BuildersList'
+import LocalitiesList from './components/LocalitiesList'
 
 function App() {
   const navigate = useNavigate();
@@ -70,13 +74,13 @@ function App() {
     if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
       return <Navigate to="/" />;
     }
-    
+
     // If it's a regular admin, check for specific privilege if required
     if (user.role === 'admin' && privilege && !user.privileges?.includes(privilege)) {
       toast.error("You don't have permission to access this page");
       return <Navigate to="/admin" />;
     }
-    
+
     return children;
   };
 
@@ -105,7 +109,7 @@ function App() {
         containerStyle={{ zIndex: 999999 }}
         toastOptions={{ duration: 5000 }}
       />
-      
+
       <Routes>
         {/* Main Website Routes */}
         <Route path="/" element={
@@ -134,6 +138,24 @@ function App() {
           <>
             <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
             <PropertyDetails onLoginRequired={() => setIsLoginOpen(true)} />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/builders/:city" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <BuildersList />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/localities/:city" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <LocalitiesList />
             <Footer />
             <WhatsAppButton />
           </>
@@ -235,10 +257,12 @@ function App() {
           <Route path="home" element={<AdminRoute privilege="Home"><HomeManager /></AdminRoute>} />
           <Route path="menu" element={<AdminRoute privilege="Menu"><MenuManager /></AdminRoute>} />
           <Route path="slider" element={<AdminRoute privilege="Slider"><SliderManager /></AdminRoute>} />
-          <Route path="search" element={<AdminRoute privilege="Search"><GenericManager title="Search Manager" apiEndpoint="search-configs" columns={[{field: 'name', label: 'Config Name'}]} /></AdminRoute>} />
+          <Route path="search" element={<AdminRoute privilege="Search"><GenericManager title="Search Manager" apiEndpoint="search-configs" columns={[{ field: 'name', label: 'Config Name' }]} /></AdminRoute>} />
           <Route path="services" element={<AdminRoute privilege="Service"><ServiceManager /></AdminRoute>} />
           <Route path="funfacts" element={<AdminRoute privilege="FunFact"><FunFactManager /></AdminRoute>} />
           <Route path="brokers" element={<AdminRoute privilege="Broker"><BrokerManager /></AdminRoute>} />
+          <Route path="builders" element={<AdminRoute privilege="Builders"><BuilderManager /></AdminRoute>} />
+          <Route path="localities" element={<AdminRoute privilege="Localities"><LocalitiesManager /></AdminRoute>} />
           <Route path="team" element={<AdminRoute privilege="Team"><TeamManager /></AdminRoute>} />
           <Route path="insta" element={<AdminRoute privilege="Insta Video"><InstaReelManager /></AdminRoute>} />
           <Route path="news" element={<Navigate to="/admin/news-manager" />} />

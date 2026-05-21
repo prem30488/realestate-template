@@ -9,6 +9,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'typeId',
         as: 'propertyType'
       });
+      Property.belongsTo(models.Locality, {
+        foreignKey: 'locality_id',
+        as: 'locality'
+      });
+      Property.belongsTo(models.Project, {
+        foreignKey: 'project_id',
+        as: 'project'
+      });
       Property.belongsTo(models.User, {
         foreignKey: 'posted_by',
         as: 'owner'
@@ -67,9 +75,21 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false
     },
-    location: {
-      type: DataTypes.STRING,
-      allowNull: false
+    locality_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Localities',
+        key: 'id'
+      }
+    },
+    project_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Projects',
+        key: 'id'
+      }
     },
     area: {
       type: DataTypes.DECIMAL(10, 2),
@@ -105,6 +125,30 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    furnishing_type: {
+      type: DataTypes.STRING,
+      defaultValue: 'none'
+    },
+    bachelor_friendly: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    availability: {
+      type: DataTypes.STRING,
+      defaultValue: 'Immediate'
+    },
+    family_friendly: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    live_in_friendly: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     }

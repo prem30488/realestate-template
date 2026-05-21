@@ -3,9 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, TeamMember, sequelize } = require('./models');
+const { Builder, User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Locality, Project, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, TeamMember, sequelize } = require('./models');
 const { Op } = require('sequelize');
 const initDb = require('./initDb');
+const localitiesRoutes = require('./routes/localitiesRoutes');
+const projectsRoutes = require('./routes/projectsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -129,7 +131,7 @@ app.get('/api/home/data', async (req, res) => {
       order: [['updatedAt', 'DESC']],
       include: [
         { model: PropertyImage, as: 'images' },
-        { model: PropertyType, as: 'propertyType' },
+        { model: PropertyType, as: 'propertyType' }, { model: Locality, as: 'locality' },
         {
           model: User,
           as: 'owner',
@@ -145,7 +147,7 @@ app.get('/api/home/data', async (req, res) => {
       order: [['createdAt', 'DESC']],
       include: [
         { model: PropertyImage, as: 'images' },
-        { model: PropertyType, as: 'propertyType' },
+        { model: PropertyType, as: 'propertyType' }, { model: Locality, as: 'locality' },
         {
           model: User,
           as: 'owner',
@@ -225,14 +227,22 @@ app.get('/api/settings', async (req, res) => {
 
 // Get properties with pagination and filters (type, status, city)
 app.get('/api/properties', async (req, res) => {
-  const { city, search, type, status, page = 1, limit = 10 } = req.query;
+  const { city, search, type, status, postedBy, minPrice, maxPrice, orderBy, order = 'DESC', page = 1, limit = 10, locality_id, project_id } = req.query;
   const offset = (page - 1) * limit;
 
   try {
     const where = { isDeleted: false };
-    
+
     if (city) {
       where.city = { [Op.iLike]: `%${city}%` };
+    }
+
+    if (locality_id) {
+      where.locality_id = locality_id;
+    }
+
+    if (project_id) {
+      where.project_id = project_id;
     }
 
     if (type) {
@@ -247,34 +257,82 @@ app.get('/api/properties', async (req, res) => {
       where.status = dbStatus;
     }
 
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) {
+        where.price[Op.gte] = parseFloat(minPrice);
+      }
+      if (maxPrice) {
+        where.price[Op.lte] = parseFloat(maxPrice);
+      }
+    }
+
+    if (req.query.verified === 'true') {
+      where.verified = true;
+    }
+    if (req.query.furnishing_type && req.query.furnishing_type !== '') {
+      where.furnishing_type = req.query.furnishing_type;
+    }
+    if (req.query.bachelor_friendly === 'true') {
+      where.bachelor_friendly = true;
+    }
+    if (req.query.availability && req.query.availability !== '') {
+      where.availability = req.query.availability;
+    }
+    if (req.query.family_friendly === 'true') {
+      where.family_friendly = true;
+    }
+    if (req.query.live_in_friendly === 'true') {
+      where.live_in_friendly = true;
+    }
+
     if (search) {
       where[Op.and] = [
         { isDeleted: false },
         {
           [Op.or]: [
             { title: { [Op.iLike]: `%${search}%` } },
-            { location: { [Op.iLike]: `%${search}%` } },
+            { '$locality.name$': { [Op.iLike]: `%${search}%` } },
             { city: { [Op.iLike]: `%${search}%` } }
           ]
         }
       ];
     }
 
+    const ownerInclude = {
+      model: User,
+      as: 'owner',
+      attributes: ['username', 'id', 'role']
+    };
+
+    if (postedBy === 'owner') {
+      ownerInclude.where = {
+        role: {
+          [Op.notIn]: ['admin', 'superadmin']
+        }
+      };
+    }
+
+    let queryOrder = [['createdAt', 'DESC']];
+    const allowedSortFields = ['createdAt', 'updatedAt', 'price', 'id', 'title'];
+    if (orderBy && allowedSortFields.includes(orderBy)) {
+      const orderDir = ['ASC', 'DESC'].includes(order.toUpperCase()) ? order.toUpperCase() : 'DESC';
+      queryOrder = [[orderBy, orderDir]];
+    }
+
     const { count, rows } = await Property.findAndCountAll({
+      distinct: true,
       where,
       include: [
         { model: PropertyImage, as: 'images' },
         { model: PropertyType, as: 'propertyType' },
-        {
-          model: User,
-          as: 'owner',
-          attributes: ['username', 'id', 'role'],
-          where: { role: 'user' }
-        }
+        { model: Locality, as: 'locality' },
+        { model: Project, as: 'project' },
+        ownerInclude
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
-      order: [['createdAt', 'DESC']]
+      order: queryOrder
     });
 
     res.json({
@@ -295,10 +353,11 @@ app.get('/api/properties/:id', async (req, res) => {
     const property = await Property.findByPk(req.params.id, {
       include: [
         { model: PropertyImage, as: 'images' },
-        { model: PropertyType, as: 'propertyType' },
+        { model: PropertyType, as: 'propertyType' }, { model: Locality, as: 'locality' },
+        { model: Project, as: 'project' },
         { model: User, as: 'owner', attributes: ['username', 'email', 'phoneNumber'] },
-        { 
-          model: Amenity, 
+        {
+          model: Amenity,
           as: 'amenities',
           through: { attributes: [] }
         }
@@ -415,7 +474,7 @@ app.get('/api/my-properties', authenticateToken, async (req, res) => {
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
-        { location: { [Op.iLike]: `%${search}%` } },
+        { '$locality.name$': { [Op.iLike]: `%${search}%` } },
         { city: { [Op.iLike]: `%${search}%` } }
       ];
     }
@@ -425,6 +484,7 @@ app.get('/api/my-properties', authenticateToken, async (req, res) => {
       include: [
         { model: PropertyImage, as: 'images' },
         { model: PropertyType, as: 'propertyType' },
+        { model: Locality, as: 'locality', include: [{ model: City, as: 'city', attributes: ['id', 'name'] }] },
         { model: User, as: 'owner', attributes: ['username', 'id'] }
       ],
       order: [['createdAt', 'DESC']]
@@ -563,7 +623,7 @@ app.get('/api/shortlist', authenticateToken, async (req, res) => {
           as: 'property',
           include: [
             { model: PropertyImage, as: 'images' },
-            { model: PropertyType, as: 'propertyType' }
+            { model: PropertyType, as: 'propertyType' }, { model: Locality, as: 'locality' }
           ]
         }
       ]
@@ -627,7 +687,7 @@ app.get('/api/viewed-properties', authenticateToken, async (req, res) => {
           as: 'property',
           include: [
             { model: PropertyImage, as: 'images' },
-            { model: PropertyType, as: 'propertyType' }
+            { model: PropertyType, as: 'propertyType' }, { model: Locality, as: 'locality' }
           ]
         }
       ],
@@ -759,16 +819,19 @@ app.get('/api/admin/properties', authenticateToken, authorizeManager('Properties
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
-        { location: { [Op.iLike]: `%${search}%` } },
+        { '$locality.name$': { [Op.iLike]: `%${search}%` } },
         { city: { [Op.iLike]: `%${search}%` } }
       ];
     }
 
     const { count, rows } = await Property.findAndCountAll({
+      distinct: true,
+      subQuery: false,
       where,
       include: [
         { model: PropertyImage, as: 'images' },
         { model: PropertyType, as: 'propertyType' },
+        { model: Locality, as: 'locality', include: [{ model: City, as: 'city', attributes: ['id', 'name'] }] },
         { model: User, as: 'owner', attributes: ['username', 'id'] }
       ],
       limit: parseInt(limit),
@@ -2116,17 +2179,17 @@ app.post('/api/newsletter/subscribe', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required' });
-    
+
     const [subscriber, created] = await Subscriber.findOrCreate({
       where: { email },
       defaults: { isActive: true }
     });
-    
+
     if (!created && !subscriber.isActive) {
       subscriber.isActive = true;
       await subscriber.save();
     }
-    
+
     res.json({ message: 'Thank you for subscribing to our newsletter!' });
   } catch (error) {
     console.error('Subscription error:', error);
@@ -2194,7 +2257,7 @@ const transporter = nodemailer.createTransport({
 app.post('/api/admin/newsletter/send', authenticateToken, authorizeManager('Newsletter'), async (req, res) => {
   try {
     const { subscriberIds, templateId, customSubject, customBody } = req.body;
-    
+
     if (!subscriberIds || subscriberIds.length === 0) {
       return res.status(400).json({ error: 'No subscribers selected' });
     }
@@ -2251,7 +2314,7 @@ app.get('/api/admin/faqs', authenticateToken, authorizeManager('FAQ'), async (re
     }
     const { count, rows } = await PropertyFaq.findAndCountAll({
       where,
-      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'location', 'city'] }],
+      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'locality_id', 'city'], include: [{ model: Locality, as: 'locality' }] }],
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['createdAt', 'DESC']]
@@ -2276,7 +2339,7 @@ app.post('/api/admin/faqs', authenticateToken, authorizeManager('FAQ'), async (r
     }
     const faq = await PropertyFaq.create(req.body);
     const faqWithProp = await PropertyFaq.findByPk(faq.id, {
-      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'location', 'city'] }]
+      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'locality_id', 'city'], include: [{ model: Locality, as: 'locality' }] }]
     });
     res.status(201).json(faqWithProp);
   } catch (error) {
@@ -2290,7 +2353,7 @@ app.put('/api/admin/faqs/:id', authenticateToken, authorizeManager('FAQ'), async
     const { id } = req.params;
     await PropertyFaq.update(req.body, { where: { id } });
     const updated = await PropertyFaq.findByPk(id, {
-      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'location', 'city'] }]
+      include: [{ model: Property, as: 'property', attributes: ['id', 'title', 'locality_id', 'city'], include: [{ model: Locality, as: 'locality' }] }]
     });
     res.json({ message: 'FAQ updated successfully', faq: updated });
   } catch (error) {
@@ -2472,17 +2535,132 @@ app.post('/api/contact', async (req, res) => {
       });
       return res.status(200).json({ message: 'Message sent successfully! Our team will get back to you shortly.' });
     } else {
-      return res.status(200).json({ 
-        message: 'Message received successfully! (Simulation Mode: Node Mailer not configured in environment)' 
+      return res.status(200).json({
+        message: 'Message received successfully! (Simulation Mode: Node Mailer not configured in environment)'
       });
     }
   } catch (error) {
     console.error('Nodemailer error in /api/contact:', error);
-    return res.status(200).json({ 
-      message: 'Message received successfully! (Notice: Email dispatch server was offline, logged in terminal)' 
+    return res.status(200).json({
+      message: 'Message received successfully! (Notice: Email dispatch server was offline, logged in terminal)'
     });
   }
 });
+
+// --- PUBLIC BUILDERS ---
+app.get('/api/builders', async (req, res) => {
+  const { city } = req.query;
+  try {
+    const where = { is_verified: true, status: 'Active' };
+    if (city) {
+      where.city = { [Op.iLike]: `%${city}%` };
+    }
+    const builders = await Builder.findAll({
+      where,
+      order: [['average_rating', 'DESC'], ['total_projects_completed', 'DESC']]
+    });
+    res.json(builders);
+  } catch (error) {
+    console.error('Error fetching public builders:', error);
+    res.status(500).json({ error: 'Error fetching builders' });
+  }
+});
+
+// --- BUILDER MANAGEMENT (ADMIN) ---
+
+// Get all builders (paginated, with search)
+app.get('/api/admin/builders', authenticateToken, authorizeManager('Builders'), async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
+  try {
+    let where = {};
+    if (search) {
+      where = {
+        [Op.or]: [
+          { company_name: { [Op.iLike]: `%${search}%` } },
+          { owner_name: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } },
+          { city: { [Op.iLike]: `%${search}%` } }
+        ]
+      };
+    }
+
+    const { count, rows } = await Builder.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json({
+      builders: rows,
+      totalCount: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    console.error('Error fetching builders:', error);
+    res.status(500).json({ error: 'Error fetching builders' });
+  }
+});
+
+// Get single builder
+app.get('/api/admin/builders/:id', authenticateToken, authorizeManager('Builders'), async (req, res) => {
+  try {
+    const builder = await Builder.findByPk(req.params.id);
+    if (!builder) return res.status(404).json({ error: 'Builder not found' });
+    res.json(builder);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching builder' });
+  }
+});
+
+// Create builder
+app.post('/api/admin/builders', authenticateToken, authorizeManager('Builders'), async (req, res) => {
+  try {
+    const builder = await Builder.create(req.body);
+    res.status(201).json(builder);
+  } catch (error) {
+    console.error('Error creating builder:', error);
+    res.status(500).json({ error: 'Error creating builder', details: error.message });
+  }
+});
+
+// Update builder
+app.put('/api/admin/builders/:id', authenticateToken, authorizeManager('Builders'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const builder = await Builder.findByPk(id);
+    if (!builder) return res.status(404).json({ error: 'Builder not found' });
+
+    await Builder.update(req.body, { where: { id } });
+    const updatedBuilder = await Builder.findByPk(id);
+    res.json(updatedBuilder);
+  } catch (error) {
+    console.error('Error updating builder:', error);
+    res.status(500).json({ error: 'Error updating builder' });
+  }
+});
+
+// Delete builder
+app.delete('/api/admin/builders/:id', authenticateToken, authorizeManager('Builders'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const builder = await Builder.findByPk(id);
+    if (!builder) return res.status(404).json({ error: 'Builder not found' });
+
+    await Builder.destroy({ where: { id } });
+    res.json({ message: 'Builder deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting builder:', error);
+    res.status(500).json({ error: 'Error deleting builder' });
+  }
+});
+
+// Register routes
+app.use('/api', localitiesRoutes);
+app.use('/api', projectsRoutes);
 
 // Initialize database and start server
 initDb()

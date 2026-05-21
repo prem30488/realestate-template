@@ -15,7 +15,7 @@ const interpolate = (text, city) => (text || '').replace(/\{city\}/g, city);
 const NavLink = ({ item, city }) => {
   const link = interpolate(item.link, city);
   const isInternal = link.startsWith('/');
-  
+
   return (
     <li>
       {isInternal ? (
@@ -36,7 +36,7 @@ const NavLink = ({ item, city }) => {
 // ── Render one mega-menu column (a section heading + its children) ──────────
 const MegaMenuColumn = ({ section, city }) => {
   const isPropertyType = section.title.toLowerCase().includes('property type');
-  
+
   return (
     <div className={`mega-menu-column ${isPropertyType ? 'column-wide' : ''}`}>
       <h6>{interpolate(section.title, city)}</h6>
@@ -127,22 +127,22 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
         <div className="mega-menu-column">
           <h6>Popular Choices</h6>
           <ul>
-            <li><Link to="/properties?status=Sell">Ready to Move</Link></li>
-            <li><Link to="/properties?status=Sell">Owner Properties</Link></li>
-            <li><Link to="/properties?status=Sell&maxPrice=5000000">Budget Homes</Link></li>
-            <li><Link to="/properties?status=Sell&minPrice=10000000">Premium Homes</Link></li>
-            <li><Link to="/properties?status=Sell">Newly Launched <span className="badge-new">NEW</span></Link></li>
+            <li><Link to={`/properties?status=Sell&city=${selectedCity}`}>Ready to Move</Link></li>
+            <li><Link to={`/properties?status=Sell&postedBy=owner&city=${selectedCity}`}>Owner Properties</Link></li>
+            <li><Link to={`/properties?status=Sell&maxPrice=5000000&city=${selectedCity}`}>Budget Homes</Link></li>
+            <li><Link to={`/properties?status=Sell&minPrice=10000000&city=${selectedCity}`}>Premium Homes</Link></li>
+            <li><Link to={`/properties?status=Sell&orderBy=updatedAt&order=DESC&city=${selectedCity}`}>Newly Launched <span className="badge-new">NEW</span></Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
           <h6>Property Types</h6>
           <ul>
-            <li><Link to={`/properties?type=1&city=${selectedCity}&status=Sell`}>Flats in {selectedCity}</Link></li>
-            <li><Link to={`/properties?type=2&city=${selectedCity}&status=Sell`}>House for sale in {selectedCity}</Link></li>
-            <li><Link to={`/properties?type=5&city=${selectedCity}&status=Sell`}>Villa in {selectedCity}</Link></li>
-            <li><Link to={`/properties?type=16&city=${selectedCity}&status=Sell`}>Plot in {selectedCity}</Link></li>
-            <li><Link to={`/properties?type=11&city=${selectedCity}&status=Sell`}>Office Space in {selectedCity}</Link></li>
-            <li><Link to={`/properties?type=3&city=${selectedCity}&status=Sell`}>Commercial Space in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=1&status=Sell&city=${selectedCity}`}>Flats in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=2&status=Sell&city=${selectedCity}`}>House for sale in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=5&status=Sell&city=${selectedCity}`}>Villa in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=16&status=Sell&city=${selectedCity}`}>Plot in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=11&status=Sell&city=${selectedCity}`}>Office Space in {selectedCity}</Link></li>
+            <li><Link to={`/properties?type=3&status=Sell&city=${selectedCity}`}>Commercial Space in {selectedCity}</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
@@ -157,8 +157,8 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
         <div className="mega-menu-column">
           <h6>Explore</h6>
           <ul>
-            <li><a href="#">Builders in {selectedCity}</a></li>
-            <li><a href="#">Localities in {selectedCity}</a></li>
+            <li><Link to={`/builders/${selectedCity}`}>Builders in {selectedCity}</Link></li>
+            <li><Link to={`/localities/${selectedCity}`}>Localities in {selectedCity}</Link></li>
             <li><a href="#">Projects in {selectedCity}</a></li>
             <li><Link to="/brokers">Find an Agent in {selectedCity}</Link></li>
           </ul>
@@ -181,11 +181,11 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
         <div className="mega-menu-column">
           <h6>Popular Choices</h6>
           <ul>
-            <li><Link to="/properties?status=Rent">Owner Properties</Link></li>
-            <li><Link to="/properties?status=Rent">Verified Properties</Link></li>
-            <li><Link to="/properties?status=Rent">Furnished Homes</Link></li>
-            <li><Link to="/properties?status=Rent">Bachelor Friendly Homes</Link></li>
-            <li><Link to="/properties?status=Rent">Immediately Available</Link></li>
+            <li><Link to={`/properties?status=Rent&postedBy=owner&city=${selectedCity}`}>Owner Properties</Link></li>
+            <li><Link to={`/properties?status=Rent&city=${selectedCity}`}>Verified Properties</Link></li>
+            <li><Link to={`/properties?status=Rent&city=${selectedCity}`}>Furnished Homes</Link></li>
+            <li><Link to={`/properties?status=Rent&city=${selectedCity}`}>Bachelor Friendly Homes</Link></li>
+            <li><Link to={`/properties?status=Rent&city=${selectedCity}`}>Immediately Available</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
@@ -213,7 +213,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
         <div className="mega-menu-column">
           <h6>Explore</h6>
           <ul>
-            <li><a href="#">Localities</a></li>
+            <li><Link to={`/localities/${selectedCity}`}>Localities</Link></li>
             <li><a href="#">Buy Vs Rent</a></li>
             <li><Link to="/brokers">Find an Agent</Link></li>
             <li><a href="#">Share Requirement</a></li>
@@ -326,8 +326,8 @@ const Header = ({ onLoginClick, user, onLogout }) => {
 
                     {useDynamic
                       ? menuItems.map(item => (
-                          <NavItem key={item.id} item={item} city={selectedCity} />
-                        ))
+                        <NavItem key={item.id} item={item} city={selectedCity} />
+                      ))
                       : <StaticNav selectedCity={selectedCity} user={user} onLogout={onLogout} onLoginClick={onLoginClick} />
                     }
 

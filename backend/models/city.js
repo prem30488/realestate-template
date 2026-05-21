@@ -4,7 +4,14 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class City extends Model {
     static associate(models) {
-      // define association here
+      City.hasMany(models.Locality, {
+        foreignKey: 'city_id',
+        as: 'localities'
+      });
+      City.hasMany(models.Project, {
+        foreignKey: 'city_id',
+        as: 'projects'
+      });
     }
   }
   City.init({

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/models/locality.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1779272652817,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1779272652817,
+            "name": "Commit-0",
+            "content": "'use strict';\r\nconst { Model } = require('sequelize');\r\n\r\nmodule.exports = (sequelize, DataTypes) => {\r\n  class Locality extends Model {\r\n    static associate(models) {\r\n      Locality.belongsTo(models.City, {\r\n        foreignKey: 'city_id',\r\n        as: 'city'\r\n      });\r\n    }\r\n  }\r\n  Locality.init({\r\n    city_id: {\r\n      type: DataTypes.INTEGER,\r\n      allowNull: false,\r\n      references: {\r\n        model: 'Cities',\r\n        key: 'id'\r\n      }\r\n    },\r\n    name: {\r\n      type: DataTypes.STRING,\r\n      allowNull: false\r\n    },\r\n    postal_code: {\r\n      type: DataTypes.STRING,\r\n      allowNull: true\r\n    },\r\n    latitude: {\r\n      type: DataTypes.DECIMAL(10, 8),\r\n      allowNull: true\r\n    },\r\n    longitude: {\r\n      type: DataTypes.DECIMAL(11, 8),\r\n      allowNull: true\r\n    }\r\n  }, {\r\n    sequelize,\r\n    modelName: 'Locality',\r\n  });\r\n  return Locality;\r\n};\r\n"
+        }
+    ]
+}

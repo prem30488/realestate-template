@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'typeId',
         as: 'properties'
       });
+      PropertyType.hasMany(models.Project, {
+        foreignKey: 'property_type_id',
+        as: 'projects'
+      });
     }
   }
   PropertyType.init({

@@ -4,19 +4,19 @@ module.exports = [
     title: 'Buy', link: '/properties?status=Sell', itemType: 'nav', menuType: 'mega', badge: null, order: 1,
     children: [
       { title: 'Popular Choices', itemType: 'section', order: 1, children: [
-        { title: 'Ready to Move',    link: '/properties?status=Sell', order: 1 },
-        { title: 'Owner Properties', link: '/properties?status=Sell', order: 2 },
-        { title: 'Budget Homes',     link: '/properties?status=Sell&maxPrice=5000000', order: 3 },
-        { title: 'Premium Homes',    link: '/properties?status=Sell&minPrice=10000000', order: 4 },
-        { title: 'Newly Launched',   link: '/properties?status=Sell', order: 5, badge: 'NEW' },
+        { title: 'Ready to Move',    link: '/properties?status=Sell&city={city}', order: 1 },
+        { title: 'Owner Properties', link: '/properties?status=Sell&postedBy=owner&city={city}', order: 2 },
+        { title: 'Budget Homes',     link: '/properties?status=Sell&maxPrice=5000000&city={city}', order: 3 },
+        { title: 'Premium Homes',    link: '/properties?status=Sell&minPrice=10000000&city={city}', order: 4 },
+        { title: 'Newly Launched',   link: '/properties?status=Sell&orderBy=updatedAt&order=DESC&city={city}', order: 5, badge: 'NEW' },
       ]},
       { title: 'Property Types', itemType: 'section', order: 2, children: [
-        { title: 'Flats in {city}',            link: '/properties?type=1&city={city}&status=Sell', order: 1 },
-        { title: 'House for sale in {city}',   link: '/properties?type=2&city={city}&status=Sell', order: 2 },
-        { title: 'Villa in {city}',            link: '/properties?type=5&city={city}&status=Sell', order: 3 },
-        { title: 'Plot in {city}',             link: '/properties?type=16&city={city}&status=Sell', order: 4 },
-        { title: 'Office Space in {city}',     link: '/properties?type=11&city={city}&status=Sell', order: 5 },
-        { title: 'Commercial Space in {city}', link: '/properties?type=3&city={city}&status=Sell', order: 6 },
+        { title: 'Flats in {city}',            link: '/properties?type=1&status=Sell&city={city}', order: 1 },
+        { title: 'House for sale in {city}',   link: '/properties?type=2&status=Sell&city={city}', order: 2 },
+        { title: 'Villa in {city}',            link: '/properties?type=5&status=Sell&city={city}', order: 3 },
+        { title: 'Plot in {city}',             link: '/properties?type=16&status=Sell&city={city}', order: 4 },
+        { title: 'Office Space in {city}',     link: '/properties?type=11&status=Sell&city={city}', order: 5 },
+        { title: 'Commercial Space in {city}', link: '/properties?type=3&status=Sell&city={city}', order: 6 },
       ]},
       { title: 'Budget', itemType: 'section', order: 3, children: [
         { title: 'Under ₹ 50 Lac',     link: '/properties?maxPrice=5000000&status=Sell', order: 1 },
@@ -25,9 +25,9 @@ module.exports = [
         { title: 'Above ₹ 1.5 Cr',    link: '/properties?minPrice=15000000&status=Sell', order: 4 },
       ]},
       { title: 'Explore', itemType: 'section', order: 4, children: [
-        { title: 'Builders in {city}',      link: '#', order: 1 },
-        { title: 'Localities in {city}',    link: '#', order: 2 },
-        { title: 'Projects in {city}',      link: '#', order: 3 },
+        { title: 'Builders in {city}',      link: '/builders/{city}', order: 1 },
+        { title: 'Localities in {city}',    link: '/localities/{city}', order: 2 },
+        { title: 'Projects in {city}',      link: '/projects/{city}', order: 3 },
         { title: 'Find an Agent in {city}', link: '/brokers', order: 4 },
       ]},
       { title: 'Buying Tools', itemType: 'section', order: 5, children: [
@@ -42,11 +42,11 @@ module.exports = [
     title: 'Rent', link: '/properties?status=Rent', itemType: 'nav', menuType: 'mega', badge: null, order: 2,
     children: [
       { title: 'Popular Choices', itemType: 'section', order: 1, children: [
-        { title: 'Owner Properties',        link: '/properties?status=Rent', order: 1 },
-        { title: 'Verified Properties',     link: '/properties?status=Rent', order: 2 },
-        { title: 'Furnished Homes',         link: '/properties?status=Rent', order: 3 },
-        { title: 'Bachelor Friendly Homes', link: '/properties?status=Rent', order: 4 },
-        { title: 'Immediately Available',   link: '/properties?status=Rent', order: 5 },
+        { title: 'Owner Properties',        link: '/properties?status=Rent&postedBy=owner&city={city}', order: 1 },
+        { title: 'Verified Properties',     link: '/properties?status=Rent&verified=true&city={city}', order: 2 },
+        { title: 'Furnished Homes',         link: '/properties?status=Rent&furnishing_type=full-furnished&city={city}', order: 3 },
+        { title: 'Bachelor Friendly Homes', link: '/properties?status=Rent&bachelor_friendly=true&city={city}', order: 4 },
+        { title: 'Immediately Available',   link: '/properties?status=Rent&availability=Immediate&city={city}', order: 5 },
       ]},
       { title: 'Property Type', itemType: 'section', order: 2, children: [
         { title: 'Flat for rent in {city}',      link: '/properties?type=1&city={city}&status=Rent', order: 1 },
@@ -65,7 +65,7 @@ module.exports = [
         { title: 'Above ₹ 25,000',        link: '/properties?minPrice=25000&status=Rent', order: 4 },
       ]},
       { title: 'Explore', itemType: 'section', order: 4, children: [
-        { title: 'Localities',        link: '#', order: 1 },
+        { title: 'Localities',        link: '/localities/{city}', order: 1 },
         { title: 'Buy Vs Rent',       link: '#', order: 2 },
         { title: 'Find an Agent',     link: '/brokers', order: 3 },
         { title: 'Share Requirement', link: '#', order: 4 },

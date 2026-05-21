@@ -11,7 +11,7 @@ import {
   LocationOn, Bed, Bathtub, SquareFoot, DirectionsCar,
   CheckCircle, WhatsApp, Phone, Email, ArrowBack,
   Share, FavoriteBorder, Map as MapIcon, Visibility,
-  ExpandMore, Star, Edit, Info, Add
+  ExpandMore, Star, Edit, Info, Add, Business
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -285,7 +285,12 @@ const PropertyDetails = ({ onLoginRequired }) => {
             >
               Back to search
             </Button>
-            <Typography variant="h3" className="premium-heading" sx={{ display: 'block', mb: 1 }}>{property.title}</Typography>
+            <Typography variant="h3" className="premium-heading" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
+              {property.title}
+              {property.verified && (
+                <CheckCircle sx={{ color: '#2563eb', fontSize: '32px' }} titleAccess="Verified Property" />
+              )}
+            </Typography>
             <Box className="property-location" sx={{ fontSize: '18px' }}>
               <LocationOn sx={{ mr: 1, color: 'var(--premium-accent-secondary)' }} />
               {property.location}, {property.city}, {property.state}
@@ -344,7 +349,38 @@ const PropertyDetails = ({ onLoginRequired }) => {
                 </Grid>
               </Grid>
 
-              <Divider sx={{ my: 4, borderColor: '#e2e8f0' }} />
+              <Divider sx={{ my: 3, borderColor: '#e2e8f0' }} />
+              <Typography variant="h6" sx={{ mb: 2, color: 'textPrimary', fontWeight: 'bold' }}>Quick Features & Suitability</Typography>
+              <Grid container spacing={2} sx={{ mb: 1 }}>
+                <Grid item xs={6} sm={4}>
+                  <Typography variant="body2" color="text.secondary">Furnishing Type</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b', textTransform: 'capitalize' }}>
+                    {property.furnishing_type === 'none' ? 'Unfurnished' : property.furnishing_type}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6} sm={4}>
+                  <Typography variant="body2" color="text.secondary">Availability</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                    {property.availability}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Suitability</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {property.bachelor_friendly && (
+                      <Chip label="Bachelor Friendly" color="info" size="small" sx={{ fontWeight: 'bold', bgcolor: '#e0f2fe', color: '#0369a1', fontSize: '11px' }} />
+                    )}
+                    {property.family_friendly && (
+                      <Chip label="Family Friendly" color="success" size="small" sx={{ fontWeight: 'bold', bgcolor: '#dcfce7', color: '#15803d', fontSize: '11px' }} />
+                    )}
+                    {property.live_in_friendly && (
+                      <Chip label="Live-in Friendly" color="secondary" size="small" sx={{ fontWeight: 'bold', bgcolor: '#f3e8ff', color: '#7e22ce', fontSize: '11px' }} />
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ my: 3, borderColor: '#e2e8f0' }} />
 
               <Typography variant="h5" sx={{ mb: 2, color: '#000' }}>Description</Typography>
               <Typography variant="body1" sx={{ color: '#333', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
@@ -410,6 +446,101 @@ const PropertyDetails = ({ onLoginRequired }) => {
                   </Grid>
                 )}
               </Grid>
+              {/* Locality Section */}
+              {property.locality && (
+                <Box sx={{ mt: 4, mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <Typography variant="h5" sx={{ mb: 2, color: 'textPrimary', display: 'flex', alignItems: 'center' }}>
+                    <LocationOn sx={{ mr: 1, color: '#2563eb' }} /> Locality Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={4}>
+                      <Typography variant="body2" color="text.secondary">Name</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                        {property.locality.name}
+                      </Typography>
+                    </Grid>
+                    {property.locality.postal_code && (
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body2" color="text.secondary">Postal Code</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                          {property.locality.postal_code}
+                        </Typography>
+                      </Grid>
+                    )}
+                    {property.locality.rating && (
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body2" color="text.secondary">Locality Rating</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Star sx={{ color: '#f59e0b', fontSize: '18px', mr: 0.5 }} />
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                            {property.locality.rating} / 5.0
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    )}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* Project Section */}
+              {property.project && (
+                <Box sx={{ mt: 4, mb: 4, p: 3, bgcolor: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                  <Typography variant="h5" sx={{ mb: 2, color: 'textPrimary', display: 'flex', alignItems: 'center' }}>
+                    <Business sx={{ mr: 1, color: '#2563eb' }} /> Project Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={4}>
+                      <Typography variant="body2" color="text.secondary">Name</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                        {property.project.projectName}
+                      </Typography>
+                    </Grid>
+                    {property.project.bhk && (
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body2" color="text.secondary">BHK configurations</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                          {property.project.bhk}
+                        </Typography>
+                      </Grid>
+                    )}
+                    {property.project.budget && (
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body2" color="text.secondary">Price Range</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                          {property.project.budget}
+                        </Typography>
+                      </Grid>
+                    )}
+                    {property.project.project_size && (
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body2" color="text.secondary">Project Size</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                          {property.project.project_size}
+                        </Typography>
+                      </Grid>
+                    )}
+                    {property.project.total_units && (
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body2" color="text.secondary">Total Units</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                          {property.project.total_units} Units
+                        </Typography>
+                      </Grid>
+                    )}
+                    {property.project.ratings && (
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="body2" color="text.secondary">Project Rating</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Star sx={{ color: '#f59e0b', fontSize: '18px', mr: 0.5 }} />
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                            {property.project.ratings} / 5.0
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    )}
+                  </Grid>
+                </Box>
+              )}
 
               {/* Map Section */}
               {property.latitude && property.longitude && !isNaN(parseFloat(property.latitude)) && !isNaN(parseFloat(property.longitude)) && (

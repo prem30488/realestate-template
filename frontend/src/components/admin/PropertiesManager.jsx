@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -28,7 +28,8 @@ import {
   InputAdornment,
   Checkbox,
   FormControlLabel,
-  Divider
+  Divider,
+  Autocomplete
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -52,10 +53,10 @@ import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -65,7 +66,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
   // Force userMode to true if not admin/superadmin
   const userMode = userModeProp || (user?.role !== 'admin' && user?.role !== 'superadmin');
-  
+
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -74,14 +75,19 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
-  
+  const [localities, setLocalities] = useState([]);
+  const [projects, setProjects] = useState([]);
+
   const [formData, setFormData] = useState({
     title: '',
     typeId: '',
+    city_id: '',
     city: '',
     state: '',
     country: 'India',
     location: '',
+    locality_id: '',
+    project_id: '',
     latitude: 23.2156,
     longitude: 72.6369,
     price: '',
@@ -92,14 +98,39 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
     no_of_garage: '',
     description: '',
     featured: false,
-    images: []
+    images: [],
+    verified: false,
+    furnishing_type: 'none',
+    bachelor_friendly: false,
+    availability: 'Immediate',
+    family_friendly: false,
+    live_in_friendly: false
   });
+
+  // Derive unique cities from loaded localities
+  const uniqueCities = useMemo(() => {
+    const seen = new Set();
+    return localities.reduce((acc, loc) => {
+      const cid = loc.city?.id;
+      if (cid && !seen.has(cid)) {
+        seen.add(cid);
+        acc.push({ id: cid, name: loc.city.name });
+      }
+      return acc;
+    }, []).sort((a, b) => a.name.localeCompare(b.name));
+  }, [localities]);
+
+  // Localities filtered by the currently selected city
+  const filteredLocalities = useMemo(() => {
+    if (!formData.city_id) return localities;
+    return localities.filter(l => l.city?.id === formData.city_id);
+  }, [localities, formData.city_id]);
 
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  
+
   // Amenities state
   const [allAmenities, setAllAmenities] = useState([]);
   const [amenitiesDialogOpen, setAmenitiesDialogOpen] = useState(false);
@@ -175,8 +206,31 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
   useEffect(() => {
     axios.get(`${API_BASE_URL}/api/property-types`)
       .then(res => setPropertyTypes(res.data))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
+
+  // Fetch all localities (public, no auth)
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/api/public/localities`)
+      .then(res => setLocalities(res.data?.data || []))
+      .catch(() => { });
+  }, []);
+
+  // Fetch projects whenever locality_id changes
+  useEffect(() => {
+    if (formData.locality_id) {
+      axios.get(`${API_BASE_URL}/api/public/projects`, {
+        params: { locality_id: formData.locality_id }
+      })
+        .then(res => setProjects(res.data?.data || []))
+        .catch(() => setProjects([]));
+    } else {
+      // Load all projects when no locality selected
+      axios.get(`${API_BASE_URL}/api/public/projects`)
+        .then(res => setProjects(res.data?.data || []))
+        .catch(() => setProjects([]));
+    }
+  }, [formData.locality_id]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -221,13 +275,18 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
 
   const handleEdit = (property) => {
     setEditingId(property.id);
+    // Derive city_id from the associated locality if localities are loaded
+    const linkedLocality = localities.find(l => l.id === parseInt(property.locality_id));
     setFormData({
       title: property.title || '',
       typeId: property.typeId || '',
+      city_id: linkedLocality?.city?.id || '',
       city: property.city || '',
       state: property.state || '',
       country: property.country || 'India',
       location: property.location || '',
+      locality_id: property.locality_id || '',
+      project_id: property.project_id || '',
       latitude: Number(property.latitude) || 23.2156,
       longitude: Number(property.longitude) || 72.6369,
       price: property.price || '',
@@ -238,7 +297,13 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       no_of_garage: property.no_of_garage || '',
       description: property.description || '',
       featured: property.featured || false,
-      images: property.images || []
+      images: property.images || [],
+      verified: property.verified || false,
+      furnishing_type: property.furnishing_type || 'none',
+      bachelor_friendly: property.bachelor_friendly || false,
+      availability: property.availability || 'Immediate',
+      family_friendly: property.family_friendly || false,
+      live_in_friendly: property.live_in_friendly || false
     });
     setOpen(true);
     setActiveStep(0);
@@ -268,11 +333,14 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
     setEditingId(null);
     setNewImageUrl('');
     setFormData({
-      title: '', typeId: '', city: '', state: '', country: 'India', location: '',
+      title: '', typeId: '', city_id: '', city: '', state: '', country: 'India', location: '',
+      locality_id: '', project_id: '',
       latitude: 23.2156, longitude: 72.6369, price: '', status: 'For Sale',
       area: '', no_of_bedrooms: '', no_of_bathrooms: '', no_of_garage: '',
       description: '',
-      featured: false, images: []
+      featured: false, images: [],
+      verified: false, furnishing_type: 'none', bachelor_friendly: false,
+      availability: 'Immediate', family_friendly: false, live_in_friendly: false
     });
   };
 
@@ -280,7 +348,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      
+
       if (editingId) {
         const endpoint = userMode ? `${API_BASE_URL}/api/my-properties/${editingId}` : `${API_BASE_URL}/api/admin/properties/${editingId}`;
         await axios.put(endpoint, formData, config);
@@ -310,8 +378,8 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
   };
 
   const handleToggleAmenity = (amenityId) => {
-    setSelectedAmenityIds(prev => 
-      prev.includes(amenityId) 
+    setSelectedAmenityIds(prev =>
+      prev.includes(amenityId)
         ? prev.filter(id => id !== amenityId)
         : [...prev, amenityId]
     );
@@ -321,7 +389,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
     setSavingAmenities(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_BASE_URL}/api/admin/properties/${selectedPropertyForAmenities.id}/amenities`, 
+      await axios.post(`${API_BASE_URL}/api/admin/properties/${selectedPropertyForAmenities.id}/amenities`,
         { amenityIds: selectedAmenityIds },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -362,59 +430,173 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       case 1:
         return (
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid  xs={12}>
-              <TextField fullWidth label="Property Title" variant="outlined" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
+            <Grid xs={12}>
+              <TextField fullWidth label="Property Title" variant="outlined" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
             </Grid>
-            <Grid  xs={12}>
-              <TextField fullWidth label="Location/Area Name" variant="outlined" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} />
+
+            {/* 1. City combobox */}
+            <Grid xs={12}>
+              <Autocomplete
+                fullWidth
+                options={uniqueCities}
+                getOptionLabel={(opt) => (typeof opt === 'object' ? opt.name : '')}
+                isOptionEqualToValue={(opt, val) => opt.id === (val?.id ?? val)}
+                value={uniqueCities.find(c => c.id === formData.city_id) || null}
+                onChange={(_, newVal) => {
+                  setFormData({
+                    ...formData,
+                    city_id: newVal?.id || '',
+                    city: newVal?.name || '',
+                    locality_id: '',
+                    project_id: '',
+                  });
+                }}
+                ListboxProps={{ style: { maxHeight: 260 } }}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>{option.name}</li>
+                )}
+                renderInput={(params) => (
+                  <TextField {...params} label="City" variant="outlined" />
+                )}
+              />
             </Grid>
-            <Grid  xs={6}>
-              <TextField fullWidth label="City" variant="outlined" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
+
+            {/* 2. Locality combobox (filtered by city) */}
+            <Grid xs={12}>
+              <Autocomplete
+                fullWidth
+                options={filteredLocalities}
+                getOptionLabel={(opt) =>
+                  typeof opt === 'object'
+                    ? `${opt.name}${!formData.city_id && opt.city ? ` (${opt.city.name})` : ''}`
+                    : ''
+                }
+                isOptionEqualToValue={(opt, val) => opt.id === (val?.id ?? val)}
+                value={filteredLocalities.find(l => l.id === formData.locality_id) || null}
+                noOptionsText={formData.city_id ? 'No localities for this city' : 'No localities available'}
+                onChange={(_, newVal) => {
+                  setFormData({
+                    ...formData,
+                    locality_id: newVal?.id || '',
+                    project_id: '',
+                    city: newVal?.city?.name || formData.city,
+                  });
+                }}
+                ListboxProps={{ style: { maxHeight: 260 } }}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>
+                    {option.name}{!formData.city_id && option.city ? ` (${option.city.name})` : ''}
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField {...params} label="Locality / Area" variant="outlined" />
+                )}
+              />
             </Grid>
-            <Grid  xs={6}>
-              <TextField fullWidth label="State" variant="outlined" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} />
+
+            {/* 3. Project combobox (filtered by locality) */}
+            <Grid xs={12}>
+              <Autocomplete
+                fullWidth
+                options={projects}
+                getOptionLabel={(opt) =>
+                  typeof opt === 'object' ? opt.projectName : ''
+                }
+                isOptionEqualToValue={(opt, val) => opt.id === (val?.id ?? val)}
+                value={projects.find(p => p.id === formData.project_id) || null}
+                onChange={(_, newVal) => {
+                  setFormData({ ...formData, project_id: newVal?.id || '' });
+                }}
+                noOptionsText={formData.locality_id ? 'No projects for this locality' : 'Select a locality first'}
+                ListboxProps={{ style: { maxHeight: 260 } }}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>{option.projectName}</li>
+                )}
+                renderInput={(params) => (
+                  <TextField {...params} label="Project" variant="outlined" />
+                )}
+              />
+            </Grid>
+
+            <Grid xs={12}>
+              <TextField fullWidth label="State" variant="outlined" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} />
             </Grid>
           </Grid>
         );
       case 2:
         return (
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid  xs={6}>
-              <TextField select fullWidth label="Property Type" value={formData.typeId} onChange={(e) => setFormData({...formData, typeId: e.target.value})}>
+            <Grid xs={6}>
+              <TextField select fullWidth label="Property Type" value={formData.typeId} onChange={(e) => setFormData({ ...formData, typeId: e.target.value })}>
                 {propertyTypes.map((type) => (
                   <MenuItem key={type.id} value={type.id}>{type.name}</MenuItem>
                 ))}
               </TextField>
             </Grid>
-            <Grid  xs={6}>
-              <TextField select fullWidth label="Status" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
+            <Grid xs={6}>
+              <TextField select fullWidth label="Status" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
                 <MenuItem value="For Sale">For Sale</MenuItem>
                 <MenuItem value="For Rent">For Rent</MenuItem>
               </TextField>
             </Grid>
-            <Grid  xs={6}>
-              <TextField fullWidth label="Price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
+            <Grid xs={6}>
+              <TextField fullWidth label="Price" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
             </Grid>
-            <Grid  xs={6}>
-              <TextField fullWidth label="Area (SqFt)" type="number" value={formData.area} onChange={(e) => setFormData({...formData, area: e.target.value})} />
+            <Grid xs={6}>
+              <TextField fullWidth label="Area (SqFt)" type="number" value={formData.area} onChange={(e) => setFormData({ ...formData, area: e.target.value })} />
             </Grid>
-            <Grid  xs={4}>
-              <TextField fullWidth label="Bedrooms" type="number" value={formData.no_of_bedrooms} onChange={(e) => setFormData({...formData, no_of_bedrooms: e.target.value})} />
+            <Grid xs={4}>
+              <TextField fullWidth label="Bedrooms" type="number" value={formData.no_of_bedrooms} onChange={(e) => setFormData({ ...formData, no_of_bedrooms: e.target.value })} />
             </Grid>
-            <Grid  xs={4}>
-              <TextField fullWidth label="Bathrooms" type="number" value={formData.no_of_bathrooms} onChange={(e) => setFormData({...formData, no_of_bathrooms: e.target.value})} />
+            <Grid xs={4}>
+              <TextField fullWidth label="Bathrooms" type="number" value={formData.no_of_bathrooms} onChange={(e) => setFormData({ ...formData, no_of_bathrooms: e.target.value })} />
             </Grid>
-            <Grid  xs={4}>
-              <TextField fullWidth label="Garage" type="number" value={formData.no_of_garage} onChange={(e) => setFormData({...formData, no_of_garage: e.target.value})} />
+            <Grid xs={4}>
+              <TextField fullWidth label="Garage" type="number" value={formData.no_of_garage} onChange={(e) => setFormData({ ...formData, no_of_garage: e.target.value })} />
             </Grid>
-            <Grid  xs={12}>
-              <TextField 
-                fullWidth 
-                label="Property Description" 
-                multiline 
-                rows={4} 
-                value={formData.description} 
-                onChange={(e) => setFormData({...formData, description: e.target.value})} 
+            <Grid xs={6}>
+              <TextField select fullWidth label="Furnishing Type" value={formData.furnishing_type} onChange={(e) => setFormData({ ...formData, furnishing_type: e.target.value })}>
+                <MenuItem value="none">None / Unfurnished</MenuItem>
+                <MenuItem value="semi-furnished">Semi-Furnished</MenuItem>
+                <MenuItem value="full-furnished">Fully Furnished</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid xs={6}>
+              <TextField select fullWidth label="Availability" value={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.value })}>
+                <MenuItem value="Immediate">Immediate</MenuItem>
+                <MenuItem value="1 month">1 month</MenuItem>
+                <MenuItem value="2 months">2 months</MenuItem>
+                <MenuItem value="3 months">3 months</MenuItem>
+                <MenuItem value="6 months">6 months</MenuItem>
+                <MenuItem value="1 year">1 year</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid xs={12} sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+              <FormControlLabel
+                control={<Checkbox checked={formData.verified} onChange={(e) => setFormData({ ...formData, verified: e.target.checked })} color="primary" />}
+                label="Verified Property"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={formData.bachelor_friendly} onChange={(e) => setFormData({ ...formData, bachelor_friendly: e.target.checked })} color="primary" />}
+                label="Bachelor Friendly"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={formData.family_friendly} onChange={(e) => setFormData({ ...formData, family_friendly: e.target.checked })} color="primary" />}
+                label="Family Friendly"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={formData.live_in_friendly} onChange={(e) => setFormData({ ...formData, live_in_friendly: e.target.checked })} color="primary" />}
+                label="Live-in Friendly"
+              />
+            </Grid>
+            <Grid xs={12}>
+              <TextField
+                fullWidth
+                label="Property Description"
+                multiline
+                rows={4}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Describe the property's key features, surrounding area, etc."
               />
             </Grid>
@@ -424,16 +606,16 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
         return (
           <Box sx={{ mt: 2 }}>
             <Box sx={{ mb: 3, display: 'flex', gap: 1 }}>
-              <TextField 
-                fullWidth 
-                size="small" 
-                label="Add Image URL" 
+              <TextField
+                fullWidth
+                size="small"
+                label="Add Image URL"
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
                 placeholder="https://example.com/image.jpg"
               />
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 startIcon={<AddCircleIcon />}
                 onClick={handleAddImage}
                 sx={{ whiteSpace: 'nowrap' }}
@@ -446,11 +628,11 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
             {formData.images.length > 0 ? (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
                 {formData.images.map((img, index) => (
-                  <Paper 
+                  <Paper
                     key={index}
-                    elevation={2} 
-                    sx={{ 
-                      position: 'relative', 
+                    elevation={2}
+                    sx={{
+                      position: 'relative',
                       width: 200,
                       height: 200,
                       borderRadius: '12px',
@@ -502,7 +684,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
                 No images added yet. Add some URLs above.
               </Typography>
             )}
-            
+
             <Box sx={{ p: 2, border: '1px dashed #ccc', borderRadius: '8px', textAlign: 'center', bgcolor: '#fafafa' }}>
               <Typography variant="caption" color="textSecondary">
                 Pro Tip: You can find high quality property images on Unsplash or Pexels.
@@ -564,15 +746,15 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
             ) : properties.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((property) => (
               <TableRow key={property.id} sx={{ opacity: property.isDeleted ? 0.6 : 1 }}>
                 <TableCell sx={{ fontWeight: 600 }}>{property.title}</TableCell>
-                <TableCell>{property.location}, {property.city}</TableCell>
+                <TableCell>{property.locality?.name}, {property.city}</TableCell>
                 <TableCell>₹ {parseFloat(property.price).toLocaleString()}</TableCell>
                 <TableCell><Chip label={property.propertyType?.name || 'N/A'} size="small" /></TableCell>
                 <TableCell>
-                  <Chip 
-                    label={property.status} 
-                    color={property.status === 'For Sale' ? 'primary' : 'secondary'} 
-                    size="small" 
-                    variant="outlined" 
+                  <Chip
+                    label={property.status}
+                    color={property.status === 'For Sale' ? 'primary' : 'secondary'}
+                    size="small"
+                    variant="outlined"
                   />
                 </TableCell>
                 {!userMode && (
@@ -583,16 +765,16 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
                   </TableCell>
                 )}
                 <TableCell>
-                  <Switch 
-                    checked={!property.isDeleted} 
-                    onChange={() => handleToggleDelete(property.id, property.isDeleted)} 
+                  <Switch
+                    checked={!property.isDeleted}
+                    onChange={() => handleToggleDelete(property.id, property.isDeleted)}
                     color="success"
                   />
                 </TableCell>
                 <TableCell align="right">
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
+                  <Button
+                    size="small"
+                    variant="outlined"
                     sx={{ mr: 1, textTransform: 'none', borderRadius: '8px' }}
                     onClick={() => handleOpenAmenities(property)}
                   >
@@ -617,7 +799,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
 
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>{editingId ? 'Edit Property' : 'Add New Property'}</DialogTitle>
         <DialogContent dividers>
           <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
@@ -651,10 +833,10 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
             </Typography>
             <Grid container spacing={1}>
               {allAmenities.filter(a => a.type?.toLowerCase() === 'indoor').map((amenity) => (
-                <Grid  xs={6} key={amenity.id}>
+                <Grid xs={6} key={amenity.id}>
                   <FormControlLabel
                     control={
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedAmenityIds.includes(amenity.id)}
                         onChange={() => handleToggleAmenity(amenity.id)}
                         color="primary"
@@ -666,19 +848,19 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
               ))}
             </Grid>
           </Box>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#2575fc', mb: 1 }}>
               Outdoor Amenities
             </Typography>
             <Grid container spacing={1}>
               {allAmenities.filter(a => a.type?.toLowerCase() === 'outdoor').map((amenity) => (
-                <Grid  xs={6} key={amenity.id}>
+                <Grid xs={6} key={amenity.id}>
                   <FormControlLabel
                     control={
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedAmenityIds.includes(amenity.id)}
                         onChange={() => handleToggleAmenity(amenity.id)}
                         color="secondary"
@@ -693,9 +875,9 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={handleCloseAmenities} disabled={savingAmenities}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSaveAmenities} 
+          <Button
+            variant="contained"
+            onClick={handleSaveAmenities}
             disabled={savingAmenities}
             sx={{ bgcolor: '#6a11cb' }}
           >

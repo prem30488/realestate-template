@@ -4,11 +4,12 @@ import {
   Box, Container, Grid, Typography, Card, CardContent, CardMedia,
   Pagination, CircularProgress, TextField, MenuItem, Select,
   FormControl, InputLabel, Button, Divider, Chip, IconButton,
-  Slider, Drawer, useMediaQuery, useTheme
+  Slider, Drawer, useMediaQuery, useTheme, Checkbox, FormControlLabel
 } from '@mui/material';
 import {
   LocationOn, Bed, Bathtub, SquareFoot, FilterList,
-  Map as MapIcon, GridView, Search as SearchIcon, ArrowForward
+  Map as MapIcon, GridView, Search as SearchIcon, ArrowForward,
+  CheckCircle
 } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -53,6 +54,8 @@ const PropertiesList = () => {
   const [loading, setLoading] = useState(true);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [cities, setCities] = useState([]);
+  const [localities, setLocalities] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [showMap, setShowMap] = useState(true);
   const [mapCenter, setMapCenter] = useState([23.2156, 72.6369]);
 
@@ -63,8 +66,19 @@ const PropertiesList = () => {
     status: searchParams.get('status') || '',
     search: searchParams.get('search') || '',
     page: parseInt(searchParams.get('page')) || 1,
-    minPrice: searchParams.get('minPrice') || 0,
-    maxPrice: searchParams.get('maxPrice') || 100000000,
+    minPrice: parseFloat(searchParams.get('minPrice')) || 0,
+    maxPrice: parseFloat(searchParams.get('maxPrice')) || 100000000,
+    postedBy: searchParams.get('postedBy') || searchParams.get('postedby') || '',
+    orderBy: searchParams.get('orderBy') || '',
+    order: searchParams.get('order') || '',
+    verified: searchParams.get('verified') || '',
+    furnishing_type: searchParams.get('furnishing_type') || '',
+    bachelor_friendly: searchParams.get('bachelor_friendly') || '',
+    availability: searchParams.get('availability') || '',
+    family_friendly: searchParams.get('family_friendly') || '',
+    live_in_friendly: searchParams.get('live_in_friendly') || '',
+    locality_id: searchParams.get('locality_id') || '',
+    project_id: searchParams.get('project_id') || '',
   });
 
   useEffect(() => {
@@ -73,19 +87,40 @@ const PropertiesList = () => {
   }, []);
 
   useEffect(() => {
+    const newFilters = {
+      city: searchParams.get('city') || '',
+      type: searchParams.get('type') || '',
+      status: searchParams.get('status') || '',
+      search: searchParams.get('search') || '',
+      page: parseInt(searchParams.get('page')) || 1,
+      minPrice: parseFloat(searchParams.get('minPrice')) || 0,
+      maxPrice: parseFloat(searchParams.get('maxPrice')) || 100000000,
+      postedBy: searchParams.get('postedBy') || searchParams.get('postedby') || '',
+      orderBy: searchParams.get('orderBy') || '',
+      order: searchParams.get('order') || '',
+      verified: searchParams.get('verified') || '',
+      furnishing_type: searchParams.get('furnishing_type') || '',
+      bachelor_friendly: searchParams.get('bachelor_friendly') || '',
+      availability: searchParams.get('availability') || '',
+      family_friendly: searchParams.get('family_friendly') || '',
+      live_in_friendly: searchParams.get('live_in_friendly') || '',
+      locality_id: searchParams.get('locality_id') || '',
+      project_id: searchParams.get('project_id') || '',
+    };
+    setFilters(newFilters);
     fetchProperties();
 
     // Update map center synchronously from loaded cities if possible
-    if (filters.city && cities.length > 0) {
-      const selectedCity = cities.find(c => c.name === filters.city);
+    if (newFilters.city && cities.length > 0) {
+      const selectedCity = cities.find(c => c.name === newFilters.city);
       if (selectedCity && selectedCity.latitude && selectedCity.longitude) {
         setMapCenter([parseFloat(selectedCity.latitude), parseFloat(selectedCity.longitude)]);
       } else {
-        fetchCityCoords(filters.city);
+        fetchCityCoords(newFilters.city);
       }
-    } else if (filters.city) {
+    } else if (newFilters.city) {
       // If cities aren't loaded yet (e.g. initial URL load)
-      fetchCityCoords(filters.city);
+      fetchCityCoords(newFilters.city);
     }
   }, [searchParams, cities]); // Run when cities load so initial URL city can pan immediately
 
@@ -108,6 +143,43 @@ const PropertiesList = () => {
       console.error('Error fetching cities:', err);
     }
   };
+
+  const fetchLocalities = async (city) => {
+    if (!city) {
+      setLocalities([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/public/localities?city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      if (data.success) {
+        setLocalities(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching localities:', err);
+    }
+  };
+
+  const fetchProjects = async (city, locality_id) => {
+    let url = `${API_BASE_URL}/api/public/projects?`;
+    if (city) url += `city=${encodeURIComponent(city)}&`;
+    if (locality_id) url += `locality_id=${locality_id}`;
+    
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setProjects(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLocalities(filters.city);
+    fetchProjects(filters.city, filters.locality_id);
+  }, [filters.city, filters.locality_id]);
 
   const fetchCityCoords = async (cityName) => {
     try {
@@ -141,7 +213,10 @@ const PropertiesList = () => {
   };
 
   const handleFilterChange = (name, value) => {
-    const newFilters = { ...filters, [name]: value, page: 1 };
+    const newFilters = { ...filters, [name]: value };
+    if (name !== 'page') {
+      newFilters.page = 1;
+    }
     setFilters(newFilters);
     updateSearchParams(newFilters);
   };
@@ -167,7 +242,8 @@ const PropertiesList = () => {
           <CardMedia
             component="img"
             height="240"
-            image={property.images?.[0]?.imageUrl || 'https://picsum.photos/400/300?random=' + property.id}
+            image={property.images?.[0]?.imageUrl || '/images/1/img_1.jpg'}
+            onError={(e) => { e.target.onerror = null; e.target.src = '/images/1/img_1.jpg'; }}
             alt={property.title}
           />
           <Box className="property-badges">
@@ -185,21 +261,38 @@ const PropertiesList = () => {
                 sx={{ fontWeight: 'bold', ml: 1 }}
               />
             )}
+            {property.verified && (
+              <Chip
+                label="Verified"
+                size="small"
+                sx={{ fontWeight: 'bold', ml: 1, bgcolor: '#10b981', color: '#fff' }}
+              />
+            )}
           </Box>
         </Box>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h5" className="price-tag" sx={{ mb: 1 }}>
             ₹ {parseFloat(property.price).toLocaleString('en-IN')}
           </Typography>
-          <Typography variant="h6" className="property-title" gutterBottom noWrap>
-            <Link to={`/properties/${property.id}`}>{property.title}</Link>
+          <Typography variant="h6" className="property-title" gutterBottom noWrap sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Link to={`/properties/${property.id}`} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{property.title}</Link>
+            {property.verified && (
+              <CheckCircle sx={{ color: '#2563eb', fontSize: '18px', flexShrink: 0 }} titleAccess="Verified Property" />
+            )}
           </Typography>
           <Box className="property-location" sx={{ mb: 2 }}>
             <LocationOn fontSize="small" sx={{ mr: 0.5, color: 'var(--premium-accent)' }} />
             <Typography variant="body2" color="text.secondary" noWrap>
-              {property.location}, {property.city}
+              {property.locality?.name ? `${property.locality.name}, ` : ''}{property.city}
             </Typography>
           </Box>
+          {property.project?.projectName && (
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'var(--premium-accent)', fontWeight: 'bold' }}>
+                Project: {property.project.projectName}
+              </Typography>
+            </Box>
+          )}
           <Divider sx={{ mb: 2, borderColor: '#e2e8f0' }} />
           <Grid container spacing={1} className="property-amenities-mini">
             <Grid item xs={4}>
@@ -284,6 +377,38 @@ const PropertiesList = () => {
         </Select>
       </FormControl>
 
+      {filters.city && (
+        <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+          <InputLabel>Locality</InputLabel>
+          <Select
+            value={filters.locality_id ? filters.locality_id.toString() : ''}
+            label="Locality"
+            onChange={(e) => handleFilterChange('locality_id', e.target.value)}
+          >
+            <MenuItem value="">Any Locality</MenuItem>
+            {localities.map(loc => (
+              <MenuItem key={loc.id} value={loc.id.toString()}>{loc.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
+      {(filters.city || filters.locality_id) && (
+        <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+          <InputLabel>Project</InputLabel>
+          <Select
+            value={filters.project_id ? filters.project_id.toString() : ''}
+            label="Project"
+            onChange={(e) => handleFilterChange('project_id', e.target.value)}
+          >
+            <MenuItem value="">Any Project</MenuItem>
+            {projects.map(proj => (
+              <MenuItem key={proj.id} value={proj.id.toString()}>{proj.projectName}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
       <FormControl fullWidth size="small" sx={{ mb: 3 }}>
         <InputLabel>Property Type</InputLabel>
         <Select
@@ -314,6 +439,84 @@ const PropertiesList = () => {
         </Select>
       </FormControl>
 
+      <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+        <InputLabel>Furnishing Type</InputLabel>
+        <Select
+          value={filters.furnishing_type}
+          label="Furnishing Type"
+          onChange={(e) => handleFilterChange('furnishing_type', e.target.value)}
+        >
+          <MenuItem value="">Any Furnishing</MenuItem>
+          <MenuItem value="none">Unfurnished / None</MenuItem>
+          <MenuItem value="semi-furnished">Semi-Furnished</MenuItem>
+          <MenuItem value="full-furnished">Fully Furnished</MenuItem>
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+        <InputLabel>Availability</InputLabel>
+        <Select
+          value={filters.availability}
+          label="Availability"
+          onChange={(e) => handleFilterChange('availability', e.target.value)}
+        >
+          <MenuItem value="">Any Availability</MenuItem>
+          <MenuItem value="Immediate">Immediate</MenuItem>
+          <MenuItem value="1 month">1 Month</MenuItem>
+          <MenuItem value="2 months">2 Months</MenuItem>
+          <MenuItem value="3 months">3 Months</MenuItem>
+          <MenuItem value="6 months">6 Months</MenuItem>
+          <MenuItem value="1 year">1 Year</MenuItem>
+        </Select>
+      </FormControl>
+
+      <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filters.verified === 'true'}
+              onChange={(e) => handleFilterChange('verified', e.target.checked ? 'true' : '')}
+              color="primary"
+              size="small"
+            />
+          }
+          label={<Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>Verified Properties Only</Typography>}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filters.bachelor_friendly === 'true'}
+              onChange={(e) => handleFilterChange('bachelor_friendly', e.target.checked ? 'true' : '')}
+              color="primary"
+              size="small"
+            />
+          }
+          label={<Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>Bachelor Friendly Homes</Typography>}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filters.family_friendly === 'true'}
+              onChange={(e) => handleFilterChange('family_friendly', e.target.checked ? 'true' : '')}
+              color="primary"
+              size="small"
+            />
+          }
+          label={<Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>Family Friendly Homes</Typography>}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filters.live_in_friendly === 'true'}
+              onChange={(e) => handleFilterChange('live_in_friendly', e.target.checked ? 'true' : '')}
+              color="primary"
+              size="small"
+            />
+          }
+          label={<Typography variant="body2" sx={{ fontWeight: 500, color: '#334155' }}>Live-in Friendly Homes</Typography>}
+        />
+      </Box>
+
       <Box sx={{ px: 1 }}>
         <Typography variant="body2" gutterBottom color="#333">Price Range</Typography>
         <Slider
@@ -335,7 +538,12 @@ const PropertiesList = () => {
         fullWidth
         variant="outlined"
         onClick={() => {
-          const reset = { city: '', type: '', status: '', search: '', page: 1, minPrice: 0, maxPrice: 100000000 };
+          const reset = {
+            city: '', type: '', status: '', search: '', page: 1, minPrice: 0, maxPrice: 100000000,
+            postedBy: '', orderBy: '', order: '', verified: '', furnishing_type: '',
+            bachelor_friendly: '', availability: '', family_friendly: '', live_in_friendly: '',
+            locality_id: '', project_id: ''
+          };
           setFilters(reset);
           setSearchParams({});
         }}

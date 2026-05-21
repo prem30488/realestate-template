@@ -90,7 +90,13 @@ const MyPropertiesManager = () => {
     no_of_garage: '',
     description: '',
     featured: false,
-    images: []
+    images: [],
+    verified: false,
+    furnishing_type: 'none',
+    bachelor_friendly: false,
+    availability: 'Immediate',
+    family_friendly: false,
+    live_in_friendly: false
   });
 
   // Pagination state
@@ -232,7 +238,13 @@ const MyPropertiesManager = () => {
       no_of_garage: property.no_of_garage || '',
       description: property.description || '',
       featured: property.featured || false,
-      images: property.images || []
+      images: property.images || [],
+      verified: property.verified || false,
+      furnishing_type: property.furnishing_type || 'none',
+      bachelor_friendly: property.bachelor_friendly || false,
+      availability: property.availability || 'Immediate',
+      family_friendly: property.family_friendly || false,
+      live_in_friendly: property.live_in_friendly || false
     });
     setOpen(true);
     setActiveStep(0);
@@ -266,7 +278,9 @@ const MyPropertiesManager = () => {
       latitude: 23.2156, longitude: 72.6369, price: '', status: 'For Sale',
       area: '', no_of_bedrooms: '', no_of_bathrooms: '', no_of_garage: '',
       description: '',
-      featured: false, images: []
+      featured: false, images: [],
+      verified: false, furnishing_type: 'none', bachelor_friendly: false,
+      availability: 'Immediate', family_friendly: false, live_in_friendly: false
     });
   };
 
@@ -400,6 +414,41 @@ const MyPropertiesManager = () => {
             </Grid>
             <Grid xs={4}>
               <TextField fullWidth label="Garage" type="number" value={formData.no_of_garage} onChange={(e) => setFormData({...formData, no_of_garage: e.target.value})} />
+            </Grid>
+            <Grid xs={6}>
+              <TextField select fullWidth label="Furnishing Type" value={formData.furnishing_type} onChange={(e) => setFormData({...formData, furnishing_type: e.target.value})}>
+                <MenuItem value="none">None / Unfurnished</MenuItem>
+                <MenuItem value="semi-furnished">Semi-Furnished</MenuItem>
+                <MenuItem value="full-furnished">Fully Furnished</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid xs={6}>
+              <TextField select fullWidth label="Availability" value={formData.availability} onChange={(e) => setFormData({...formData, availability: e.target.value})}>
+                <MenuItem value="Immediate">Immediate</MenuItem>
+                <MenuItem value="1 month">1 month</MenuItem>
+                <MenuItem value="2 months">2 months</MenuItem>
+                <MenuItem value="3 months">3 months</MenuItem>
+                <MenuItem value="6 months">6 months</MenuItem>
+                <MenuItem value="1 year">1 year</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid xs={12} sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+              <FormControlLabel
+                control={<Checkbox checked={formData.verified} onChange={(e) => setFormData({...formData, verified: e.target.checked})} color="primary" />}
+                label="Verified Property"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={formData.bachelor_friendly} onChange={(e) => setFormData({...formData, bachelor_friendly: e.target.checked})} color="primary" />}
+                label="Bachelor Friendly"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={formData.family_friendly} onChange={(e) => setFormData({...formData, family_friendly: e.target.checked})} color="primary" />}
+                label="Family Friendly"
+              />
+              <FormControlLabel
+                control={<Checkbox checked={formData.live_in_friendly} onChange={(e) => setFormData({...formData, live_in_friendly: e.target.checked})} color="primary" />}
+                label="Live-in Friendly"
+              />
             </Grid>
             <Grid xs={12}>
               <TextField 
