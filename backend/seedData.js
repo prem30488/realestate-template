@@ -3,7 +3,7 @@ const { Article, HeroSlider, Broker, Service, FunFact, InstaReel, Testimonial, B
 async function seedData() {
   try {
     await sequelize.sync({ alter: true });
-    
+
     // Truncate tables to prevent duplicates
     await Article.destroy({ where: {}, truncate: true, cascade: true });
     await HeroSlider.destroy({ where: {}, truncate: true, cascade: true });
@@ -15,7 +15,7 @@ async function seedData() {
     await Brand.destroy({ where: {}, truncate: true, cascade: true });
     await TeamMember.destroy({ where: {}, truncate: true, cascade: true });
     await Amenity.destroy({ where: {}, truncate: true, cascade: true });
-    
+
     console.log('Tables truncated and synced.');
 
     // Seed Articles
@@ -227,7 +227,10 @@ async function seedData() {
       { title: 'Intercom', type: 'Indoor' },
       { title: 'Gas Pipeline', type: 'Indoor' },
       { title: 'Water Purifier', type: 'Indoor' },
-      
+      { title: 'Balcony', type: 'Indoor' },
+      { title: 'Top floor', type: 'Indoor' },
+      { title: 'Central air conditioning', type: 'Indoor' },
+
       // Outdoor Amenities
       { title: 'Swimming Pool', type: 'Outdoor' },
       { title: 'Garden', type: 'Outdoor' },

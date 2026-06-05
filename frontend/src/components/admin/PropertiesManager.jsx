@@ -104,7 +104,8 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
     bachelor_friendly: false,
     availability: 'Immediate',
     family_friendly: false,
-    live_in_friendly: false
+    live_in_friendly: false,
+    floor: 0
   });
 
   // Derive unique cities from loaded localities
@@ -152,13 +153,8 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
         },
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (userMode) {
-        setProperties(response.data);
-        setTotalCount(response.data.length);
-      } else {
-        setProperties(response.data.properties);
-        setTotalCount(response.data.totalCount);
-      }
+      setProperties(response.data.properties);
+      setTotalCount(response.data.totalCount);
     } catch (error) {
       toast.error('Error fetching properties');
     } finally {
@@ -303,7 +299,8 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       bachelor_friendly: property.bachelor_friendly || false,
       availability: property.availability || 'Immediate',
       family_friendly: property.family_friendly || false,
-      live_in_friendly: property.live_in_friendly || false
+      live_in_friendly: property.live_in_friendly || false,
+      floor: property.floor || 0
     });
     setOpen(true);
     setActiveStep(0);
@@ -340,7 +337,8 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
       description: '',
       featured: false, images: [],
       verified: false, furnishing_type: 'none', bachelor_friendly: false,
-      availability: 'Immediate', family_friendly: false, live_in_friendly: false
+      availability: 'Immediate', family_friendly: false, live_in_friendly: false,
+      floor: 0
     });
   };
 
@@ -554,6 +552,9 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
             <Grid xs={4}>
               <TextField fullWidth label="Garage" type="number" value={formData.no_of_garage} onChange={(e) => setFormData({ ...formData, no_of_garage: e.target.value })} />
             </Grid>
+            <Grid xs={4}>
+              <TextField fullWidth label="Floor" type="number" value={formData.floor} onChange={(e) => setFormData({ ...formData, floor: e.target.value })} />
+            </Grid>
             <Grid xs={6}>
               <TextField select fullWidth label="Furnishing Type" value={formData.furnishing_type} onChange={(e) => setFormData({ ...formData, furnishing_type: e.target.value })}>
                 <MenuItem value="none">None / Unfurnished</MenuItem>
@@ -712,7 +713,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
           variant="outlined"
           placeholder="Search by title, location, city or status..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
           slotProps={{
             input: {
@@ -743,7 +744,7 @@ const PropertiesManager = ({ userMode: userModeProp }) => {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={7} align="center"><CircularProgress size={24} sx={{ my: 2 }} /></TableCell></TableRow>
-            ) : properties.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((property) => (
+            ) : properties.map((property) => (
               <TableRow key={property.id} sx={{ opacity: property.isDeleted ? 0.6 : 1 }}>
                 <TableCell sx={{ fontWeight: 600 }}>{property.title}</TableCell>
                 <TableCell>{property.locality?.name}, {property.city}</TableCell>

@@ -3,11 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Builder, User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Locality, Project, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, TeamMember, sequelize } = require('./models');
+const { Builder, User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Locality, Project, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, TeamMember, sequelize, Sequelize } = require('./models');
 const { Op } = require('sequelize');
 const initDb = require('./initDb');
 const localitiesRoutes = require('./routes/localitiesRoutes');
 const projectsRoutes = require('./routes/projectsRoutes');
+const { predictValuation, trainModel } = require('./ml/valuation');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -414,7 +416,14 @@ const authorizeManager = (privilege) => {
 // Public Broker Routes
 app.get('/api/brokers', async (req, res) => {
   try {
-    const brokers = await Broker.findAll({ where: { isDeleted: false } });
+    const { city, limit } = req.query;
+    const where = { isDeleted: false };
+    if (city) where.city = { [Op.iLike]: `%${city}%` };
+    const brokers = await Broker.findAll({
+      where,
+      order: [['name', 'ASC']],
+      ...(limit ? { limit: parseInt(limit) } : {})
+    });
     res.json(brokers);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching brokers' });
@@ -430,6 +439,28 @@ app.get('/api/property-types', async (req, res) => {
     res.status(500).json({ error: 'Error fetching property types' });
   }
 });
+
+// Get amenities
+app.get('/api/amenities', async (req, res) => {
+  try {
+    const amenities = await Amenity.findAll({ order: [['title', 'ASC']] });
+    res.json(amenities);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching amenities' });
+  }
+});
+
+// Property Valuation Prediction
+app.post('/api/predict-valuation', async (req, res) => {
+  try {
+    const prediction = await predictValuation(req.body);
+    res.json({ price: prediction });
+  } catch (error) {
+    console.error('Valuation error:', error);
+    res.status(500).json({ error: 'Error calculating property valuation' });
+  }
+});
+
 
 // Get cities
 app.get('/api/cities', async (req, res) => {
@@ -457,20 +488,59 @@ app.get('/api/cities/:name', async (req, res) => {
   }
 });
 
+// Get jantri rates for a city
+app.get('/api/jantri-rates', async (req, res) => {
+  const { city } = req.query;
+  try {
+    let query = `
+      SELECT 
+        area, 
+        MAX(district) as district, 
+        MAX(zone_code) as zone_code,
+        ROUND(AVG(residential_rate), 0) as residential_rate,
+        ROUND(AVG(commercial_rate), 0) as commercial_rate,
+        ROUND(AVG(office_rate), 0) as office_rate,
+        ROUND(AVG(industrial_rate), 0) as industrial_rate,
+        ROUND(AVG(land_rate), 0) as land_rate
+      FROM jantri_rates
+    `;
+    let replacements = {};
+
+    if (city) {
+      query += ' WHERE TRIM(UPPER(district)) = :city';
+      replacements.city = city.toUpperCase().trim();
+    }
+
+    query += ' GROUP BY area ORDER BY area ASC';
+
+    const rates = await sequelize.query(query, {
+      replacements,
+      type: Sequelize.QueryTypes.SELECT
+    });
+
+    res.json(rates);
+  } catch (error) {
+    console.error('CRITICAL: Error fetching jantri rates:', error.message);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: 'Error fetching jantri rates', details: error.message });
+  }
+});
+
 // --- USER PROPERTY MANAGEMENT ---
 
 // Get current user's properties
 app.get('/api/my-properties', authenticateToken, async (req, res) => {
-  const { search } = req.query;
+  const { search, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
 
   try {
-    // Basic filter: must be the owner and not deleted
     let where = {
-      posted_by: req.user.id,
-      isDeleted: false
+      posted_by: req.user.id
+      // isDeleted check can be removed if we want to show deleted items in manager as well, 
+      // but let's stick to what was there or what's expected.
+      // Actually Admin shows deleted too (switch toggle), so my-properties should too.
     };
 
-    // If there's a search term, add it as an AND condition
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
@@ -479,21 +549,38 @@ app.get('/api/my-properties', authenticateToken, async (req, res) => {
       ];
     }
 
-    const properties = await Property.findAll({
+    const { count, rows } = await Property.findAndCountAll({
+      distinct: true,
+      subQuery: false,
       where,
       include: [
-        { model: PropertyImage, as: 'images' },
         { model: PropertyType, as: 'propertyType' },
         { model: Locality, as: 'locality', include: [{ model: City, as: 'city', attributes: ['id', 'name'] }] },
         { model: User, as: 'owner', attributes: ['username', 'id'] }
       ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
       order: [['createdAt', 'DESC']]
     });
 
-    // Final security check: double verify in memory if needed (though Sequelize should handle it)
-    const filteredProperties = properties.filter(p => p.posted_by === req.user.id);
+    // Fetch images separately to avoid multiplying rows during limit/count
+    const propertyIds = rows.map(p => p.id);
+    const images = await PropertyImage.findAll({
+      where: { propertyId: propertyIds }
+    });
 
-    res.json(filteredProperties);
+    const propertiesWithImages = rows.map(p => {
+      const property = p.toJSON();
+      property.images = images.filter(img => img.propertyId === p.id);
+      return property;
+    });
+
+    res.json({
+      properties: propertiesWithImages,
+      totalCount: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page)
+    });
   } catch (error) {
     console.error('Error fetching my properties:', error);
     res.status(500).json({ error: 'Error fetching your properties' });
@@ -829,7 +916,6 @@ app.get('/api/admin/properties', authenticateToken, authorizeManager('Properties
       subQuery: false,
       where,
       include: [
-        { model: PropertyImage, as: 'images' },
         { model: PropertyType, as: 'propertyType' },
         { model: Locality, as: 'locality', include: [{ model: City, as: 'city', attributes: ['id', 'name'] }] },
         { model: User, as: 'owner', attributes: ['username', 'id'] }
@@ -839,8 +925,20 @@ app.get('/api/admin/properties', authenticateToken, authorizeManager('Properties
       order: [['createdAt', 'DESC']]
     });
 
+    // Fetch images separately to avoid multiplying rows during limit/count
+    const propertyIds = rows.map(p => p.id);
+    const images = await PropertyImage.findAll({
+      where: { propertyId: propertyIds }
+    });
+
+    const propertiesWithImages = rows.map(p => {
+      const property = p.toJSON();
+      property.images = images.filter(img => img.propertyId === p.id);
+      return property;
+    });
+
     res.json({
-      properties: rows,
+      properties: propertiesWithImages,
       totalCount: count,
       totalPages: Math.ceil(count / limit),
       currentPage: parseInt(page)
@@ -2667,6 +2765,8 @@ initDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      // Train valuation model on startup
+      trainModel();
     });
   })
   .catch(err => {

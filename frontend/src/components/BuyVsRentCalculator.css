@@ -1,0 +1,58 @@
+.calculator-container {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #1e293b 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.verdict-badge {
+    padding: 24px;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.buy-active {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.rent-active {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.highlight-color {
+    color: #3b82f6;
+}
+
+.buy-active .highlight-color {
+    color: #10b981;
+}
+
+.rent-active .highlight-color {
+    color: #f59e0b;
+}
+
+.calculator-container .MuiTextField-root .MuiOutlinedInput-root {
+    border-radius: 12px;
+    background: white;
+}
+
+.calculator-container .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #3b82f6;
+}
+
+.calculator-container .MuiTextField-root .Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-width: 2px;
+}
+
+@media (max-width: 900px) {
+    .calculator-container {
+        padding-top: 80px;
+    }
+}

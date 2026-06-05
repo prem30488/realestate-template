@@ -42,8 +42,15 @@ import Notifications from './components/Notifications'
 import AdminSettings from './components/admin/AdminSettings'
 import ThemeSettings from './components/admin/ThemeSettings'
 import ViewedProperties from './components/ViewedProperties'
-import BuildersList from './components/BuildersList'
-import LocalitiesList from './components/LocalitiesList'
+import BuildersList from './components/BuildersList';
+import LocalitiesList from './components/LocalitiesList';
+import ProjectsList from './components/ProjectsList';
+import BrokersList from './components/BrokersList';
+import ShareRequirement from './components/ShareRequirement';
+import BuyVsRentCalculator from './components/BuyVsRentCalculator';
+import RatesAndTrends from './components/RatesAndTrends';
+import PropertyValuation from './components/PropertyValuation';
+
 
 function App() {
   const navigate = useNavigate();
@@ -161,6 +168,24 @@ function App() {
           </>
         } />
 
+        <Route path="/projects/:city" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <ProjectsList />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/brokers" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <BrokersList />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
         <Route path="/about" element={
           <>
             <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
@@ -178,6 +203,43 @@ function App() {
             <WhatsAppButton />
           </>
         } />
+
+        <Route path="/share-requirement" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <ShareRequirement />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/buy-vs-rent" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <BuyVsRentCalculator />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/rates-and-trends" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <RatesAndTrends />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/property-valuation" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <PropertyValuation />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
 
         {/* User Specific Routes */}
         <Route path="/dashboard" element={

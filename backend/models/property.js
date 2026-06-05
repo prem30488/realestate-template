@@ -151,6 +151,10 @@ module.exports = (sequelize, DataTypes) => {
     live_in_friendly: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+    floor: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
     }
   }, {
     sequelize,

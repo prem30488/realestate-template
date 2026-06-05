@@ -23,9 +23,9 @@
 
 /* Clear Bootstrap intermediaries so top:100% on dropdowns anchors
    to .header-bottom (fixed 100px), not content-height parents */
-.header-bottom > .container,
-.header-bottom .container > .row,
-.header-bottom .container > .row > [class*='col'] {
+.header-bottom>.container,
+.header-bottom .container>.row,
+.header-bottom .container>.row>[class*='col'] {
     position: static !important;
 }
 
@@ -54,7 +54,7 @@
     height: 100%;
 }
 
-.main-menu > ul {
+.main-menu>ul {
     position: static;
     display: flex;
     align-items: center;
@@ -74,7 +74,7 @@
 }
 
 /* Nav link base */
-.main-menu ul li > a {
+.main-menu ul li>a {
     font-size: 15px;
     font-weight: 500;
     color: #333;
@@ -90,7 +90,7 @@
 }
 
 /* Orange underline indicator on hover */
-.main-menu ul li > a::after {
+.main-menu ul li>a::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -104,22 +104,22 @@
     transition: transform 0.25s ease;
 }
 
-.main-menu ul li:hover > a {
+.main-menu ul li:hover>a {
     color: var(--color-primary);
 }
 
-.main-menu ul li:hover > a::after {
+.main-menu ul li:hover>a::after {
     transform: scaleX(1);
 }
 
 /* Chevron icon */
-.main-menu ul li > a i {
+.main-menu ul li>a i {
     font-size: 12px;
     margin-left: 2px;
     transition: transform 0.3s ease;
 }
 
-.main-menu ul li:hover > a i {
+.main-menu ul li:hover>a i {
     transform: rotate(180deg);
 }
 
@@ -129,7 +129,8 @@
    -------------------------------------------------------------------------- */
 .mega-menu {
     position: absolute;
-    top: 100%;          /* = 100px from .header-bottom top = flush with header bottom */
+    top: 100%;
+    /* = 100px from .header-bottom top = flush with header bottom */
     left: 50%;
     transform: translateX(-50%);
     width: min(1440px, 98vw);
@@ -157,7 +158,7 @@
     height: 14px;
 }
 
-.main-menu ul li:hover > .mega-menu,
+.main-menu ul li:hover>.mega-menu,
 .main-menu ul li:hover .mega-menu {
     opacity: 1;
     visibility: visible;
@@ -171,8 +172,14 @@
     border-right: 1px solid #f2f2f2;
 }
 
-.mega-menu-column:first-child { padding-left: 12px; }
-.mega-menu-column:last-child  { border-right: none; padding-right: 12px; }
+.mega-menu-column:first-child {
+    padding-left: 12px;
+}
+
+.mega-menu-column:last-child {
+    border-right: none;
+    padding-right: 12px;
+}
 
 .mega-menu-column.column-wide {
     flex: 1.5;
@@ -190,7 +197,7 @@
     letter-spacing: 1px;
 }
 
-.mega-menu-column > ul {
+.mega-menu-column>ul {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -198,13 +205,13 @@
     position: static !important;
 }
 
-.mega-menu-column > ul.grid-2-cols {
+.mega-menu-column>ul.grid-2-cols {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr);
     gap: 0 20px;
 }
 
-.mega-menu-column > ul > li {
+.mega-menu-column>ul>li {
     padding: 0 !important;
     margin-bottom: 10px !important;
     display: block !important;
@@ -224,7 +231,8 @@
 }
 
 .mega-menu-column ul li a::after {
-    display: none !important;    /* suppress the underline indicator inside mega menu */
+    display: none !important;
+    /* suppress the underline indicator inside mega menu */
 }
 
 .mega-menu-column ul li a:hover {
@@ -262,8 +270,10 @@
    -------------------------------------------------------------------------- */
 .sub-menu {
     position: fixed;
-    top: 100px;         /* exact header height = flush below header */
-    left: auto;         /* browser places horizontally under the trigger */
+    top: 100px;
+    /* exact header height = flush below header */
+    left: auto;
+    /* browser places horizontally under the trigger */
     min-width: 240px;
     background: #ffffff;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
@@ -288,7 +298,7 @@
     height: 14px;
 }
 
-.main-menu ul li:hover > .sub-menu,
+.main-menu ul li:hover>.sub-menu,
 .main-menu ul li:hover .sub-menu {
     opacity: 1;
     visibility: visible;
@@ -296,7 +306,7 @@
 }
 
 /* Sub-menu items */
-.sub-menu > li {
+.sub-menu>li {
     padding: 0 !important;
     margin: 0 !important;
     display: block !important;
@@ -304,7 +314,7 @@
     height: auto !important;
 }
 
-.sub-menu > li > a {
+.sub-menu>li>a {
     padding: 10px 22px !important;
     font-size: 14px !important;
     color: #555 !important;
@@ -315,11 +325,12 @@
     height: auto !important;
 }
 
-.sub-menu > li > a::after {
-    display: none !important;    /* suppress nav underline inside sub-menu */
+.sub-menu>li>a::after {
+    display: none !important;
+    /* suppress nav underline inside sub-menu */
 }
 
-.sub-menu > li > a:hover {
+.sub-menu>li>a:hover {
     background: #fff7f3 !important;
     color: var(--color-primary) !important;
     padding-left: 28px !important;
@@ -605,7 +616,7 @@
         background: rgba(10, 14, 28, 0.97) !important;
     }
 
-    .main-menu ul li > a {
+    .main-menu ul li>a {
         color: #ddd;
     }
 
@@ -627,12 +638,12 @@
     }
 
     .mega-menu-column ul li a,
-    .sub-menu > li > a {
+    .sub-menu>li>a {
         color: #bbb !important;
     }
 
     .mega-menu-column ul li a:hover,
-    .sub-menu > li > a:hover {
+    .sub-menu>li>a:hover {
         background: rgba(255, 94, 20, 0.1) !important;
         color: var(--color-primary) !important;
     }
@@ -675,7 +686,8 @@
    11. ADMIN MENU STYLES
    -------------------------------------------------------------------------- */
 .admin-link {
-    color: #6a11cb !important; /* Deep Purple for Admin */
+    color: #6a11cb !important;
+    /* Deep Purple for Admin */
     font-weight: 700 !important;
 }
 
@@ -740,20 +752,20 @@
         background: #151025;
         border-top-color: #8e44ad;
     }
-    
+
     .mega-menu-admin .mega-menu-column h6 {
         color: #a29bfe;
         border-bottom-color: rgba(162, 155, 254, 0.1);
     }
-    
+
     .mega-menu-admin ul li a {
         color: #d1d1d1 !important;
     }
-    
+
     .mega-menu-admin ul li a i {
         color: #a29bfe;
     }
-    
+
     .mega-menu-admin ul li a:hover {
         background: rgba(162, 155, 254, 0.1) !important;
         color: #a29bfe !important;

@@ -2,20 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../constants';
-import { 
-  Container, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Typography, 
-  Box, 
-  TextField, 
-  InputAdornment, 
+import {
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  TextField,
+  InputAdornment,
   CircularProgress,
   Button
 } from '@mui/material';
-import { 
-  LocationOn as LocationIcon, 
+import {
+  LocationOn as LocationIcon,
   Search as SearchIcon,
   Map as MapIcon,
   Home as HomeIcon,
@@ -52,8 +52,8 @@ const LocalitiesList = () => {
   }, [city]);
 
   // Filter localities by search term
-  const filteredLocalities = localities.filter(loc => 
-    loc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredLocalities = localities.filter(loc =>
+    loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (loc.postal_code && loc.postal_code.includes(searchTerm))
   );
 
@@ -64,7 +64,7 @@ const LocalitiesList = () => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
     const extraFullStar = rating % 1 >= 0.75 ? 1 : 0;
-    
+
     const displayFullStars = fullStars + extraFullStar;
     const displayHalfStars = hasHalfStar ? 1 : 0;
     const displayEmptyStars = 5 - displayFullStars - displayHalfStars;
@@ -94,27 +94,27 @@ const LocalitiesList = () => {
   return (
     <Box sx={{ pt: 14, pb: 8, bgcolor: '#f8fafc', minHeight: '85vh' }}>
       {/* Decorative gradient banner */}
-      <Box 
-        sx={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          height: '280px', 
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '280px',
           background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c084fc 100%)',
           zIndex: 0,
           opacity: 0.9
-        }} 
+        }}
       />
 
       <Container sx={{ position: 'relative', zIndex: 1 }}>
         {/* Breadcrumbs / Header Info */}
         <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <Typography 
-            variant="h2" 
-            sx={{ 
-              fontWeight: 900, 
-              color: 'white', 
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 900,
+              color: 'white',
               textShadow: '0 4px 12px rgba(0,0,0,0.1)',
               letterSpacing: '-1px',
               mb: 1
@@ -122,10 +122,10 @@ const LocalitiesList = () => {
           >
             Explore Localities in {city}
           </Typography>
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              color: 'rgba(255,255,255,0.9)', 
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'rgba(255,255,255,0.9)',
               fontWeight: 400,
               maxWidth: '600px',
               mb: 4
@@ -135,11 +135,11 @@ const LocalitiesList = () => {
           </Typography>
 
           {/* Search bar card */}
-          <Card 
-            sx={{ 
-              width: '100%', 
-              maxWidth: '600px', 
-              borderRadius: '24px', 
+          <Card
+            sx={{
+              width: '100%',
+              maxWidth: '600px',
+              borderRadius: '24px',
               boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
               p: 1.5,
               border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -176,13 +176,13 @@ const LocalitiesList = () => {
             <CircularProgress size={60} sx={{ color: '#7c3aed' }} />
           </Box>
         ) : filteredLocalities.length === 0 ? (
-          <Box 
-            sx={{ 
-              textAlign: 'center', 
-              mt: 6, 
-              p: 6, 
-              bgcolor: 'white', 
-              borderRadius: '24px', 
+          <Box
+            sx={{
+              textAlign: 'center',
+              mt: 6,
+              p: 6,
+              bgcolor: 'white',
+              borderRadius: '24px',
               boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
               border: '1px solid #e2e8f0'
             }}
@@ -194,11 +194,11 @@ const LocalitiesList = () => {
             <Typography variant="body1" sx={{ color: '#64748b', mb: 3 }}>
               We couldn't find any localities matching "{searchTerm}" in {city}.
             </Typography>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={() => setSearchTerm('')}
-              sx={{ 
-                bgcolor: '#7c3aed', 
+              sx={{
+                bgcolor: '#7c3aed',
                 borderRadius: '12px',
                 px: 4,
                 py: 1.5,
@@ -223,10 +223,10 @@ const LocalitiesList = () => {
             <Grid container spacing={3.5}>
               {filteredLocalities.map((locality) => (
                 <Grid item xs={12} sm={6} md={4} key={locality.id}>
-                  <Card 
-                    sx={{ 
-                      height: '100%', 
-                      display: 'flex', 
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
                       flexDirection: 'column',
                       borderRadius: '24px',
                       boxShadow: '0 10px 25px rgba(0,0,0,0.02)',
@@ -256,12 +256,12 @@ const LocalitiesList = () => {
                     <CardContent sx={{ p: 4, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                       {/* Locality Header */}
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3.5 }}>
-                        <Box 
-                          sx={{ 
-                            width: '54px', 
-                            height: '54px', 
-                            borderRadius: '16px', 
-                            bgcolor: 'rgba(124, 58, 237, 0.1)', 
+                        <Box
+                          sx={{
+                            width: '54px',
+                            height: '54px',
+                            borderRadius: '16px',
+                            bgcolor: 'rgba(124, 58, 237, 0.1)',
                             color: '#7c3aed',
                             display: 'flex',
                             alignItems: 'center',
@@ -286,11 +286,11 @@ const LocalitiesList = () => {
 
                       {/* Technical Info (Lat/Lng Grid) */}
                       {(locality.latitude || locality.longitude) && (
-                        <Box 
-                          sx={{ 
-                            p: 2, 
-                            bgcolor: '#f8fafc', 
-                            borderRadius: '16px', 
+                        <Box
+                          sx={{
+                            p: 2,
+                            bgcolor: '#f8fafc',
+                            borderRadius: '16px',
                             border: '1px dashed #e2e8f0',
                             mb: 4,
                             display: 'flex',
@@ -321,11 +321,11 @@ const LocalitiesList = () => {
 
                       {/* CTA Action - Find Properties in this locality */}
                       <Box sx={{ mt: 'auto' }}>
-                        <Link 
-                          to={`/properties?city=${city}&location=${encodeURIComponent(locality.name)}`} 
+                        <Link
+                          to={`/properties?city=${city}&locality_id=${locality.id}`}
                           style={{ textDecoration: 'none' }}
                         >
-                          <Button 
+                          <Button
                             fullWidth
                             variant="outlined"
                             startIcon={<HomeIcon />}

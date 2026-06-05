@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/scratch/remove_propworth.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1779529825105,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1779529825105,
+            "name": "Commit-0",
+            "content": "require('dotenv').config();\r\nconst { MenuItem, sequelize } = require('../models');\r\n\r\nasync function removePropworth() {\r\n  try {\r\n    console.log('Searching for Propworth menu items...');\r\n    \r\n    const propworthItems = await MenuItem.findAll({\r\n      where: { title: 'Propworth' }\r\n    });\r\n\r\n    console.log(`Found ${propworthItems.length} Propworth item(s)`);\r\n\r\n    if (propworthItems.length > 0) {\r\n      for (const item of propworthItems) {\r\n        await item.destroy();\r\n        console.log(`✓ Deleted: ${item.title} (ID: ${item.id})`);\r\n      }\r\n      console.log('\\n✓ All Propworth items removed successfully!');\r\n    } else {\r\n      console.log('No Propworth items found in database');\r\n    }\r\n\r\n    process.exit(0);\r\n  } catch (error) {\r\n    console.error('Error removing Propworth:', error);\r\n    process.exit(1);\r\n  }\r\n}\r\n\r\nremovePropworth();\r\n"
+        }
+    ]
+}

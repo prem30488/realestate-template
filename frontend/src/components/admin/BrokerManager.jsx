@@ -22,7 +22,11 @@ import {
   Chip,
   InputAdornment,
   Avatar,
-  TablePagination
+  TablePagination,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -49,12 +53,13 @@ const BrokerManager = () => {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
+  const [cities, setCities] = useState([]);
+
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -63,18 +68,25 @@ const BrokerManager = () => {
     designation: '',
     experience: '',
     specialization: '',
+    city: '',
     facebook: '',
     twitter: '',
     linkedin: '',
     instagram: ''
   });
 
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/api/cities`)
+      .then(res => setCities(res.data))
+      .catch(() => { });
+  }, []);
+
   const fetchBrokers = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_BASE_URL}/api/admin/brokers`, {
-        params: { 
+        params: {
           search: searchTerm,
           page: page + 1,
           limit: rowsPerPage
@@ -111,7 +123,7 @@ const BrokerManager = () => {
   const handleToggleDelete = async (id, currentStatus) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`${API_BASE_URL}/api/admin/brokers/${id}/toggle-delete`, 
+      await axios.patch(`${API_BASE_URL}/api/admin/brokers/${id}/toggle-delete`,
         { isDeleted: !currentStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -148,6 +160,7 @@ const BrokerManager = () => {
         designation: broker.designation || '',
         experience: broker.experience || '',
         specialization: broker.specialization || '',
+        city: broker.city || '',
         facebook: broker.facebook || '',
         twitter: broker.twitter || '',
         linkedin: broker.linkedin || '',
@@ -157,7 +170,7 @@ const BrokerManager = () => {
       setEditingId(null);
       setFormData({
         name: '', email: '', phoneNumber: '', photo: '', designation: '',
-        experience: '', specialization: '', facebook: '', twitter: '',
+        experience: '', specialization: '', city: '', facebook: '', twitter: '',
         linkedin: '', instagram: ''
       });
     }
@@ -200,16 +213,16 @@ const BrokerManager = () => {
           <Typography variant="h4" sx={{ fontWeight: 800, color: '#1a1a2e' }}>Broker Manager</Typography>
           <Typography variant="body2" color="textSecondary">Manage company brokers and agents</Typography>
         </Box>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          sx={{ 
-            bgcolor: '#6a11cb', 
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          sx={{
+            bgcolor: '#6a11cb',
             borderRadius: '10px',
             px: 3,
             py: 1,
-            '&:hover': { bgcolor: '#2575fc' } 
-          }} 
+            '&:hover': { bgcolor: '#2575fc' }
+          }}
           onClick={() => handleOpen()}
         >
           Add New Broker
@@ -242,6 +255,7 @@ const BrokerManager = () => {
             <TableRow>
               <TableCell sx={{ fontWeight: 700 }}>Broker</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Contact</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>City</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Designation</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Specialization</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
@@ -250,15 +264,15 @@ const BrokerManager = () => {
           </TableHead>
           <TableBody>
             {loading && brokers.length === 0 ? (
-              <TableRow><TableCell colSpan={6} align="center"><CircularProgress size={30} sx={{ my: 4 }} /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center"><CircularProgress size={30} sx={{ my: 4 }} /></TableCell></TableRow>
             ) : brokers.length === 0 ? (
-              <TableRow><TableCell colSpan={6} align="center"><Typography sx={{ py: 4 }}>No brokers found</Typography></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center"><Typography sx={{ py: 4 }}>No brokers found</Typography></TableCell></TableRow>
             ) : brokers.map((broker) => (
               <TableRow key={broker.id} hover sx={{ transition: '0.2s', opacity: broker.isDeleted ? 0.6 : 1 }}>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar 
-                      src={broker.photo} 
+                    <Avatar
+                      src={broker.photo}
                       alt={broker.name}
                       sx={{ width: 45, height: 45, border: '2px solid #eee' }}
                     >
@@ -283,6 +297,9 @@ const BrokerManager = () => {
                   </Box>
                 </TableCell>
                 <TableCell>
+                  <Chip label={broker.city || '—'} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
+                </TableCell>
+                <TableCell>
                   <Chip label={broker.designation || 'Broker'} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
                 </TableCell>
                 <TableCell>
@@ -290,9 +307,9 @@ const BrokerManager = () => {
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Switch 
-                      checked={!broker.isDeleted} 
-                      onChange={() => handleToggleDelete(broker.id, broker.isDeleted)} 
+                    <Switch
+                      checked={!broker.isDeleted}
+                      onChange={() => handleToggleDelete(broker.id, broker.isDeleted)}
                       color="success"
                       size="small"
                     />
@@ -332,30 +349,30 @@ const BrokerManager = () => {
         <DialogContent sx={{ px: 3 }}>
           <Grid container spacing={3} sx={{ mt: 0.5 }}>
             {/* Basic Info */}
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Full Name" 
-                value={formData.name} 
-                onChange={(e) => setFormData({...formData, name: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Designation" 
-                value={formData.designation} 
-                onChange={(e) => setFormData({...formData, designation: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Designation"
+                value={formData.designation}
+                onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
                 placeholder="e.g. Senior Real Estate Agent"
               />
             </Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Email Address" 
-                value={formData.email} 
-                onChange={(e) => setFormData({...formData, email: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Email Address"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start"><EmailIcon fontSize="small" /></InputAdornment>
@@ -363,12 +380,12 @@ const BrokerManager = () => {
                 }}
               />
             </Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Phone Number" 
-                value={formData.phoneNumber} 
-                onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Phone Number"
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start"><PhoneIcon fontSize="small" /></InputAdornment>
@@ -376,14 +393,14 @@ const BrokerManager = () => {
                 }}
               />
             </Grid>
-            
+
             {/* Professional Info */}
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Experience" 
-                value={formData.experience} 
-                onChange={(e) => setFormData({...formData, experience: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Experience"
+                value={formData.experience}
+                onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                 placeholder="e.g. 5+ Years"
                 slotProps={{
                   input: {
@@ -392,12 +409,12 @@ const BrokerManager = () => {
                 }}
               />
             </Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Specialization" 
-                value={formData.specialization} 
-                onChange={(e) => setFormData({...formData, specialization: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Specialization"
+                value={formData.specialization}
+                onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
                 placeholder="e.g. Luxury Villas, Commercial"
                 slotProps={{
                   input: {
@@ -406,13 +423,30 @@ const BrokerManager = () => {
                 }}
               />
             </Grid>
-            
-            <Grid  xs={12}>
-              <TextField 
-                fullWidth 
-                label="Photo URL" 
-                value={formData.photo} 
-                onChange={(e) => setFormData({...formData, photo: e.target.value})}
+
+            {/* City */}
+            <Grid xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>City</InputLabel>
+                <Select
+                  value={formData.city}
+                  label="City"
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                >
+                  <MenuItem value="">-- No City --</MenuItem>
+                  {cities.map(c => (
+                    <MenuItem key={c.id} value={c.name}>{c.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid xs={12}>
+              <TextField
+                fullWidth
+                label="Photo URL"
+                value={formData.photo}
+                onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start"><PhotoIcon fontSize="small" /></InputAdornment>
@@ -422,13 +456,13 @@ const BrokerManager = () => {
             </Grid>
 
             {/* Social Links */}
-            <Grid  xs={12}><Typography variant="subtitle2" sx={{ fontWeight: 700, mb: -1 }}>Social Media Profiles</Typography></Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Facebook URL" 
-                value={formData.facebook} 
-                onChange={(e) => setFormData({...formData, facebook: e.target.value})} 
+            <Grid xs={12}><Typography variant="subtitle2" sx={{ fontWeight: 700, mb: -1 }}>Social Media Profiles</Typography></Grid>
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Facebook URL"
+                value={formData.facebook}
+                onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start"><FacebookIcon fontSize="small" sx={{ color: '#1877F2' }} /></InputAdornment>
@@ -436,12 +470,12 @@ const BrokerManager = () => {
                 }}
               />
             </Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Twitter URL" 
-                value={formData.twitter} 
-                onChange={(e) => setFormData({...formData, twitter: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Twitter URL"
+                value={formData.twitter}
+                onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start"><TwitterIcon fontSize="small" sx={{ color: '#1DA1F2' }} /></InputAdornment>
@@ -449,12 +483,12 @@ const BrokerManager = () => {
                 }}
               />
             </Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="LinkedIn URL" 
-                value={formData.linkedin} 
-                onChange={(e) => setFormData({...formData, linkedin: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="LinkedIn URL"
+                value={formData.linkedin}
+                onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start"><LinkedInIcon fontSize="small" sx={{ color: '#0A66C2' }} /></InputAdornment>
@@ -462,12 +496,12 @@ const BrokerManager = () => {
                 }}
               />
             </Grid>
-            <Grid  xs={12} md={6}>
-              <TextField 
-                fullWidth 
-                label="Instagram URL" 
-                value={formData.instagram} 
-                onChange={(e) => setFormData({...formData, instagram: e.target.value})} 
+            <Grid xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Instagram URL"
+                value={formData.instagram}
+                onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start"><InstagramIcon fontSize="small" sx={{ color: '#E4405F' }} /></InputAdornment>

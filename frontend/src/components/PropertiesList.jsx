@@ -164,7 +164,7 @@ const PropertiesList = () => {
     let url = `${API_BASE_URL}/api/public/projects?`;
     if (city) url += `city=${encodeURIComponent(city)}&`;
     if (locality_id) url += `locality_id=${locality_id}`;
-    
+
     try {
       const res = await fetch(url);
       const data = await res.json();
@@ -295,22 +295,28 @@ const PropertiesList = () => {
           )}
           <Divider sx={{ mb: 2, borderColor: '#e2e8f0' }} />
           <Grid container spacing={1} className="property-amenities-mini">
-            <Grid item xs={4}>
+            <Grid item xs={3}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Bed fontSize="small" sx={{ mr: 0.5, color: '#94a3b8' }} />
                 <Typography variant="body2">{property.no_of_bedrooms}</Typography>
               </Box>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={3}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Bathtub fontSize="small" sx={{ mr: 0.5, color: '#94a3b8' }} />
                 <Typography variant="body2">{property.no_of_bathrooms}</Typography>
               </Box>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={3}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <SquareFoot fontSize="small" sx={{ mr: 0.5, color: '#94a3b8' }} />
                 <Typography variant="body2">{property.area} <Box component="span" sx={{ fontSize: '10px' }}>SqFt</Box></Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={3}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 'bold', mr: 0.5 }}>F:</Typography>
+                <Typography variant="body2">{property.floor || 0}</Typography>
               </Box>
             </Grid>
           </Grid>

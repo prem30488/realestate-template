@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/scratch/update_brokers_cities.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1779450949218,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1779450949218,
+            "name": "Commit-0",
+            "content": "require('dotenv').config();\r\nconst { Broker, sequelize } = require('../models');\r\n\r\nconst cities = ['Ahmedabad', 'Gandhinagar'];\r\n\r\nasync function updateBrokersWithCities() {\r\n  try {\r\n    const brokers = await Broker.findAll();\r\n    console.log(`Found ${brokers.length} brokers`);\r\n\r\n    if (brokers.length === 0) {\r\n      console.log('No brokers found to update');\r\n      return;\r\n    }\r\n\r\n    // Assign cities alternately\r\n    for (let i = 0; i < brokers.length; i++) {\r\n      const city = cities[i % cities.length]; // Alternate between Ahmedabad and Gandhinagar\r\n      await brokers[i].update({ city });\r\n      console.log(`✓ Updated broker ${brokers[i].name} → ${city}`);\r\n    }\r\n\r\n    console.log('\\n✓ All brokers updated successfully!');\r\n    process.exit(0);\r\n  } catch (error) {\r\n    console.error('Error updating brokers:', error);\r\n    process.exit(1);\r\n  }\r\n}\r\n\r\nupdateBrokersWithCities();\r\n"
+        }
+    ]
+}

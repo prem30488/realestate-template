@@ -52,10 +52,10 @@ import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -63,7 +63,7 @@ const steps = ['Select Location', 'Address Details', 'Property Specifics', 'Imag
 
 const MyPropertiesManager = () => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
-  
+
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -72,7 +72,7 @@ const MyPropertiesManager = () => {
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
-  
+
   const [formData, setFormData] = useState({
     title: '',
     typeId: '',
@@ -96,14 +96,15 @@ const MyPropertiesManager = () => {
     bachelor_friendly: false,
     availability: 'Immediate',
     family_friendly: false,
-    live_in_friendly: false
+    live_in_friendly: false,
+    floor: 0
   });
 
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  
+
   // Amenities state
   const [allAmenities, setAllAmenities] = useState([]);
   const [amenitiesDialogOpen, setAmenitiesDialogOpen] = useState(false);
@@ -125,9 +126,8 @@ const MyPropertiesManager = () => {
         },
         headers: { Authorization: `Bearer ${token}` }
       });
-      // The /api/my-properties endpoint returns a direct array
-      setProperties(response.data);
-      setTotalCount(response.data.length);
+      setProperties(response.data.properties);
+      setTotalCount(response.data.totalCount);
     } catch (error) {
       toast.error('Error fetching properties');
     } finally {
@@ -175,7 +175,7 @@ const MyPropertiesManager = () => {
   useEffect(() => {
     axios.get(`${API_BASE_URL}/api/property-types`)
       .then(res => setPropertyTypes(res.data))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleChangePage = (event, newPage) => {
@@ -244,7 +244,8 @@ const MyPropertiesManager = () => {
       bachelor_friendly: property.bachelor_friendly || false,
       availability: property.availability || 'Immediate',
       family_friendly: property.family_friendly || false,
-      live_in_friendly: property.live_in_friendly || false
+      live_in_friendly: property.live_in_friendly || false,
+      floor: property.floor || 0
     });
     setOpen(true);
     setActiveStep(0);
@@ -280,7 +281,8 @@ const MyPropertiesManager = () => {
       description: '',
       featured: false, images: [],
       verified: false, furnishing_type: 'none', bachelor_friendly: false,
-      availability: 'Immediate', family_friendly: false, live_in_friendly: false
+      availability: 'Immediate', family_friendly: false, live_in_friendly: false,
+      floor: 0
     });
   };
 
@@ -288,7 +290,7 @@ const MyPropertiesManager = () => {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      
+
       if (editingId) {
         const endpoint = `${API_BASE_URL}/api/my-properties/${editingId}`;
         await axios.put(endpoint, formData, config);
@@ -318,8 +320,8 @@ const MyPropertiesManager = () => {
   };
 
   const handleToggleAmenity = (amenityId) => {
-    setSelectedAmenityIds(prev => 
-      prev.includes(amenityId) 
+    setSelectedAmenityIds(prev =>
+      prev.includes(amenityId)
         ? prev.filter(id => id !== amenityId)
         : [...prev, amenityId]
     );
@@ -329,7 +331,7 @@ const MyPropertiesManager = () => {
     setSavingAmenities(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_BASE_URL}/api/admin/properties/${selectedPropertyForAmenities.id}/amenities`, 
+      await axios.post(`${API_BASE_URL}/api/admin/properties/${selectedPropertyForAmenities.id}/amenities`,
         { amenityIds: selectedAmenityIds },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -371,16 +373,16 @@ const MyPropertiesManager = () => {
         return (
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid xs={12}>
-              <TextField fullWidth label="Property Title" variant="outlined" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
+              <TextField fullWidth label="Property Title" variant="outlined" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
             </Grid>
             <Grid xs={12}>
-              <TextField fullWidth label="Location/Area Name" variant="outlined" value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} />
+              <TextField fullWidth label="Location/Area Name" variant="outlined" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
             </Grid>
             <Grid xs={6}>
-              <TextField fullWidth label="City" variant="outlined" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
+              <TextField fullWidth label="City" variant="outlined" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
             </Grid>
             <Grid xs={6}>
-              <TextField fullWidth label="State" variant="outlined" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} />
+              <TextField fullWidth label="State" variant="outlined" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} />
             </Grid>
           </Grid>
         );
@@ -388,42 +390,45 @@ const MyPropertiesManager = () => {
         return (
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid xs={6}>
-              <TextField select fullWidth label="Property Type" value={formData.typeId} onChange={(e) => setFormData({...formData, typeId: e.target.value})}>
+              <TextField select fullWidth label="Property Type" value={formData.typeId} onChange={(e) => setFormData({ ...formData, typeId: e.target.value })}>
                 {propertyTypes.map((type) => (
                   <MenuItem key={type.id} value={type.id}>{type.name}</MenuItem>
                 ))}
               </TextField>
             </Grid>
             <Grid xs={6}>
-              <TextField select fullWidth label="Status" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
+              <TextField select fullWidth label="Status" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
                 <MenuItem value="For Sale">For Sale</MenuItem>
                 <MenuItem value="For Rent">For Rent</MenuItem>
               </TextField>
             </Grid>
             <Grid xs={6}>
-              <TextField fullWidth label="Price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
+              <TextField fullWidth label="Price" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
             </Grid>
             <Grid xs={6}>
-              <TextField fullWidth label="Area (SqFt)" type="number" value={formData.area} onChange={(e) => setFormData({...formData, area: e.target.value})} />
+              <TextField fullWidth label="Area (SqFt)" type="number" value={formData.area} onChange={(e) => setFormData({ ...formData, area: e.target.value })} />
             </Grid>
             <Grid xs={4}>
-              <TextField fullWidth label="Bedrooms" type="number" value={formData.no_of_bedrooms} onChange={(e) => setFormData({...formData, no_of_bedrooms: e.target.value})} />
+              <TextField fullWidth label="Bedrooms" type="number" value={formData.no_of_bedrooms} onChange={(e) => setFormData({ ...formData, no_of_bedrooms: e.target.value })} />
             </Grid>
             <Grid xs={4}>
-              <TextField fullWidth label="Bathrooms" type="number" value={formData.no_of_bathrooms} onChange={(e) => setFormData({...formData, no_of_bathrooms: e.target.value})} />
+              <TextField fullWidth label="Bathrooms" type="number" value={formData.no_of_bathrooms} onChange={(e) => setFormData({ ...formData, no_of_bathrooms: e.target.value })} />
             </Grid>
             <Grid xs={4}>
-              <TextField fullWidth label="Garage" type="number" value={formData.no_of_garage} onChange={(e) => setFormData({...formData, no_of_garage: e.target.value})} />
+              <TextField fullWidth label="Garage" type="number" value={formData.no_of_garage} onChange={(e) => setFormData({ ...formData, no_of_garage: e.target.value })} />
+            </Grid>
+            <Grid xs={4}>
+              <TextField fullWidth label="Floor" type="number" value={formData.floor} onChange={(e) => setFormData({ ...formData, floor: e.target.value })} />
             </Grid>
             <Grid xs={6}>
-              <TextField select fullWidth label="Furnishing Type" value={formData.furnishing_type} onChange={(e) => setFormData({...formData, furnishing_type: e.target.value})}>
+              <TextField select fullWidth label="Furnishing Type" value={formData.furnishing_type} onChange={(e) => setFormData({ ...formData, furnishing_type: e.target.value })}>
                 <MenuItem value="none">None / Unfurnished</MenuItem>
                 <MenuItem value="semi-furnished">Semi-Furnished</MenuItem>
                 <MenuItem value="full-furnished">Fully Furnished</MenuItem>
               </TextField>
             </Grid>
             <Grid xs={6}>
-              <TextField select fullWidth label="Availability" value={formData.availability} onChange={(e) => setFormData({...formData, availability: e.target.value})}>
+              <TextField select fullWidth label="Availability" value={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.value })}>
                 <MenuItem value="Immediate">Immediate</MenuItem>
                 <MenuItem value="1 month">1 month</MenuItem>
                 <MenuItem value="2 months">2 months</MenuItem>
@@ -434,30 +439,30 @@ const MyPropertiesManager = () => {
             </Grid>
             <Grid xs={12} sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
               <FormControlLabel
-                control={<Checkbox checked={formData.verified} onChange={(e) => setFormData({...formData, verified: e.target.checked})} color="primary" />}
+                control={<Checkbox checked={formData.verified} onChange={(e) => setFormData({ ...formData, verified: e.target.checked })} color="primary" />}
                 label="Verified Property"
               />
               <FormControlLabel
-                control={<Checkbox checked={formData.bachelor_friendly} onChange={(e) => setFormData({...formData, bachelor_friendly: e.target.checked})} color="primary" />}
+                control={<Checkbox checked={formData.bachelor_friendly} onChange={(e) => setFormData({ ...formData, bachelor_friendly: e.target.checked })} color="primary" />}
                 label="Bachelor Friendly"
               />
               <FormControlLabel
-                control={<Checkbox checked={formData.family_friendly} onChange={(e) => setFormData({...formData, family_friendly: e.target.checked})} color="primary" />}
+                control={<Checkbox checked={formData.family_friendly} onChange={(e) => setFormData({ ...formData, family_friendly: e.target.checked })} color="primary" />}
                 label="Family Friendly"
               />
               <FormControlLabel
-                control={<Checkbox checked={formData.live_in_friendly} onChange={(e) => setFormData({...formData, live_in_friendly: e.target.checked})} color="primary" />}
+                control={<Checkbox checked={formData.live_in_friendly} onChange={(e) => setFormData({ ...formData, live_in_friendly: e.target.checked })} color="primary" />}
                 label="Live-in Friendly"
               />
             </Grid>
             <Grid xs={12}>
-              <TextField 
-                fullWidth 
-                label="Property Description" 
-                multiline 
-                rows={4} 
-                value={formData.description} 
-                onChange={(e) => setFormData({...formData, description: e.target.value})} 
+              <TextField
+                fullWidth
+                label="Property Description"
+                multiline
+                rows={4}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Describe the property's key features, surrounding area, etc."
               />
             </Grid>
@@ -467,16 +472,16 @@ const MyPropertiesManager = () => {
         return (
           <Box sx={{ mt: 2 }}>
             <Box sx={{ mb: 3, display: 'flex', gap: 1 }}>
-              <TextField 
-                fullWidth 
-                size="small" 
-                label="Add Image URL" 
+              <TextField
+                fullWidth
+                size="small"
+                label="Add Image URL"
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
                 placeholder="https://example.com/image.jpg"
               />
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 startIcon={<AddCircleIcon />}
                 onClick={handleAddImage}
                 sx={{ whiteSpace: 'nowrap' }}
@@ -489,11 +494,11 @@ const MyPropertiesManager = () => {
             {formData.images.length > 0 ? (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
                 {formData.images.map((img, index) => (
-                  <Paper 
+                  <Paper
                     key={index}
-                    elevation={2} 
-                    sx={{ 
-                      position: 'relative', 
+                    elevation={2}
+                    sx={{
+                      position: 'relative',
                       width: 200,
                       height: 200,
                       borderRadius: '12px',
@@ -545,7 +550,7 @@ const MyPropertiesManager = () => {
                 No images added yet. Add some URLs above.
               </Typography>
             )}
-            
+
             <Box sx={{ p: 2, border: '1px dashed #ccc', borderRadius: '8px', textAlign: 'center', bgcolor: '#fafafa' }}>
               <Typography variant="caption" color="textSecondary">
                 Pro Tip: You can find high quality property images on Unsplash or Pexels.
@@ -573,7 +578,7 @@ const MyPropertiesManager = () => {
           variant="outlined"
           placeholder="Search by title, location, city or status..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
           slotProps={{
             input: {
@@ -603,31 +608,31 @@ const MyPropertiesManager = () => {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={7} align="center"><CircularProgress size={24} sx={{ my: 2 }} /></TableCell></TableRow>
-            ) : properties.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((property) => (
+            ) : properties.map((property) => (
               <TableRow key={property.id} sx={{ opacity: property.isDeleted ? 0.6 : 1 }}>
                 <TableCell sx={{ fontWeight: 600 }}>{property.title}</TableCell>
                 <TableCell>{property.location}, {property.city}</TableCell>
                 <TableCell>₹ {parseFloat(property.price).toLocaleString()}</TableCell>
                 <TableCell><Chip label={property.propertyType?.name || 'N/A'} size="small" /></TableCell>
                 <TableCell>
-                  <Chip 
-                    label={property.status} 
-                    color={property.status === 'For Sale' ? 'primary' : 'secondary'} 
-                    size="small" 
-                    variant="outlined" 
+                  <Chip
+                    label={property.status}
+                    color={property.status === 'For Sale' ? 'primary' : 'secondary'}
+                    size="small"
+                    variant="outlined"
                   />
                 </TableCell>
                 <TableCell>
-                  <Switch 
-                    checked={!property.isDeleted} 
-                    onChange={() => handleToggleDelete(property.id, property.isDeleted)} 
+                  <Switch
+                    checked={!property.isDeleted}
+                    onChange={() => handleToggleDelete(property.id, property.isDeleted)}
                     color="success"
                   />
                 </TableCell>
                 <TableCell align="right">
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
+                  <Button
+                    size="small"
+                    variant="outlined"
                     sx={{ mr: 1, textTransform: 'none', borderRadius: '8px' }}
                     onClick={() => handleOpenAmenities(property)}
                   >
@@ -686,10 +691,10 @@ const MyPropertiesManager = () => {
             </Typography>
             <Grid container spacing={1}>
               {allAmenities.filter(a => a.type?.toLowerCase() === 'indoor').map((amenity) => (
-                <Grid  xs={6} key={amenity.id}>
+                <Grid xs={6} key={amenity.id}>
                   <FormControlLabel
                     control={
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedAmenityIds.includes(amenity.id)}
                         onChange={() => handleToggleAmenity(amenity.id)}
                         color="primary"
@@ -701,19 +706,19 @@ const MyPropertiesManager = () => {
               ))}
             </Grid>
           </Box>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#2575fc', mb: 1 }}>
               Outdoor Amenities
             </Typography>
             <Grid container spacing={1}>
               {allAmenities.filter(a => a.type?.toLowerCase() === 'outdoor').map((amenity) => (
-                <Grid  xs={6} key={amenity.id}>
+                <Grid xs={6} key={amenity.id}>
                   <FormControlLabel
                     control={
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedAmenityIds.includes(amenity.id)}
                         onChange={() => handleToggleAmenity(amenity.id)}
                         color="secondary"
@@ -728,9 +733,9 @@ const MyPropertiesManager = () => {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={handleCloseAmenities} disabled={savingAmenities}>Cancel</Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSaveAmenities} 
+          <Button
+            variant="contained"
+            onClick={handleSaveAmenities}
             disabled={savingAmenities}
             sx={{ bgcolor: '#6a11cb' }}
           >

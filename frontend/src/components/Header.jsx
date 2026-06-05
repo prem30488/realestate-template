@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './Header.css';
 import axios from 'axios';
 
@@ -159,16 +159,15 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
           <ul>
             <li><Link to={`/builders/${selectedCity}`}>Builders in {selectedCity}</Link></li>
             <li><Link to={`/localities/${selectedCity}`}>Localities in {selectedCity}</Link></li>
-            <li><a href="#">Projects in {selectedCity}</a></li>
-            <li><Link to="/brokers">Find an Agent in {selectedCity}</Link></li>
+            <li><Link to={`/projects/${selectedCity}`}>Projects in {selectedCity}</Link></li>
+            <li><Link to={`/brokers?city=${selectedCity}`}>Find an Agent in {selectedCity}</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column column-wide">
           <h6>Buying Tools</h6>
           <ul>
-            <li><a href="#">Propworth</a></li>
-            <li><a href="#">Rates &amp; Trends</a></li>
-            <li><a href="#">Buy vs Rent</a></li>
+            <li><Link to="/rates-and-trends">Rates &amp; Trends</Link></li>
+            <li><Link to="/buy-vs-rent">Buy vs Rent</Link></li>
             <li><Link to="/news">Tips and Guides</Link></li>
           </ul>
         </div>
@@ -214,9 +213,9 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
           <h6>Explore</h6>
           <ul>
             <li><Link to={`/localities/${selectedCity}`}>Localities</Link></li>
-            <li><a href="#">Buy Vs Rent</a></li>
-            <li><Link to="/brokers">Find an Agent</Link></li>
-            <li><a href="#">Share Requirement</a></li>
+            <li><Link to="/buy-vs-rent">Buy Vs Rent</Link></li>
+            <li><Link to={`/brokers?city=${selectedCity}`}>Find an Agent in {selectedCity}</Link></li>
+            <li><Link to="/share-requirement">Share Requirement</Link></li>
           </ul>
         </div>
       </div>
@@ -243,15 +242,15 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
             <li><a href="#">Ad Packages</a></li>
             <li><a href="#">iAdvantage</a></li>
             <li><a href="#">Developer Lounge</a></li>
-            <li><a href="#">Sales Enquiry</a></li>
+            <li><Link to="/share-requirement">Sales Enquiry</Link></li>
           </ul>
         </div>
         <div className="mega-menu-column">
           <h6>Selling Tools</h6>
           <ul>
-            <li><a href="#">Property Valuation</a></li>
+            <li><Link to="/property-valuation">Property Valuation</Link></li>
             <li><Link to="/brokers">Find an Agent</Link></li>
-            <li><a href="#">Rates and Trends</a></li>
+            <li><Link to="/rates-and-trends">Rates and Trends</Link></li>
           </ul>
         </div>
       </div>
@@ -275,7 +274,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
     <li className="has-sub-menu"><a href="#">Help <i className="pe-7s-angle-down" /></a>
       <ul className="sub-menu">
         <li><a href="#">Help Center</a></li>
-        <li><a href="#">Sales Enquiry</a></li>
+        <li><Link to="/share-requirement">Sales Enquiry</Link></li>
         <li><a href="#">Chat with Us</a></li>
       </ul>
     </li>
@@ -285,8 +284,36 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
 // ── Main Header component ────────────────────────────────────────────────────
 const Header = ({ onLoginClick, user, onLogout }) => {
   const { selectedCity } = useCity();
+  const location = useLocation();
   const [isSticky, setIsSticky] = useState(false);
   const [menuItems, setMenuItems] = useState(null); // null = loading, [] = failed/empty
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    const closeMenu = () => {
+      // Use a tiny delay to ensure navigation is initiated before closing
+      setTimeout(() => {
+        const meanMenuReveal = document.querySelector('.meanmenu-reveal');
+        if (meanMenuReveal && meanMenuReveal.querySelector('.menu-close')) {
+          meanMenuReveal.click();
+        }
+      }, 100);
+    };
+
+    const handleMenuClick = (e) => {
+      // If the clicked element is a link inside the mobile menu and NOT an expansion toggle
+      const link = e.target.closest('.mean-nav a');
+      if (link && !link.classList.contains('mean-expand')) {
+        closeMenu();
+      }
+    };
+
+    // Also close on location change as a fallback
+    closeMenu();
+
+    document.addEventListener('click', handleMenuClick);
+    return () => document.removeEventListener('click', handleMenuClick);
+  }, [location]);
 
   // Sticky scroll
   useEffect(() => {

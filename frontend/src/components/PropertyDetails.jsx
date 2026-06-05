@@ -364,6 +364,12 @@ const PropertyDetails = ({ onLoginRequired }) => {
                     {property.availability}
                   </Typography>
                 </Grid>
+                <Grid item xs={6} sm={4}>
+                  <Typography variant="body2" color="text.secondary">Floor</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                    {property.floor || 0}
+                  </Typography>
+                </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Suitability</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
