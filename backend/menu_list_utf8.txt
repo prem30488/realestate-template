@@ -1,0 +1,115 @@
+﻿Γùç injected env (7) from .env // tip: Γîü auth for agents [www.vestauth.com]
+Executing (default): SELECT "id", "title", "link", "parentId", "itemType", "menuType", "badge", "order", "isDeleted", "createdAt", "updatedAt" FROM "MenuItems" AS "MenuItem" WHERE "MenuItem"."isDeleted" = false ORDER BY "MenuItem"."parentId" ASC, "MenuItem"."order" ASC;
+Current Active Menu Items:
+ID: 2, ParentID: 1, Title: Popular Choices, Link: #
+ID: 8, ParentID: 1, Title: Property Types, Link: #
+ID: 31, ParentID: 1, Title: Budget, Link: #
+ID: 36, ParentID: 1, Title: Explore, Link: #
+ID: 41, ParentID: 1, Title: Buying Tools, Link: #
+ID: 3, ParentID: 2, Title: Ready to Move, Link: /properties?status=Sell&city={city}
+ID: 4, ParentID: 2, Title: Owner Properties, Link: /properties?status=Sell&postedBy=owner&city={city}
+ID: 5, ParentID: 2, Title: Budget Homes, Link: /properties?status=Sell&maxPrice=5000000&city={city}
+ID: 6, ParentID: 2, Title: Premium Homes, Link: /properties?status=Sell&minPrice=10000000&city={city}
+ID: 7, ParentID: 2, Title: Newly Launched, Link: /properties?status=Sell&orderBy=updatedAt&order=DESC&city={city}
+ID: 9, ParentID: 8, Title: Agriculture in {city}, Link: /properties?type=16&status=Sell&city={city}
+ID: 10, ParentID: 8, Title: Apartment in {city}, Link: /properties?type=1&status=Sell&city={city}
+ID: 11, ParentID: 8, Title: Building in {city}, Link: /properties?type=15&status=Sell&city={city}
+ID: 12, ParentID: 8, Title: Commercial in {city}, Link: /properties?type=3&status=Sell&city={city}
+ID: 13, ParentID: 8, Title: Duplex in {city}, Link: /properties?type=8&status=Sell&city={city}
+ID: 14, ParentID: 8, Title: Factory in {city}, Link: /properties?type=19&status=Sell&city={city}
+ID: 15, ParentID: 8, Title: Farm House in {city}, Link: /properties?type=18&status=Sell&city={city}
+ID: 16, ParentID: 8, Title: Garage in {city}, Link: /properties?type=4&status=Sell&city={city}
+ID: 17, ParentID: 8, Title: Godown in {city}, Link: /properties?type=20&status=Sell&city={city}
+ID: 18, ParentID: 8, Title: Hotel in {city}, Link: /properties?type=14&status=Sell&city={city}
+ID: 19, ParentID: 8, Title: House in {city}, Link: /properties?type=2&status=Sell&city={city}
+ID: 20, ParentID: 8, Title: Industry in {city}, Link: /properties?type=17&status=Sell&city={city}
+ID: 21, ParentID: 8, Title: Office in {city}, Link: /properties?type=11&status=Sell&city={city}
+ID: 22, ParentID: 8, Title: Penthouse in {city}, Link: /properties?type=6&status=Sell&city={city}
+ID: 23, ParentID: 8, Title: Restaurent in {city}, Link: /properties?type=10&status=Sell&city={city}
+ID: 24, ParentID: 8, Title: Shop in {city}, Link: /properties?type=12&status=Sell&city={city}
+ID: 25, ParentID: 8, Title: Shop-cum-Office in {city}, Link: /properties?type=22&status=Sell&city={city}
+ID: 26, ParentID: 8, Title: Showroom in {city}, Link: /properties?type=13&status=Sell&city={city}
+ID: 27, ParentID: 8, Title: Studio in {city}, Link: /properties?type=9&status=Sell&city={city}
+ID: 28, ParentID: 8, Title: Townhouse in {city}, Link: /properties?type=7&status=Sell&city={city}
+ID: 29, ParentID: 8, Title: Villa in {city}, Link: /properties?type=5&status=Sell&city={city}
+ID: 30, ParentID: 8, Title: Warehouse in {city}, Link: /properties?type=21&status=Sell&city={city}
+ID: 32, ParentID: 31, Title: Under Γé╣ 50 Lac, Link: /properties?maxPrice=5000000&status=Sell
+ID: 33, ParentID: 31, Title: Γé╣ 50 Lac - Γé╣ 1 Cr, Link: /properties?minPrice=5000000&maxPrice=10000000&status=Sell
+ID: 34, ParentID: 31, Title: Γé╣ 1 Cr - Γé╣ 1.5 Cr, Link: /properties?minPrice=10000000&maxPrice=15000000&status=Sell
+ID: 35, ParentID: 31, Title: Above Γé╣ 1.5 Cr, Link: /properties?minPrice=15000000&status=Sell
+ID: 37, ParentID: 36, Title: Builders in {city}, Link: /builders/{city}
+ID: 38, ParentID: 36, Title: Localities in {city}, Link: /localities/{city}
+ID: 39, ParentID: 36, Title: Projects in {city}, Link: /projects/{city}
+ID: 40, ParentID: 36, Title: Find an Agent in {city}, Link: /brokers
+ID: 113, ParentID: 36, Title: Compare Localities, Link: /compare-localities
+ID: 43, ParentID: 41, Title: Rates & Trends, Link: /rates-and-trends
+ID: 44, ParentID: 41, Title: Buy vs Rent, Link: /buy-vs-rent
+ID: 45, ParentID: 41, Title: Tips and Guides, Link: /tips-and-guides
+ID: 47, ParentID: 46, Title: Popular Choices, Link: #
+ID: 53, ParentID: 46, Title: Property Type, Link: #
+ID: 76, ParentID: 46, Title: Budget, Link: #
+ID: 81, ParentID: 46, Title: Explore, Link: #
+ID: 48, ParentID: 47, Title: Owner Properties, Link: /properties?status=Rent&postedBy=owner&city={city}
+ID: 49, ParentID: 47, Title: Verified Properties, Link: /properties?status=Rent&verified=true&city={city}
+ID: 50, ParentID: 47, Title: Furnished Homes, Link: /properties?status=Rent&furnishing_type=full-furnished&city={city}
+ID: 51, ParentID: 47, Title: Bachelor Friendly Homes, Link: /properties?status=Rent&bachelor_friendly=true&city={city}
+ID: 52, ParentID: 47, Title: Immediately Available, Link: /properties?status=Rent&availability=Immediate&city={city}
+ID: 54, ParentID: 53, Title: Agriculture for rent in {city}, Link: /properties?type=16&status=Rent&city={city}
+ID: 55, ParentID: 53, Title: Apartment for rent in {city}, Link: /properties?type=1&status=Rent&city={city}
+ID: 56, ParentID: 53, Title: Building for rent in {city}, Link: /properties?type=15&status=Rent&city={city}
+ID: 57, ParentID: 53, Title: Commercial for rent in {city}, Link: /properties?type=3&status=Rent&city={city}
+ID: 58, ParentID: 53, Title: Duplex for rent in {city}, Link: /properties?type=8&status=Rent&city={city}
+ID: 59, ParentID: 53, Title: Factory for rent in {city}, Link: /properties?type=19&status=Rent&city={city}
+ID: 60, ParentID: 53, Title: Farm House for rent in {city}, Link: /properties?type=18&status=Rent&city={city}
+ID: 61, ParentID: 53, Title: Garage for rent in {city}, Link: /properties?type=4&status=Rent&city={city}
+ID: 62, ParentID: 53, Title: Godown for rent in {city}, Link: /properties?type=20&status=Rent&city={city}
+ID: 63, ParentID: 53, Title: Hotel for rent in {city}, Link: /properties?type=14&status=Rent&city={city}
+ID: 64, ParentID: 53, Title: House for rent in {city}, Link: /properties?type=2&status=Rent&city={city}
+ID: 65, ParentID: 53, Title: Industry for rent in {city}, Link: /properties?type=17&status=Rent&city={city}
+ID: 66, ParentID: 53, Title: Office for rent in {city}, Link: /properties?type=11&status=Rent&city={city}
+ID: 67, ParentID: 53, Title: Penthouse for rent in {city}, Link: /properties?type=6&status=Rent&city={city}
+ID: 68, ParentID: 53, Title: Restaurent for rent in {city}, Link: /properties?type=10&status=Rent&city={city}
+ID: 69, ParentID: 53, Title: Shop for rent in {city}, Link: /properties?type=12&status=Rent&city={city}
+ID: 70, ParentID: 53, Title: Shop-cum-Office for rent in {city}, Link: /properties?type=22&status=Rent&city={city}
+ID: 71, ParentID: 53, Title: Showroom for rent in {city}, Link: /properties?type=13&status=Rent&city={city}
+ID: 72, ParentID: 53, Title: Studio for rent in {city}, Link: /properties?type=9&status=Rent&city={city}
+ID: 73, ParentID: 53, Title: Townhouse for rent in {city}, Link: /properties?type=7&status=Rent&city={city}
+ID: 74, ParentID: 53, Title: Villa for rent in {city}, Link: /properties?type=5&status=Rent&city={city}
+ID: 75, ParentID: 53, Title: Warehouse for rent in {city}, Link: /properties?type=21&status=Rent&city={city}
+ID: 77, ParentID: 76, Title: Under Γé╣ 10,000, Link: /properties?maxPrice=10000&status=Rent
+ID: 78, ParentID: 76, Title: Γé╣ 10,000 - Γé╣ 15,000, Link: /properties?minPrice=10000&maxPrice=15000&status=Rent
+ID: 79, ParentID: 76, Title: Γé╣ 15,000 - Γé╣ 25,000, Link: /properties?minPrice=15000&maxPrice=25000&status=Rent
+ID: 80, ParentID: 76, Title: Above Γé╣ 25,000, Link: /properties?minPrice=25000&status=Rent
+ID: 82, ParentID: 81, Title: Localities, Link: /localities/{city}
+ID: 83, ParentID: 81, Title: Buy Vs Rent, Link: /buy-vs-rent
+ID: 84, ParentID: 81, Title: Find an Agent, Link: /brokers
+ID: 85, ParentID: 81, Title: Share Requirement, Link: /share-requirement
+ID: 87, ParentID: 86, Title: For Owner, Link: #
+ID: 90, ParentID: 86, Title: For Agent & Builder, Link: #
+ID: 96, ParentID: 86, Title: Selling Tools, Link: #
+ID: 88, ParentID: 87, Title: Post Property, Link: /my-properties
+ID: 89, ParentID: 87, Title: My Dashboard, Link: /dashboard
+ID: 91, ParentID: 90, Title: My Dashboard, Link: /dashboard
+ID: 92, ParentID: 90, Title: Ad Packages, Link: #
+ID: 93, ParentID: 90, Title: iAdvantage, Link: #
+ID: 94, ParentID: 90, Title: Developer Lounge, Link: #
+ID: 95, ParentID: 90, Title: Sales Enquiry, Link: /share-requirement
+ID: 97, ParentID: 96, Title: Property Valuation, Link: /property-valuation
+ID: 98, ParentID: 96, Title: Find an Agent, Link: /brokers
+ID: 99, ParentID: 96, Title: Rates and Trends, Link: /rates-and-trends
+ID: 102, ParentID: 101, Title: Explore our services, Link: #
+ID: 103, ParentID: 101, Title: Home Interior Design Services, Link: #
+ID: 104, ParentID: 101, Title: Design Consultation, Link: #
+ID: 105, ParentID: 101, Title: Full Home Interior Cost Calculator, Link: #
+ID: 106, ParentID: 101, Title: Kitchen/Wardrobe Calculator, Link: #
+ID: 108, ParentID: 107, Title: Help Center, Link: #
+ID: 109, ParentID: 107, Title: Sales Enquiry, Link: /share-requirement
+ID: 110, ParentID: 107, Title: Chat with Us, Link: https://api.whatsapp.com/send/?phone=919624259046&text=Hi%21&type=phone_number&app_absent=0
+ID: 1, ParentID: null, Title: Buy, Link: /properties?status=Sell
+ID: 46, ParentID: null, Title: Rent, Link: /properties?status=Rent
+ID: 86, ParentID: null, Title: Sell, Link: #
+ID: 100, ParentID: null, Title: Home Loans, Link: #
+ID: 101, ParentID: null, Title: Home Interiors, Link: #
+ID: 107, ParentID: null, Title: Help, Link: #
+ID: 111, ParentID: null, Title: About Us, Link: /about
+ID: 112, ParentID: null, Title: Contact Us, Link: /contact

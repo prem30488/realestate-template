@@ -42,8 +42,8 @@ module.exports = [
         title: 'Buying Tools', itemType: 'section', order: 5, children: [
           { title: 'Rates & Trends', link: '/rates-and-trends', order: 1 },
           { title: 'Buy vs Rent', link: '/buy-vs-rent', order: 2 },
-
-          { title: 'Tips and Guides', link: '/news', order: 3 },
+          { title: 'Tips and Guides', link: '/tips-and-guides', order: 3 },
+          { title: 'Compare Localities', link: '/compare-localities', order: 4 },
         ]
       },
     ]
@@ -138,7 +138,7 @@ module.exports = [
     children: [
       { title: 'Help Center', link: '#', itemType: 'link', order: 1, children: [] },
       { title: 'Sales Enquiry', link: '/share-requirement', itemType: 'link', order: 2, children: [] },
-      { title: 'Chat with Us', link: '#', itemType: 'link', order: 3, children: [] },
+      { title: 'Chat with Us', link: 'https://api.whatsapp.com/send/?phone=919624259046&text=Hi%21&type=phone_number&app_absent=0', itemType: 'link', order: 3, children: [] },
     ]
   },
   {

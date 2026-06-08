@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Paper, 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  Chip, 
-  Button, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  Card,
+  CardContent,
+  CardMedia,
+  Chip,
+  Button,
   CircularProgress,
   Divider
 } from '@mui/material';
-import { 
-  Favorite as FavoriteIcon, 
+import {
+  Favorite as FavoriteIcon,
   LocationOn as LocationIcon,
   Home as HomeIcon,
   Map as MapIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  Description as GuideIcon
 } from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -32,10 +33,10 @@ import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -43,6 +44,7 @@ const UserDashboard = () => {
   const { selectedCity } = useCity();
   const [shortlisted, setShortlisted] = useState([]);
   const [viewed, setViewed] = useState([]);
+  const [savedGuides, setSavedGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cityData, setCityData] = useState(null);
 
@@ -51,7 +53,7 @@ const UserDashboard = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        
+
         // Fetch shortlist
         const shortlistRes = await axios.get(`${API_BASE_URL}/api/shortlist`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -70,6 +72,10 @@ const UserDashboard = () => {
           const data = await cityRes.json();
           setCityData(data);
         }
+
+        // Fetch saved guides from localStorage
+        const saved = JSON.parse(localStorage.getItem('savedGuides') || '[]');
+        setSavedGuides(saved);
       } catch (error) {
         toast.error('Error loading dashboard data');
       } finally {
@@ -87,7 +93,7 @@ const UserDashboard = () => {
     );
   }
 
-  const mapCenter = cityData?.latitude && cityData?.longitude 
+  const mapCenter = cityData?.latitude && cityData?.longitude
     ? [parseFloat(cityData.latitude), parseFloat(cityData.longitude)]
     : (shortlisted.length > 0 && shortlisted[0].latitude ? [parseFloat(shortlisted[0].latitude), parseFloat(shortlisted[0].longitude)] : [23.0225, 72.5714]);
 
@@ -103,12 +109,12 @@ const UserDashboard = () => {
             <LocationIcon sx={{ color: '#ff5e14', fontSize: 20 }} /> Exploring properties in <strong>{selectedCity}</strong>
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           component={RouterLink}
           to="/my-properties"
-          sx={{ 
-            bgcolor: '#ff5e14', 
+          sx={{
+            bgcolor: '#ff5e14',
             '&:hover': { bgcolor: '#e54d00' },
             borderRadius: '12px',
             px: 4,
@@ -157,7 +163,7 @@ const UserDashboard = () => {
         </Grid>
 
         {/* Shortlist Sidebar List */}
-        <Grid  xs={12} lg={4}>
+        <Grid xs={12} lg={4}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Paper sx={{ p: 3, borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -165,7 +171,7 @@ const UserDashboard = () => {
                 <Chip label={shortlisted.length} sx={{ bgcolor: '#fff1f0', color: '#ff4d4f', fontWeight: 700, fontSize: '12px' }} />
               </Box>
               <Divider sx={{ mb: 2 }} />
-              
+
               <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '4px' }, '&::-webkit-scrollbar-thumb': { bgcolor: '#e2e8f0', borderRadius: '10px' } }}>
                 {shortlisted.length === 0 ? (
                   <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -174,13 +180,13 @@ const UserDashboard = () => {
                   </Box>
                 ) : (
                   shortlisted.map((prop) => (
-                    <Card 
-                      key={prop.id} 
-                      sx={{ 
-                        display: 'flex', 
-                        mb: 2, 
-                        borderRadius: '16px', 
-                        boxShadow: 'none', 
+                    <Card
+                      key={prop.id}
+                      sx={{
+                        display: 'flex',
+                        mb: 2,
+                        borderRadius: '16px',
+                        boxShadow: 'none',
                         border: '1px solid #f1f5f9',
                         transition: '0.2s',
                         '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 16px rgba(0,0,0,0.05)', borderColor: '#ff5e14' }
@@ -207,11 +213,11 @@ const UserDashboard = () => {
                   ))
                 )}
               </Box>
-              
+
               {shortlisted.length > 0 && (
-                <Button 
-                  fullWidth 
-                  variant="outlined" 
+                <Button
+                  fullWidth
+                  variant="outlined"
                   component={RouterLink}
                   to="/shortlist"
                   sx={{ mt: 2, borderRadius: '10px', borderColor: '#e2e8f0', color: '#64748b', textTransform: 'none', fontWeight: 600 }}
@@ -227,7 +233,7 @@ const UserDashboard = () => {
                 <Chip label={viewed.length} sx={{ bgcolor: '#e0f2fe', color: '#0284c7', fontWeight: 700, fontSize: '12px' }} />
               </Box>
               <Divider sx={{ mb: 2 }} />
-              
+
               <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '4px' }, '&::-webkit-scrollbar-thumb': { bgcolor: '#e2e8f0', borderRadius: '10px' } }}>
                 {viewed.length === 0 ? (
                   <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -236,16 +242,16 @@ const UserDashboard = () => {
                   </Box>
                 ) : (
                   viewed.map((prop) => (
-                    <Card 
-                      key={prop.id} 
+                    <Card
+                      key={prop.id}
                       component={RouterLink}
                       to={`/properties/${prop.id}`}
-                      sx={{ 
-                        display: 'flex', 
+                      sx={{
+                        display: 'flex',
                         textDecoration: 'none',
-                        mb: 2, 
-                        borderRadius: '16px', 
-                        boxShadow: 'none', 
+                        mb: 2,
+                        borderRadius: '16px',
+                        boxShadow: 'none',
                         border: '1px solid #f1f5f9',
                         transition: '0.2s',
                         '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 16px rgba(0,0,0,0.05)', borderColor: '#0284c7' }
@@ -272,11 +278,11 @@ const UserDashboard = () => {
                   ))
                 )}
               </Box>
-              
+
               {viewed.length > 0 && (
-                <Button 
-                  fullWidth 
-                  variant="outlined" 
+                <Button
+                  fullWidth
+                  variant="outlined"
                   component={RouterLink}
                   to="/viewed-properties"
                   sx={{ mt: 2, borderRadius: '10px', borderColor: '#e2e8f0', color: '#64748b', textTransform: 'none', fontWeight: 600 }}
@@ -284,6 +290,53 @@ const UserDashboard = () => {
                   View All Browsing History
                 </Button>
               )}
+            </Paper>
+
+            <Paper sx={{ p: 3, borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#1a202e' }}>Saved Guides</Typography>
+                <Chip label={savedGuides.length} sx={{ bgcolor: '#f0fdf4', color: '#16a34a', fontWeight: 700, fontSize: '12px' }} />
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+
+              <Box sx={{ maxHeight: 300, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '4px' }, '&::-webkit-scrollbar-thumb': { bgcolor: '#e2e8f0', borderRadius: '10px' } }}>
+                {savedGuides.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <GuideIcon sx={{ fontSize: 40, color: '#f1f5f9', mb: 1 }} />
+                    <Typography variant="body2" sx={{ color: '#94a3b8' }}>No guides saved yet.</Typography>
+                  </Box>
+                ) : (
+                  savedGuides.map((guide, idx) => (
+                    <Box
+                      key={idx}
+                      component={RouterLink}
+                      to={guide.path}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        mb: 2,
+                        p: 1.5,
+                        borderRadius: '12px',
+                        textDecoration: 'none',
+                        border: '1px solid #f1f5f9',
+                        transition: '0.2s',
+                        '&:hover': { bgcolor: '#f8fafc', borderColor: '#16a34a' }
+                      }}
+                    >
+                      <img src={guide.image} alt="" style={{ width: 50, height: 50, borderRadius: '8px', objectFit: 'cover' }} />
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1a202e', lineHeight: 1.2 }}>
+                          {guide.title}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#16a34a', fontWeight: 600 }}>
+                          {guide.category}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))
+                )}
+              </Box>
             </Paper>
 
             <Paper sx={{ p: 3, borderRadius: '20px', bgcolor: '#ff5e14', color: 'white', position: 'relative', overflow: 'hidden' }}>

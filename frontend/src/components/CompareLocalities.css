@@ -1,0 +1,67 @@
+.compare-hero {
+    position: relative;
+    overflow: hidden;
+}
+
+.compare-hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.compare-hero h2 {
+    font-size: 3.5rem !important;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.compare-table-container {
+    margin-top: -50px;
+    position: relative;
+    z-index: 2;
+}
+
+.feature-cell {
+    background-color: #f8fafc;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Custom Scrollbar for Autocomplete */
+.MuiAutocomplete-listbox::-webkit-scrollbar {
+    width: 8px;
+}
+
+.MuiAutocomplete-listbox::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.MuiAutocomplete-listbox::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.MuiAutocomplete-listbox::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.MuiAutocomplete-option {
+    transition: all 0.2s ease !important;
+}
+
+.MuiAutocomplete-option[aria-selected="true"] {
+    background-color: rgba(79, 70, 229, 0.08) !important;
+}
+
+@media (max-width: 768px) {
+    .compare-hero h2 {
+        font-size: 2.5rem;
+    }
+}

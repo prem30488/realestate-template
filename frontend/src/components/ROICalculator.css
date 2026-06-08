@@ -1,0 +1,53 @@
+.roi-calculator-page {
+    padding-top: 120px;
+    padding-bottom: 80px;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.roi-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.roi-main-stat {
+    background: #f1f5f9;
+    padding: 1.5rem;
+    border-radius: 1rem;
+}
+
+.roi-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.roi-detail-item:last-child {
+    border-bottom: none;
+}
+
+.icon-wrap {
+    width: 48px;
+    height: 48px;
+    background: #eef2ff;
+    color: #4f46e5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-wrap svg {
+    font-size: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    .roi-stat-grid {
+        grid-template-columns: 1fr;
+    }
+}

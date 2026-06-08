@@ -30,18 +30,25 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
+import { useCity } from '../context/CityContext';
 import { API_BASE_URL } from '../constants';
 
 const BrokersList = () => {
-    const [searchParams] = useSearchParams();
-    const cityParam = searchParams.get('city') || '';
+    const { selectedCity: globalCity } = useCity();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const cityParam = searchParams.get('city') || globalCity || '';
 
     const [brokers, setBrokers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cities, setCities] = useState([]);
     const [selectedCity, setSelectedCity] = useState(cityParam);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredBrokers, setFilteredBrokers] = useState([]);
+
+    // Sync state with URL or Global City when they change
+    useEffect(() => {
+        const city = searchParams.get('city') || globalCity || '';
+        setSelectedCity(city);
+    }, [searchParams, globalCity]);
 
     // Fetch cities
     useEffect(() => {
@@ -50,13 +57,14 @@ const BrokersList = () => {
             .catch(() => console.error('Error fetching cities'));
     }, []);
 
-    // Fetch brokers
+    // Fetch brokers whenever city filter changes
     useEffect(() => {
         const fetchBrokers = async () => {
             setLoading(true);
             try {
                 const response = await axios.get(`${API_BASE_URL}/api/brokers`, {
                     params: {
+                        city: selectedCity || undefined,
                         limit: 100
                     }
                 });
@@ -70,18 +78,19 @@ const BrokersList = () => {
         };
 
         fetchBrokers();
-    }, []);
+    }, [selectedCity]);
 
-    // Apply filters whenever brokers, selectedCity, or searchTerm change
-    useEffect(() => {
+    // Derive filteredBrokers for extra frontend safety
+    const filteredBrokers = React.useMemo(() => {
         let filtered = brokers;
+        const currentCity = (selectedCity || '').toLowerCase().trim();
 
-        // Filter by city
-        if (selectedCity) {
-            filtered = filtered.filter(broker => broker.city === selectedCity);
+        if (currentCity) {
+            filtered = filtered.filter(broker =>
+                broker.city && broker.city.toLowerCase().trim() === currentCity
+            );
         }
 
-        // Filter by search term
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             filtered = filtered.filter(broker =>
@@ -92,7 +101,7 @@ const BrokersList = () => {
             );
         }
 
-        setFilteredBrokers(filtered);
+        return filtered;
     }, [brokers, selectedCity, searchTerm]);
 
     return (
@@ -117,10 +126,21 @@ const BrokersList = () => {
                                 <Select
                                     value={selectedCity}
                                     label="Select City"
-                                    onChange={(e) => setSelectedCity(e.target.value)}
+                                    onChange={(e) => {
+                                        const city = e.target.value;
+                                        setSelectedCity(city);
+                                        if (city) {
+                                            setSearchParams({ city });
+                                        } else {
+                                            setSearchParams({});
+                                        }
+                                    }}
                                     sx={{ borderRadius: '10px' }}
                                 >
                                     <MenuItem value="">All Cities</MenuItem>
+                                    {selectedCity && !cities.some(c => c.name === selectedCity) && (
+                                        <MenuItem value={selectedCity}>{selectedCity}</MenuItem>
+                                    )}
                                     {cities.map(city => (
                                         <MenuItem key={city.id} value={city.name}>{city.name}</MenuItem>
                                     ))}

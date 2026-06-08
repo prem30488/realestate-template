@@ -153,18 +153,20 @@ const LocalitiesList = () => {
               placeholder={`Search localities in ${city}...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#7c3aed', fontSize: 24 }} />
-                  </InputAdornment>
-                ),
-                sx: {
-                  borderRadius: '16px',
-                  '& fieldset': { border: 'none' },
-                  bgcolor: '#f1f5f9',
-                  fontWeight: 600,
-                  color: '#1e293b'
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#7c3aed', fontSize: 24 }} />
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    borderRadius: '16px',
+                    '& fieldset': { border: 'none' },
+                    bgcolor: '#f1f5f9',
+                    fontWeight: 600,
+                    color: '#1e293b'
+                  }
                 }
               }}
             />
@@ -222,7 +224,7 @@ const LocalitiesList = () => {
 
             <Grid container spacing={3.5}>
               {filteredLocalities.map((locality) => (
-                <Grid item xs={12} sm={6} md={4} key={locality.id}>
+                <Grid xs={12} sm={6} md={4} key={locality.id}>
                   <Card
                     sx={{
                       height: '100%',
@@ -253,6 +255,27 @@ const LocalitiesList = () => {
                       }
                     }}
                   >
+                    {locality.image_url && (
+                      <Box
+                        sx={{
+                          height: '180px',
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}
+                      >
+                        <Box
+                          component="img"
+                          src={locality.image_url}
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.5s ease',
+                            '&:hover': { transform: 'scale(1.1)' }
+                          }}
+                        />
+                      </Box>
+                    )}
                     <CardContent sx={{ p: 4, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                       {/* Locality Header */}
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3.5 }}>
@@ -319,8 +342,33 @@ const LocalitiesList = () => {
                         </Box>
                       )}
 
-                      {/* CTA Action - Find Properties in this locality */}
-                      <Box sx={{ mt: 'auto' }}>
+                      <Box sx={{ mt: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Link
+                          to={`/locality/${locality.name}`}
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            startIcon={<ExploreIcon />}
+                            sx={{
+                              borderRadius: '14px',
+                              py: 1.5,
+                              bgcolor: '#7c3aed',
+                              color: 'white',
+                              fontWeight: 700,
+                              textTransform: 'none',
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                bgcolor: '#6d28d9',
+                                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)'
+                              }
+                            }}
+                          >
+                            Explore {locality.name}
+                          </Button>
+                        </Link>
+
                         <Link
                           to={`/properties?city=${city}&locality_id=${locality.id}`}
                           style={{ textDecoration: 'none' }}
@@ -345,7 +393,7 @@ const LocalitiesList = () => {
                               }
                             }}
                           >
-                            Explore Properties
+                            View Properties
                           </Button>
                         </Link>
                       </Box>

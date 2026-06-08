@@ -50,6 +50,13 @@ import ShareRequirement from './components/ShareRequirement';
 import BuyVsRentCalculator from './components/BuyVsRentCalculator';
 import RatesAndTrends from './components/RatesAndTrends';
 import PropertyValuation from './components/PropertyValuation';
+import TipsAndGuides from './components/TipsAndGuides';
+import LocalityDetails from './components/LocalityDetails';
+import GuideDetail from './components/GuideDetail';
+import EMICalculator from './components/EMICalculator';
+import ROICalculator from './components/ROICalculator';
+import CompareLocalities from './components/CompareLocalities';
+
 
 
 function App() {
@@ -168,6 +175,15 @@ function App() {
           </>
         } />
 
+        <Route path="/locality/:name" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <LocalityDetails onLoginRequired={() => setIsLoginOpen(true)} />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
         <Route path="/projects/:city" element={
           <>
             <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
@@ -239,6 +255,61 @@ function App() {
             <WhatsAppButton />
           </>
         } />
+
+        <Route path="/emi-calculator" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <EMICalculator />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/roi-calculator" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <ROICalculator />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/compare-localities" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <CompareLocalities />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/tips-and-guides" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <TipsAndGuides />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/guides/:category" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <GuideDetail />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/guides/:category/:slug" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <GuideDetail />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
 
 
         {/* User Specific Routes */}

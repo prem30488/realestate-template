@@ -418,7 +418,7 @@ app.get('/api/brokers', async (req, res) => {
   try {
     const { city, limit } = req.query;
     const where = { isDeleted: false };
-    if (city) where.city = { [Op.iLike]: `%${city}%` };
+    if (city) where.city = { [Op.iLike]: city.trim() };
     const brokers = await Broker.findAll({
       where,
       order: [['name', 'ASC']],
@@ -485,6 +485,35 @@ app.get('/api/cities/:name', async (req, res) => {
     res.json(city);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching city details' });
+  }
+});
+
+// Get jantri rates for all zones in a specific area
+app.get('/api/jantri-rates/by-area', async (req, res) => {
+  const { area } = req.query;
+  if (!area) return res.status(400).json({ error: 'Area parameter is required' });
+
+  try {
+    const query = `
+      SELECT 
+        zone_code,
+        residential_rate,
+        commercial_rate,
+        office_rate,
+        industrial_rate,
+        land_rate
+      FROM jantri_rates
+      WHERE TRIM(UPPER(area)) = :area
+      ORDER BY zone_code ASC
+    `;
+    const rates = await sequelize.query(query, {
+      replacements: { area: area.toUpperCase().trim() },
+      type: Sequelize.QueryTypes.SELECT
+    });
+    res.json(rates);
+  } catch (error) {
+    console.error('Error fetching jantri rates by area:', error.message);
+    res.status(500).json({ error: 'Error fetching jantri rates for area' });
   }
 });
 

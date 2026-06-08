@@ -8,8 +8,10 @@ import { useCity } from '../context/CityContext';
 import { COMPANY_INFO } from '../constants/companyInfo';
 import { API_BASE_URL } from '../constants';
 
-// Replace {city} placeholder with the selected city
-const interpolate = (text, city) => (text || '').replace(/\{city\}/g, city);
+// Replace {city} or {cityName} placeholder with the selected city
+const interpolate = (text, city) => (text || '')
+  .replace(/\{city\}/g, city)
+  .replace(/\{cityName\}/g, city);
 
 // ── Render a link item ───────────────────────────────────────────────────────
 const NavLink = ({ item, city }) => {
@@ -24,7 +26,7 @@ const NavLink = ({ item, city }) => {
           {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
         </Link>
       ) : (
-        <a href={link}>
+        <a href={link} target="_blank" rel="noopener noreferrer">
           {interpolate(item.title, city)}
           {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
         </a>
@@ -67,7 +69,7 @@ const NavItem = ({ item, city }) => {
   const titleEl = isInternal ? (
     <Link to={link}>{titleContent}</Link>
   ) : (
-    <a href={link}>{titleContent}</a>
+    <a href={link} target="_blank" rel="noopener noreferrer">{titleContent}</a>
   );
 
   if (!hasChildren || !hasDropdown) {
@@ -168,7 +170,8 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
           <ul>
             <li><Link to="/rates-and-trends">Rates &amp; Trends</Link></li>
             <li><Link to="/buy-vs-rent">Buy vs Rent</Link></li>
-            <li><Link to="/news">Tips and Guides</Link></li>
+            <li><Link to="/tips-and-guides">Tips and Guides</Link></li>
+            <li><Link to="/compare-localities">Compare Localities</Link></li>
           </ul>
         </div>
       </div>
@@ -275,7 +278,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
       <ul className="sub-menu">
         <li><a href="#">Help Center</a></li>
         <li><Link to="/share-requirement">Sales Enquiry</Link></li>
-        <li><a href="#">Chat with Us</a></li>
+        <li><a href="https://api.whatsapp.com/send/?phone=919624259046&text=Hi%21&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">Chat with Us</a></li>
       </ul>
     </li>
   </>

@@ -29,14 +29,15 @@ router.get('/public/projects', async (req, res) => {
             where,
             include: [
                 { model: City, as: 'city', attributes: ['id', 'name'] },
-                { model: Locality, as: 'locality', attributes: ['id', 'name'] }
+                { model: Locality, as: 'locality', attributes: ['id', 'name'] },
+                { model: Builder, as: 'builder', attributes: ['id', 'company_name', 'logo_url', 'average_rating'] }
             ],
             order: [['projectName', 'ASC']]
         });
 
         res.json({ success: true, data: projects });
     } catch (error) {
-        console.error('Error fetching public projects:', error);
+        console.error('Error fetching public projects Also :', error);
         res.status(500).json({ success: false, message: 'Error fetching projects', error: error.message });
     }
 });

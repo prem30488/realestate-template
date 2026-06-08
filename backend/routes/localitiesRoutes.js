@@ -1,5 +1,5 @@
 const express = require('express');
-const { Locality, City } = require('../models');
+const { Locality, City, LocalityReview, User } = require('../models');
 const { Op } = require('sequelize');
 
 const router = express.Router();
@@ -48,7 +48,7 @@ router.get('/public/localities', async (req, res) => {
     try {
         const { city } = req.query;
         const where = {};
-        
+
         if (city) {
             const cityRecord = await City.findOne({
                 where: { name: { [Op.iLike]: city } }
@@ -70,6 +70,66 @@ router.get('/public/localities', async (req, res) => {
     } catch (error) {
         console.error('Error fetching public localities:', error);
         res.status(500).json({ success: false, message: 'Error fetching localities', error: error.message });
+    }
+});
+
+// GET single public locality by name with reviews
+router.get('/public/localities/:name', async (req, res) => {
+    try {
+        const localityName = req.params.name.trim();
+        console.log('Fetching details for locality:', localityName);
+
+        const locality = await Locality.findOne({
+            where: { name: { [Op.iLike]: localityName } },
+            include: [
+                { model: City, as: 'city', attributes: ['id', 'name'], required: false },
+                {
+                    model: LocalityReview,
+                    as: 'reviews',
+                    required: false,
+                    include: [{ model: User, as: 'user', attributes: ['id', 'username'], required: false }]
+                }
+            ],
+            order: [[{ model: LocalityReview, as: 'reviews' }, 'createdAt', 'DESC']]
+        });
+
+        if (!locality) {
+            console.log('Locality not found in DB:', localityName);
+            return res.status(404).json({ success: false, message: 'Locality not found' });
+        }
+
+        res.json({ success: true, data: locality });
+    } catch (error) {
+        console.error('Error fetching locality details:', error);
+        res.status(500).json({ success: false, message: 'Error fetching locality details', error: error.message });
+    }
+});
+
+// POST a review for a locality
+router.post('/public/localities/review', authenticateToken, async (req, res) => {
+    try {
+        const { localityId, rating, comment } = req.body;
+        const userId = req.user.id;
+
+        if (!localityId || !rating || !comment) {
+            return res.status(400).json({ success: false, message: 'localityId, rating and comment are required' });
+        }
+
+        const review = await LocalityReview.create({
+            localityId,
+            userId,
+            rating,
+            comment
+        });
+
+        const fullReview = await LocalityReview.findByPk(review.id, {
+            include: [{ model: User, as: 'user', attributes: ['id', 'username'] }]
+        });
+
+        res.status(201).json({ success: true, message: 'Review added successfully', data: fullReview });
+    } catch (error) {
+        console.error('Error adding locality review:', error);
+        res.status(500).json({ success: false, message: 'Error adding review', error: error.message });
     }
 });
 

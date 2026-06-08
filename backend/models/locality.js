@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'locality_id',
                 as: 'properties'
             });
+            Locality.hasMany(models.LocalityReview, {
+                foreignKey: 'localityId',
+                as: 'reviews'
+            });
         }
     }
     Locality.init({
@@ -47,6 +51,30 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DECIMAL(3, 2),
             allowNull: true,
             defaultValue: 4.0
+        },
+        overview: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+        connectivity: {
+            type: DataTypes.JSONB,
+            allowNull: true
+        },
+        infrastructure: {
+            type: DataTypes.JSONB,
+            allowNull: true
+        },
+        lifestyle: {
+            type: DataTypes.JSONB,
+            allowNull: true
+        },
+        real_estate_trends: {
+            type: DataTypes.JSONB,
+            allowNull: true
+        },
+        image_url: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     }, {
         sequelize,
