@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link, useLocation } from 'react-router-dom';
 import './Header.css';
 import axios from 'axios';
@@ -13,20 +14,47 @@ const interpolate = (text, city) => (text || '')
   .replace(/\{city\}/g, city)
   .replace(/\{cityName\}/g, city);
 
+// Resolve menu link: prefer explicit internal paths, map common '#' titles to routes
+const resolveMenuLink = (item) => {
+  const raw = (item.link || '').trim();
+  // if it's already an internal path, use it
+  if (raw.startsWith('/')) return raw;
+
+  // map common menu titles that use '#' in DB to real routes
+  const title = (item.title || '').toLowerCase();
+  if (title.includes('design consultation')) return '/design-consultation';
+  if (title.includes('home interior') || title.includes('home interiors')) return '/home-interiors';
+  if (title.includes('full home interior') || title.includes('cost calculator')) return '/interior-cost-calculator';
+  if (title.includes('kitchen') || title.includes('wardrobe')) return '/kitchen-wardrobe-calculator';
+
+  // otherwise return the raw link (could be external or '#')
+  return raw || '#';
+};
+
 // ── Render a link item ───────────────────────────────────────────────────────
 const NavLink = ({ item, city }) => {
-  const link = interpolate(item.link, city);
-  const isInternal = link.startsWith('/');
+  const navigate = useNavigate();
+  const rawLink = interpolate(item.link, city);
+  const resolved = resolveMenuLink({ ...item, link: rawLink });
+  const isInternal = resolved.startsWith('/');
+
+  const handleClick = (e) => {
+    if (isInternal) {
+      e.preventDefault();
+      try { navigate(resolved); } catch (err) { /* ignore */ }
+    }
+    // external links will follow normal behavior
+  };
 
   return (
     <li>
       {isInternal ? (
-        <Link to={link}>
+        <Link to={resolved} onClick={handleClick}>
           {interpolate(item.title, city)}
           {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
         </Link>
       ) : (
-        <a href={link} target="_blank" rel="noopener noreferrer">
+        <a href={resolved} onClick={handleClick} target="_blank" rel="noopener noreferrer">
           {interpolate(item.title, city)}
           {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
         </a>
@@ -172,6 +200,9 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
             <li><Link to="/buy-vs-rent">Buy vs Rent</Link></li>
             <li><Link to="/tips-and-guides">Tips and Guides</Link></li>
             <li><Link to="/compare-localities">Compare Localities</Link></li>
+            <li><Link to="/emi-calculator">EMI Calculator</Link></li>
+            <li><Link to="/roi-calculator">ROI Calculator</Link></li>
+            <li><Link to="/home-loan-calculator">Home Loan Calculator</Link></li>
           </ul>
         </div>
       </div>
@@ -242,9 +273,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
           <h6>For Agent &amp; Builder</h6>
           <ul>
             <li><Link to="/dashboard">My Dashboard</Link></li>
-            <li><a href="#">Ad Packages</a></li>
-            <li><a href="#">iAdvantage</a></li>
-            <li><a href="#">Developer Lounge</a></li>
+            <li><Link to="/developer-lounge">Developer Lounge</Link></li>
             <li><Link to="/share-requirement">Sales Enquiry</Link></li>
           </ul>
         </div>
@@ -264,10 +293,10 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
     <li className="has-sub-menu"><a href="#">Home Interiors <span className="badge-new">NEW</span> <i className="pe-7s-angle-down" /></a>
       <ul className="sub-menu">
         <li className="header-item">&nbsp;&nbsp;Explore our services</li>
-        <li><a href="#">Home Interior Design Services</a></li>
-        <li><a href="#">Design Consultation</a></li>
-        <li><a href="#">Full Home Interior Cost Calculator</a></li>
-        <li><a href="#">Kitchen/Wardrobe Calculator</a></li>
+        <li><Link to="/home-interiors">Home Interior Design Services</Link></li>
+        <li><Link to="/design-consultation">Design Consultation</Link></li>
+        <li><Link to="/interior-cost-calculator">Full Home Interior Cost Calculator</Link></li>
+        <li><Link to="/kitchen-wardrobe-calculator">Kitchen/Wardrobe Calculator</Link></li>
       </ul>
     </li>
 
@@ -290,6 +319,7 @@ const Header = ({ onLoginClick, user, onLogout }) => {
   const location = useLocation();
   const [isSticky, setIsSticky] = useState(false);
   const [menuItems, setMenuItems] = useState(null); // null = loading, [] = failed/empty
+  const navigate = useNavigate();
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -307,6 +337,22 @@ const Header = ({ onLoginClick, user, onLogout }) => {
       // If the clicked element is a link inside the mobile menu and NOT an expansion toggle
       const link = e.target.closest('.mean-nav a');
       if (link && !link.classList.contains('mean-expand')) {
+        // If link is a placeholder ('#') map by visible text to internal routes
+        try {
+          const href = link.getAttribute('href');
+          const txt = (link.textContent || '').trim().toLowerCase();
+          if (href === '#' && txt) {
+            if (txt.includes('design consultation')) {
+              navigate('/design-consultation');
+            } else if (txt.includes('full home interior') || txt.includes('cost calculator')) {
+              navigate('/interior-cost-calculator');
+            } else if (txt.includes('kitchen') || txt.includes('wardrobe')) {
+              navigate('/kitchen-wardrobe-calculator');
+            }
+          }
+        } catch (err) {
+          // ignore
+        }
         closeMenu();
       }
     };

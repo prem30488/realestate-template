@@ -16,6 +16,50 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    tagline: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    experienceYears: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    totalProjects: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    ongoingProjects: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    completedProjects: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    operatingCities: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    rating: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0.0
+    },
+    reviewsCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    websiteUrl: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

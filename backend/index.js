@@ -3,11 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Builder, User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Locality, Project, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, TeamMember, sequelize, Sequelize } = require('./models');
+const { Builder, User, Property, PropertyImage, PropertyType, Article, HeroSlider, HomeComponent, MenuItem, Broker, Service, FunFact, InstaReel, Testimonial, Brand, Amenity, City, Locality, Project, Shortlist, ViewedProperty, Review, PropertyFaq, Subscriber, EmailTemplate, Settings, TeamMember, InteriorDesigner, InteriorArticle, sequelize, Sequelize } = require('./models');
 const { Op } = require('sequelize');
 const initDb = require('./initDb');
+const { ensureInteriorData } = require('./lib/ensureInteriorData');
 const localitiesRoutes = require('./routes/localitiesRoutes');
 const projectsRoutes = require('./routes/projectsRoutes');
+const interiorRoutesPublic = require('./routes/interiorRoutesPublic');
 const { predictValuation, trainModel } = require('./ml/valuation');
 
 
@@ -17,6 +19,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
 app.use(cors());
 app.use(express.json());
+
+// Mount public interior routes (provides /api/public/* endpoints)
+app.use('/api', interiorRoutesPublic);
 
 app.get('/', (req, res) => {
   res.send('Real Estate API is running...');
@@ -200,16 +205,25 @@ app.get('/api/news/:id', async (req, res) => {
 // Public News List Route
 app.get('/api/news', async (req, res) => {
   try {
+    const { category, limit = 20 } = req.query;
+    const where = { isDeleted: false };
+
+    if (category && category !== 'All') {
+      where.category = { [Op.iLike]: `%${category}%` };
+    }
+
     const news = await Article.findAll({
-      where: { isDeleted: false },
+      where,
       order: [['id', 'DESC']],
-      include: [{ model: User, as: 'author', attributes: ['username'] }]
+      include: [{ model: User, as: 'author', attributes: ['username'] }],
+      limit: parseInt(limit)
     });
     res.json(news);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching news' });
   }
 });
+
 
 // Get public settings (including theme)
 app.get('/api/settings', async (req, res) => {
@@ -430,6 +444,20 @@ app.get('/api/brokers', async (req, res) => {
   }
 });
 
+// Brand Store Routes
+app.get(['/api/public/brands', '/api/brands'], async (req, res) => {
+  try {
+    const brands = await Brand.findAll({
+      where: { isDeleted: false },
+      order: [['name', 'ASC']]
+    });
+    res.json(brands);
+  } catch (error) {
+    console.error('Error fetching brands:', error);
+    res.status(500).json({ error: 'Error fetching brands' });
+  }
+});
+
 // Get property types
 app.get('/api/property-types', async (req, res) => {
   try {
@@ -472,6 +500,36 @@ app.get('/api/cities', async (req, res) => {
   } catch (error) {
     console.error('Error fetching cities:', error);
     res.status(500).json({ error: 'Error fetching cities' });
+  }
+});
+
+// Consultation price ranges (city-wise)
+app.get('/api/consultation/prices', async (req, res) => {
+  try {
+    const cities = await City.findAll({ order: [['order', 'ASC'], ['name', 'ASC']] });
+    // Define tiered ranges within global bounds (10,000 - 500,000)
+    const globalMin = 10000;
+    const globalMax = 500000;
+
+    const result = cities.map((c, idx) => {
+      // Simple tiering: first 5 -> premium, next 10 -> mid, rest -> standard
+      let min = globalMin;
+      let max = 50000;
+      if (idx < 5) { min = 50000; max = globalMax; }
+      else if (idx < 15) { min = 20000; max = 200000; }
+      else { min = globalMin; max = 50000; }
+      return {
+        city: c.name,
+        min,
+        max,
+        currency: 'INR'
+      };
+    });
+
+    res.json({ success: true, ranges: result, global: { min: globalMin, max: globalMax, currency: 'INR' } });
+  } catch (error) {
+    console.error('Error fetching consultation prices:', error);
+    res.status(500).json({ success: false, message: 'Error fetching consultation prices' });
   }
 });
 
@@ -1781,6 +1839,17 @@ app.put('/api/admin/brands/:id', authenticateToken, authorizeManager('Brand'), a
   }
 });
 
+app.patch('/api/admin/brands/:id/toggle-delete', authenticateToken, authorizeManager('Brand'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isDeleted } = req.body;
+    await Brand.update({ isDeleted }, { where: { id } });
+    res.json({ message: 'Brand status updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating brand status' });
+  }
+});
+
 app.delete('/api/admin/brands/:id', authenticateToken, authorizeManager('Brand'), async (req, res) => {
   try {
     const { id } = req.params;
@@ -2117,7 +2186,23 @@ app.get('/api/menu', async (req, res) => {
       }
       return result;
     };
-    const tree = await buildTree(null);
+    let tree = await buildTree(null);
+
+    // Normalize menu links for common placeholders (DB often stores '#')
+    const normalize = (items) => {
+      for (const it of items) {
+        const title = (it.title || '').toLowerCase();
+        if (!it.link || it.link.trim() === '#' || it.link.trim() === '') {
+          if (title.includes('design consultation')) it.link = '/design-consultation';
+          else if (title.includes('full home interior') || title.includes('interior cost') || title.includes('cost calculator')) it.link = '/interior-cost-calculator';
+          else if (title.includes('kitchen') || title.includes('wardrobe')) it.link = '/kitchen-wardrobe-calculator';
+          else if (title.includes('home interior')) it.link = '/home-interiors';
+        }
+        if (it.children && it.children.length) normalize(it.children);
+      }
+    };
+
+    normalize(tree);
     res.json(tree);
   } catch (error) {
     console.error(error);
@@ -2785,12 +2870,277 @@ app.delete('/api/admin/builders/:id', authenticateToken, authorizeManager('Build
   }
 });
 
+// ── INTERIOR DESIGNERS ROUTES ─────────────────────────────────────────────────
+
+// Public: Get all interior designers with pagination, city filter, search
+app.get('/api/interior-designers', async (req, res) => {
+  const { city, search, page = 1, limit = 20, sort = 'rating' } = req.query;
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+  try {
+    const where = { isDeleted: false };
+    if (city) where.city = { [Op.iLike]: `%${city}%` };
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+    let order = [['rating', 'DESC'], ['reviewCount', 'DESC']];
+    if (sort === 'name') order = [['name', 'ASC']];
+    else if (sort === 'experience') order = [['yearsExperience', 'DESC']];
+    else if (sort === 'projects') order = [['projectsCompleted', 'DESC']];
+    else if (sort === 'featured') order = [['isFeatured', 'DESC'], ['rating', 'DESC']];
+    console.log('DEBUG /api/interior-designers sort=', sort, 'order=', JSON.stringify(order));
+    const { count, rows } = await InteriorDesigner.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset,
+      order
+    });
+    res.json({
+      designers: rows,
+      totalCount: count,
+      totalPages: Math.ceil(count / parseInt(limit)),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    console.error('Error fetching interior designers:', error);
+    res.status(500).json({ error: 'Error fetching interior designers' });
+  }
+});
+
+// Public: Get top designers by city
+app.get('/api/interior-designers/top', async (req, res) => {
+  const { city, limit = 5, sort = 'rating' } = req.query;
+  try {
+    const where = { isDeleted: false };
+    if (city) where.city = { [Op.iLike]: `%${city}%` };
+
+    let order = [['rating', 'DESC'], ['reviewCount', 'DESC']];
+    if (sort === 'name') order = [['name', 'ASC']];
+    else if (sort === 'experience') order = [['yearsExperience', 'DESC']];
+    else if (sort === 'projects') order = [['projectsCompleted', 'DESC']];
+    else if (sort === 'featured') order = [['isFeatured', 'DESC'], ['rating', 'DESC']];
+
+    const designers = await InteriorDesigner.findAll({
+      where,
+      order,
+      limit: parseInt(limit)
+    });
+    res.json(designers);
+  } catch (error) {
+    console.error('Error fetching top designers:', error);
+    res.status(500).json({ error: 'Error fetching top designers' });
+  }
+});
+
+// Admin: Get all interior designers
+app.get('/api/admin/interior-designers', authenticateToken, async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+  try {
+    const where = {};
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { city: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+    const { count, rows } = await InteriorDesigner.findAndCountAll({
+      where, limit: parseInt(limit), offset,
+      order: [['id', 'DESC']]
+    });
+    res.json({ designers: rows, totalCount: count, totalPages: Math.ceil(count / parseInt(limit)), currentPage: parseInt(page) });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching interior designers' });
+  }
+});
+
+app.post('/api/admin/interior-designers', authenticateToken, async (req, res) => {
+  try {
+    const designer = await InteriorDesigner.create(req.body);
+    res.status(201).json(designer);
+  } catch (error) {
+    res.status(500).json({ error: 'Error creating designer', details: error.message });
+  }
+});
+
+app.put('/api/admin/interior-designers/:id', authenticateToken, async (req, res) => {
+  try {
+    await InteriorDesigner.update(req.body, { where: { id: req.params.id } });
+    res.json({ message: 'Designer updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating designer' });
+  }
+});
+
+app.delete('/api/admin/interior-designers/:id', authenticateToken, async (req, res) => {
+  try {
+    await InteriorDesigner.destroy({ where: { id: req.params.id } });
+    res.json({ message: 'Designer deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting designer' });
+  }
+});
+
+// ── INTERIOR ARTICLES ROUTES ─────────────────────────────────────────────────
+
+// Public: Get interior articles (latest, paginated)
+app.get('/api/interior-articles', async (req, res) => {
+  const { page = 1, limit = 10, category } = req.query;
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+  try {
+    const where = { isDeleted: false };
+    if (category) where.category = { [Op.iLike]: `%${category}%` };
+    const { count, rows } = await InteriorArticle.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset,
+      order: [['publishedAt', 'DESC']]
+    });
+    res.json({
+      articles: rows,
+      totalCount: count,
+      totalPages: Math.ceil(count / parseInt(limit)),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    console.error('Error fetching interior articles:', error);
+    res.status(500).json({ error: 'Error fetching articles' });
+  }
+});
+
+// Admin: CRUD for interior articles
+app.get('/api/admin/interior-articles', authenticateToken, async (req, res) => {
+  const { search, page = 1, limit = 10 } = req.query;
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+  try {
+    const where = {};
+    if (search) where.title = { [Op.iLike]: `%${search}%` };
+    const { count, rows } = await InteriorArticle.findAndCountAll({
+      where, limit: parseInt(limit), offset, order: [['publishedAt', 'DESC']]
+    });
+    res.json({ articles: rows, totalCount: count, totalPages: Math.ceil(count / parseInt(limit)), currentPage: parseInt(page) });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching articles' });
+  }
+});
+
+app.post('/api/admin/interior-articles', authenticateToken, async (req, res) => {
+  try {
+    const article = await InteriorArticle.create(req.body);
+    res.status(201).json(article);
+  } catch (error) {
+    res.status(500).json({ error: 'Error creating article', details: error.message });
+  }
+});
+
+app.put('/api/admin/interior-articles/:id', authenticateToken, async (req, res) => {
+  try {
+    await InteriorArticle.update(req.body, { where: { id: req.params.id } });
+    res.json({ message: 'Article updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating article' });
+  }
+});
+
+app.delete('/api/admin/interior-articles/:id', authenticateToken, async (req, res) => {
+  try {
+    await InteriorArticle.destroy({ where: { id: req.params.id } });
+    res.json({ message: 'Article deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error deleting article' });
+  }
+});
+
+// Seed interior data (one-time endpoint)
+app.post('/api/admin/seed-interior-data', authenticateToken, async (req, res) => {
+  try {
+    const designerCount = await InteriorDesigner.count();
+    const articleCount = await InteriorArticle.count();
+
+    if (designerCount === 0) {
+      const cities = ['Ahmedabad', 'Gandhinagar', 'Surat', 'Vadodara', 'Rajkot'];
+      const specializations = ['Living Room', 'Bedroom', 'Kitchen', 'Bathroom', 'Office', 'Commercial', 'Modular Kitchen', 'Wardrobe'];
+
+      const designersData = [
+        { name: 'Archispace Interiors', city: 'Ahmedabad', rating: 4.8, reviewCount: 312, yearsExperience: 14, projectsCompleted: 450, minBudget: 500000, maxBudget: 5000000, specializations: ['Living Room', 'Bedroom', 'Kitchen'], description: 'Award-winning interior design firm specializing in luxury residential and commercial spaces. Known for blending traditional Indian aesthetics with modern minimalism.', address: 'SG Highway, Ahmedabad', phone: '+91 79 4000 1234', email: 'info@archispace.com', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Archispace+Interiors&background=8B5CF6&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=800&q=80', tags: ['Luxury', 'Residential', 'Award Winning'] },
+        { name: 'Urban Canvas Designs', city: 'Ahmedabad', rating: 4.6, reviewCount: 198, yearsExperience: 9, projectsCompleted: 280, minBudget: 300000, maxBudget: 3000000, specializations: ['Modular Kitchen', 'Office', 'Commercial'], description: 'Contemporary interior design studio focused on functional spaces with artistic flair. Specializes in modular kitchens and workspace design.', address: 'Prahlad Nagar, Ahmedabad', phone: '+91 79 4000 5678', email: 'hello@urbancanvas.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Urban+Canvas&background=2563EB&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80', tags: ['Contemporary', 'Modular', 'Commercial'] },
+        { name: 'Neelkanth Decor Studio', city: 'Ahmedabad', rating: 4.5, reviewCount: 143, yearsExperience: 11, projectsCompleted: 320, minBudget: 200000, maxBudget: 2000000, specializations: ['Bedroom', 'Bathroom', 'Wardrobe'], description: 'Trusted name in Ahmedabad interior design for over a decade. Delivers premium, budget-friendly solutions for modern homes.', address: 'Bopal, Ahmedabad', phone: '+91 79 4000 9012', email: 'contact@neelkanthdecor.com', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Neelkanth+Decor&background=D97706&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80', tags: ['Budget Friendly', 'Residential'] },
+        { name: 'Luxe Living Concepts', city: 'Ahmedabad', rating: 4.9, reviewCount: 89, yearsExperience: 7, projectsCompleted: 175, minBudget: 1000000, maxBudget: 10000000, specializations: ['Living Room', 'Kitchen', 'Office'], description: 'Ultra-premium interior design brand serving Ahmedabads elite clientele. Every project is a masterpiece of craftsmanship and design.', address: 'Satellite, Ahmedabad', phone: '+91 79 4001 2345', email: 'luxury@luxeliving.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Luxe+Living&background=DC2626&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80', tags: ['Ultra Luxury', 'Premium', 'Bespoke'] },
+        { name: 'Greenscape Interiors', city: 'Ahmedabad', rating: 4.4, reviewCount: 267, yearsExperience: 6, projectsCompleted: 198, minBudget: 150000, maxBudget: 1500000, specializations: ['Bedroom', 'Living Room', 'Commercial'], description: 'Eco-conscious design firm integrating biophilic elements and sustainable materials into every living space.', address: 'Naranpura, Ahmedabad', phone: '+91 79 4001 6789', email: 'green@greenscape.com', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Greenscape&background=059669&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80', tags: ['Eco-Friendly', 'Sustainable', 'Biophilic'] },
+        { name: 'Modulo Design Lab', city: 'Gandhinagar', rating: 4.7, reviewCount: 156, yearsExperience: 8, projectsCompleted: 230, minBudget: 400000, maxBudget: 4000000, specializations: ['Kitchen', 'Wardrobe', 'Bedroom'], description: 'Gandhinagars premier modular furniture and interior design studio. Precision engineering meets aesthetic brilliance.', address: 'Sector 11, Gandhinagar', phone: '+91 79 2322 1234', email: 'info@modulodesign.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Modulo+Design&background=7C3AED&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80', tags: ['Modular', 'Precision', 'Modern'] },
+        { name: 'Creative Nest Studios', city: 'Surat', rating: 4.5, reviewCount: 211, yearsExperience: 10, projectsCompleted: 310, minBudget: 250000, maxBudget: 2500000, specializations: ['Living Room', 'Bedroom', 'Commercial'], description: 'Surat based boutique design firm known for creative and personalized interior solutions for residential and commercial clients.', address: 'Adajan, Surat', phone: '+91 261 400 1234', email: 'nest@creativenest.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Creative+Nest&background=EA580C&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80', tags: ['Boutique', 'Creative', 'Personalized'] },
+        { name: 'Imperial Interiors', city: 'Vadodara', rating: 4.6, reviewCount: 175, yearsExperience: 12, projectsCompleted: 280, minBudget: 350000, maxBudget: 3500000, specializations: ['Classic', 'Bedroom', 'Living Room'], description: 'Classic and contemporary design house in Vadodara offering timeless interior design solutions for discerning homeowners.', address: 'Alkapuri, Vadodara', phone: '+91 265 400 5678', email: 'imperial@imperialinteriors.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Imperial+Interiors&background=1E40AF&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=800&q=80', tags: ['Classic', 'Contemporary', 'Timeless'] },
+        { name: 'Pixel Perfect Designs', city: 'Ahmedabad', rating: 4.3, reviewCount: 98, yearsExperience: 5, projectsCompleted: 120, minBudget: 100000, maxBudget: 1000000, specializations: ['Office', 'Commercial', 'Retail'], description: 'Young and dynamic design studio specializing in office and retail space transformation. Tech-forward approach to modern workplaces.', address: 'GIFT City, Gandhinagar', phone: '+91 79 4002 3456', email: 'pixel@pixelperfect.in', isFeatured: false, isVerified: false, logo: 'https://ui-avatars.com/api/?name=Pixel+Perfect&background=0891B2&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80', tags: ['Office', 'Retail', 'Tech-Forward'] },
+        { name: 'Hues & Textures', city: 'Ahmedabad', rating: 4.7, reviewCount: 223, yearsExperience: 13, projectsCompleted: 390, minBudget: 300000, maxBudget: 3000000, specializations: ['Bedroom', 'Living Room', 'Bathroom'], description: 'Masters of color theory and material science. Their spaces are celebrated for their perfect harmony of texture, color and light.', address: 'C.G. Road, Ahmedabad', phone: '+91 79 4002 7890', email: 'hues@huestextures.com', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Hues+Textures&background=BE185D&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=800&q=80', tags: ['Color Expert', 'Textural', 'Artistic'] },
+        { name: 'Zen Space Architects', city: 'Ahmedabad', rating: 4.5, reviewCount: 134, yearsExperience: 9, projectsCompleted: 210, minBudget: 500000, maxBudget: 5000000, specializations: ['Minimalist', 'Living Room', 'Bedroom'], description: 'Minimalist Japanese-inspired design approach for the modern Indian home. Less is more - but never less than perfect.', address: 'Thaltej, Ahmedabad', phone: '+91 79 4003 1234', email: 'zen@zenspace.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Zen+Space&background=374151&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=800&q=80', tags: ['Minimalist', 'Japanese', 'Zen'] },
+        { name: 'Royal Decor Hub', city: 'Surat', rating: 4.4, reviewCount: 187, yearsExperience: 11, projectsCompleted: 340, minBudget: 200000, maxBudget: 2000000, specializations: ['Traditional', 'Bedroom', 'Pooja Room'], description: 'Celebrating Indian heritage through design. Royal Decor Hub creates culturally rich interiors with a modern sensibility.', address: 'Vesu, Surat', phone: '+91 261 400 5678', email: 'royal@royaldecor.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Royal+Decor&background=B45309&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1604578762246-41134e37f9cc?w=800&q=80', tags: ['Traditional', 'Heritage', 'Cultural'] },
+        { name: 'FutureLiving Design Co.', city: 'Gandhinagar', rating: 4.8, reviewCount: 112, yearsExperience: 6, projectsCompleted: 160, minBudget: 600000, maxBudget: 6000000, specializations: ['Smart Home', 'Office', 'Modular'], description: 'Gujarat most innovative design studio integrating smart home technology, automation and cutting-edge materials.', address: 'Sector 28, Gandhinagar', phone: '+91 79 2322 5678', email: 'future@futureliving.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Future+Living&background=0F172A&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', tags: ['Smart Home', 'Innovative', 'Tech'] },
+        { name: 'Arterra Spaces', city: 'Vadodara', rating: 4.3, reviewCount: 89, yearsExperience: 7, projectsCompleted: 145, minBudget: 200000, maxBudget: 2000000, specializations: ['Living Room', 'Kitchen', 'Balcony'], description: 'Bringing art into living. Arterra Spaces transforms ordinary interiors into gallery-like experiences.', address: 'Gotri, Vadodara', phone: '+91 265 400 9012', email: 'art@arterra.in', isFeatured: false, isVerified: false, logo: 'https://ui-avatars.com/api/?name=Arterra+Spaces&background=6D28D9&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80', tags: ['Artistic', 'Gallery-like', 'Creative'] },
+        { name: 'Serene Abode Interiors', city: 'Rajkot', rating: 4.6, reviewCount: 201, yearsExperience: 10, projectsCompleted: 255, minBudget: 150000, maxBudget: 1500000, specializations: ['Bedroom', 'Living Room', 'Kids Room'], description: 'Rajkots most loved interior design studio, creating comfortable and serene living environments for families.', address: 'Kalawad Road, Rajkot', phone: '+91 281 400 1234', email: 'serene@sereneabode.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Serene+Abode&background=065F46&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1617104678098-de229db51175?w=800&q=80', tags: ['Family', 'Comfortable', 'Warm'] },
+        { name: 'Prism Interior Studio', city: 'Ahmedabad', rating: 4.2, reviewCount: 76, yearsExperience: 4, projectsCompleted: 95, minBudget: 100000, maxBudget: 1000000, specializations: ['Office', 'Commercial', 'Cafes'], description: 'Young studio with a fresh perspective on commercial interior design. Specializes in cafes, restaurants and co-working spaces.', address: 'Navrangpura, Ahmedabad', phone: '+91 79 4003 5678', email: 'prism@prisminteri.com', isFeatured: false, isVerified: false, logo: 'https://ui-avatars.com/api/?name=Prism+Studio&background=9333EA&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800&q=80', tags: ['Cafes', 'Commercial', 'Co-working'] },
+        { name: 'Harmony Homes Design', city: 'Ahmedabad', rating: 4.5, reviewCount: 165, yearsExperience: 8, projectsCompleted: 195, minBudget: 250000, maxBudget: 2500000, specializations: ['Vastu', 'Traditional', 'Living Room'], description: 'Vastu-compliant design solutions that harmonize ancient Indian wisdom with modern aesthetics.', address: 'Maninagar, Ahmedabad', phone: '+91 79 4004 1234', email: 'harmony@harmonyhomes.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Harmony+Homes&background=B91C1C&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1464146072230-91cabc968266?w=800&q=80', tags: ['Vastu', 'Traditional', 'Harmony'] },
+        { name: 'Blueprint Living', city: 'Surat', rating: 4.4, reviewCount: 142, yearsExperience: 6, projectsCompleted: 168, minBudget: 200000, maxBudget: 2000000, specializations: ['Bedroom', 'Kitchen', 'Bathroom'], description: 'Systematic approach to interior design: plan, design, execute. Blueprint Living delivers projects on time, every time.', address: 'Pal, Surat', phone: '+91 261 400 9012', email: 'blue@blueprintliving.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Blueprint+Living&background=1D4ED8&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80', tags: ['Systematic', 'On-Time', 'Reliable'] },
+        { name: 'Marquee Interiors', city: 'Ahmedabad', rating: 4.8, reviewCount: 289, yearsExperience: 16, projectsCompleted: 520, minBudget: 800000, maxBudget: 8000000, specializations: ['Luxury', 'Villa', 'Penthouse'], description: 'Gujarat premier luxury interior design firm. Marquee creates extraordinary experiences in extraordinary spaces for extraordinary people.', address: 'Bodakdev, Ahmedabad', phone: '+91 79 4004 5678', email: 'marquee@marqueeinteriors.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Marquee+Interiors&background=78350F&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80', tags: ['Ultra Luxury', 'Villa', 'Penthouse'] },
+        { name: 'Vivid Design Works', city: 'Gandhinagar', rating: 4.5, reviewCount: 134, yearsExperience: 7, projectsCompleted: 178, minBudget: 300000, maxBudget: 3000000, specializations: ['Colorful', 'Kids Room', 'Living Room'], description: 'Vibrant and expressive interior design. Vivid works with bold colours and eclectic textures to create truly memorable spaces.', address: 'Sector 25, Gandhinagar', phone: '+91 79 2322 9012', email: 'vivid@vividdesign.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Vivid+Design&background=DC2626&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=800&q=80', tags: ['Colorful', 'Vibrant', 'Eclectic'] },
+        { name: 'Tranquil Touch Design', city: 'Rajkot', rating: 4.3, reviewCount: 98, yearsExperience: 5, projectsCompleted: 110, minBudget: 150000, maxBudget: 1500000, specializations: ['Spa', 'Bedroom', 'Bathroom'], description: 'Creating wellness-inspired interiors that promote relaxation, mental health and holistic living.', address: 'University Road, Rajkot', phone: '+91 281 400 5678', email: 'tranquil@tranquiltouch.in', isFeatured: false, isVerified: false, logo: 'https://ui-avatars.com/api/?name=Tranquil+Touch&background=047857&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1604578762246-41134e37f9cc?w=800&q=80', tags: ['Wellness', 'Spa', 'Relaxing'] },
+        { name: 'Form & Function Studio', city: 'Ahmedabad', rating: 4.6, reviewCount: 178, yearsExperience: 10, projectsCompleted: 245, minBudget: 400000, maxBudget: 4000000, specializations: ['Scandinavian', 'Minimalist', 'Office'], description: 'Scandinavian design principles adapted for Indian homes. Maximizing functionality through thoughtful, clutter-free design.', address: 'New Ranip, Ahmedabad', phone: '+91 79 4005 1234', email: 'form@formfunction.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Form+Function&background=374151&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=800&q=80', tags: ['Scandinavian', 'Minimalist', 'Functional'] },
+        { name: 'Ornate Abode', city: 'Vadodara', rating: 4.7, reviewCount: 156, yearsExperience: 12, projectsCompleted: 290, minBudget: 500000, maxBudget: 5000000, specializations: ['Classic', 'Baroque', 'Living Room'], description: 'For lovers of ornate classical design. Expert in European-inspired decor with intricate detailing and rich materials.', address: 'Fatehgunj, Vadodara', phone: '+91 265 400 3456', email: 'ornate@ornateabode.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Ornate+Abode&background=92400E&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80', tags: ['Classical', 'Baroque', 'Ornate'] },
+        { name: 'Studio Palette', city: 'Ahmedabad', rating: 4.4, reviewCount: 120, yearsExperience: 6, projectsCompleted: 155, minBudget: 200000, maxBudget: 2000000, specializations: ['Bedroom', 'Living Room', 'Study Room'], description: 'Thoughtfully crafted interiors for the modern urban professional. Functional spaces that inspire creativity.', address: 'Paldi, Ahmedabad', phone: '+91 79 4005 5678', email: 'studio@studiopalette.in', isFeatured: false, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Studio+Palette&background=7C3AED&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80', tags: ['Urban', 'Professional', 'Creative'] },
+        { name: 'Elysian Interiors', city: 'Surat', rating: 4.9, reviewCount: 67, yearsExperience: 5, projectsCompleted: 98, minBudget: 700000, maxBudget: 7000000, specializations: ['Luxury', 'Penthouse', 'Villa'], description: 'Surats most exclusive design firm. Elysian creates spaces that transcend ordinary living into paradise-like experiences.', address: 'Dumas Road, Surat', phone: '+91 261 400 3456', email: 'elysian@elysianinteriors.in', isFeatured: true, isVerified: true, logo: 'https://ui-avatars.com/api/?name=Elysian+Interiors&background=881337&color=fff&size=200', coverImage: 'https://images.unsplash.com/photo-1617104678098-de229db51175?w=800&q=80', tags: ['Luxury', 'Exclusive', 'Paradise'] },
+      ];
+      await InteriorDesigner.bulkCreate(designersData);
+    }
+
+    if (articleCount === 0) {
+      const articlesData = [
+        { title: '10 Trending Interior Design Styles for Indian Homes in 2025', slug: 'trending-interior-design-styles-2025', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=800&q=80', excerpt: 'From japandi to maximalism, explore the design trends that are redefining Indian interiors this year.', content: 'The world of interior design is constantly evolving...', author: 'Priya Sharma', readTime: '6 min read', publishedAt: new Date('2025-12-10') },
+        { title: 'How to Choose the Perfect Color Palette for Your Living Room', slug: 'perfect-color-palette-living-room', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80', excerpt: 'Color theory meets practicality in this comprehensive guide to selecting the right tones for your living space.', content: 'Color is the most powerful tool in an interior designer\'s arsenal...', author: 'Arjun Mehta', readTime: '5 min read', publishedAt: new Date('2025-12-05') },
+        { title: 'Modular Kitchen Design: A Complete Buyer\'s Guide', slug: 'modular-kitchen-buyers-guide', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80', excerpt: 'Everything you need to know before investing in a modular kitchen — layouts, materials, costs and more.', content: 'A modular kitchen is more than just cabinets and countertops...', author: 'Chef Ravi Kumar', readTime: '8 min read', publishedAt: new Date('2025-11-28') },
+        { title: 'Small Apartment? Big Style: Space-Saving Interior Ideas', slug: 'small-apartment-space-saving-ideas', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=800&q=80', excerpt: 'Transform even the tiniest flat into a stylish, functional sanctuary with these clever design hacks.', content: 'Living in a small apartment doesn\'t mean sacrificing style...', author: 'Neha Patel', readTime: '4 min read', publishedAt: new Date('2025-11-20') },
+        { title: 'Vastu Shastra Meets Modern Interior Design: A Perfect Balance', slug: 'vastu-meets-modern-interior-design', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1464146072230-91cabc968266?w=800&q=80', excerpt: 'Discover how you can honor ancient Vastu principles while maintaining a contemporary aesthetic in your home.', content: 'Vastu Shastra, the ancient Indian science of architecture...', author: 'Dr. Sunita Rao', readTime: '7 min read', publishedAt: new Date('2025-11-15') },
+        { title: 'Sustainable Interior Design: Eco-Friendly Choices for Your Home', slug: 'sustainable-eco-friendly-interior-design', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80', excerpt: 'From recycled materials to energy-efficient lighting, create a beautiful home that is kind to the planet.', content: 'Sustainability has moved from a trend to an imperative...', author: 'Green Living Team', readTime: '5 min read', publishedAt: new Date('2025-11-08') },
+        { title: 'Bedroom Interior Design: Creating the Ultimate Sleep Sanctuary', slug: 'bedroom-interior-ultimate-sleep-sanctuary', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=800&q=80', excerpt: 'Sleep science meets interior design in this guide to crafting a bedroom that promotes deep, restorative rest.', content: 'Your bedroom is more than just a place to sleep...', author: 'Dr. Anita Verma', readTime: '6 min read', publishedAt: new Date('2025-11-01') },
+        { title: 'The Rise of Biophilic Design: Bringing Nature Indoors', slug: 'biophilic-design-nature-indoors', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80', excerpt: 'Indoor plants, natural materials and organic forms are transforming homes into urban biodiversity hubs.', content: 'Biophilic design — connecting human interiors with the natural world...', author: 'Rohan Gupta', readTime: '5 min read', publishedAt: new Date('2025-10-25') },
+        { title: 'Smart Home Integration: Designing for the Future Today', slug: 'smart-home-integration-design', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', excerpt: 'IoT, automation and smart technology are revolutionizing how we design and experience our homes.', content: 'The smart home revolution is here and design must adapt...', author: 'Tech Editorial', readTime: '7 min read', publishedAt: new Date('2025-10-18') },
+        { title: 'Interior Lighting Guide: How Light Can Transform Any Space', slug: 'interior-lighting-guide-transform-space', category: 'Interiors & Decor', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80', excerpt: 'The secret weapon of every great interior designer? Lighting. Learn how to layer light for maximum impact.', content: 'Of all the elements in interior design, lighting is perhaps the most transformative...', author: 'Lighting Expert Team', readTime: '6 min read', publishedAt: new Date('2025-10-10') },
+      ];
+      await InteriorArticle.bulkCreate(articlesData);
+    }
+
+    res.json({ message: 'Interior data seeded successfully', designers: designerCount === 0 ? 'seeded' : 'already exists', articles: articleCount === 0 ? 'seeded' : 'already exists' });
+  } catch (error) {
+    console.error('Error seeding interior data:', error);
+    res.status(500).json({ error: 'Error seeding data', details: error.message });
+  }
+});
+
 // Register routes
+console.log('📝 Registering routes...');
+console.log('localitiesRoutes type:', typeof localitiesRoutes);
+console.log('projectsRoutes type:', typeof projectsRoutes);
+console.log('interiorRoutesPublic type:', typeof interiorRoutesPublic);
+
+if (interiorRoutesPublic && interiorRoutesPublic.stack) {
+  console.log('interiorRoutesPublic.stack length:', interiorRoutesPublic.stack.length);
+  interiorRoutesPublic.stack.forEach((layer, idx) => {
+    if (layer.route) {
+      console.log(`  Route ${idx}:`, layer.route.path, Object.keys(layer.route.methods));
+    }
+  });
+}
+
 app.use('/api', localitiesRoutes);
+console.log('✅ localitiesRoutes mounted at /api');
 app.use('/api', projectsRoutes);
+console.log('✅ projectsRoutes mounted at /api');
+app.use('/api', interiorRoutesPublic);
+console.log('✅ interiorRoutesPublic mounted at /api');
 
 // Initialize database and start server
 initDb()
+  .then(() => ensureInteriorData())
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

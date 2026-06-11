@@ -44,6 +44,9 @@ module.exports = [
           { title: 'Buy vs Rent', link: '/buy-vs-rent', order: 2 },
           { title: 'Tips and Guides', link: '/tips-and-guides', order: 3 },
           { title: 'Compare Localities', link: '/compare-localities', order: 4 },
+          { title: 'EMI Calculator', link: '/emi-calculator', order: 5 },
+          { title: 'ROI Calculator', link: '/roi-calculator', order: 6 },
+          { title: 'Home Loan Calculator', link: '/home-loan-calculator', order: 7 },
         ]
       },
     ]
@@ -103,10 +106,8 @@ module.exports = [
       {
         title: 'For Agent & Builder', itemType: 'section', order: 2, children: [
           { title: 'My Dashboard', link: '/dashboard', order: 1 },
-          { title: 'Ad Packages', link: '#', order: 2 },
-          { title: 'iAdvantage', link: '#', order: 3 },
-          { title: 'Developer Lounge', link: '#', order: 4 },
-          { title: 'Sales Enquiry', link: '/share-requirement', order: 5 },
+          { title: 'Developer Lounge', link: '/developer-lounge', order: 2 },
+          { title: 'Sales Enquiry', link: '/share-requirement', order: 3 },
         ]
       },
       {
@@ -127,7 +128,7 @@ module.exports = [
     title: 'Home Interiors', link: '#', itemType: 'nav', menuType: 'sub', badge: 'NEW', order: 5,
     children: [
       { title: 'Explore our services', link: '#', itemType: 'section', order: 1, children: [] },
-      { title: 'Home Interior Design Services', link: '#', itemType: 'link', order: 2, children: [] },
+      { title: 'Home Interior Design Services', link: '/home-interiors', itemType: 'link', order: 2, children: [] },
       { title: 'Design Consultation', link: '#', itemType: 'link', order: 3, children: [] },
       { title: 'Full Home Interior Cost Calculator', link: '#', itemType: 'link', order: 4, children: [] },
       { title: 'Kitchen/Wardrobe Calculator', link: '#', itemType: 'link', order: 5, children: [] },

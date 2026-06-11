@@ -47,6 +47,7 @@ import LocalitiesList from './components/LocalitiesList';
 import ProjectsList from './components/ProjectsList';
 import BrokersList from './components/BrokersList';
 import ShareRequirement from './components/ShareRequirement';
+import DesignConsultation from './components/DesignConsultation';
 import BuyVsRentCalculator from './components/BuyVsRentCalculator';
 import RatesAndTrends from './components/RatesAndTrends';
 import PropertyValuation from './components/PropertyValuation';
@@ -55,7 +56,12 @@ import LocalityDetails from './components/LocalityDetails';
 import GuideDetail from './components/GuideDetail';
 import EMICalculator from './components/EMICalculator';
 import ROICalculator from './components/ROICalculator';
+import HomeLoanCalculator from './components/HomeLoanCalculator';
+import DeveloperLounge from './components/DeveloperLounge';
 import CompareLocalities from './components/CompareLocalities';
+import HomeInteriors from './components/HomeInteriors';
+import InteriorCostCalculator from './components/InteriorCostCalculator';
+import KitchenWardrobeCalculator from './components/KitchenWardrobeCalculator';
 
 
 
@@ -274,10 +280,64 @@ function App() {
           </>
         } />
 
+        <Route path="/home-loan-calculator" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <HomeLoanCalculator />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/developer-lounge" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <DeveloperLounge />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
         <Route path="/compare-localities" element={
           <>
             <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
             <CompareLocalities />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/home-interiors" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <HomeInteriors />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/interior-cost-calculator" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <InteriorCostCalculator />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/kitchen-wardrobe-calculator" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <KitchenWardrobeCalculator />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/design-consultation" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <DesignConsultation />
             <Footer />
             <WhatsAppButton />
           </>
