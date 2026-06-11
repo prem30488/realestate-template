@@ -20,6 +20,8 @@ import AreaIcon from '@mui/icons-material/SquareFoot';
 import axios from 'axios';
 import { API_BASE_URL } from '../constants';
 import './AboutUs.css';
+import SEO from '../common/SEO';
+import { COMPANY_INFO } from '../constants/companyInfo';
 
 // ─── Animated Counter Subcomponent ───────────────────────────────────────────
 const AnimatedCounter = ({ targetString }) => {
@@ -33,7 +35,7 @@ const AnimatedCounter = ({ targetString }) => {
     let start = 0;
     const duration = 2000; // 2 seconds animation
     const increment = targetNum / (duration / 16); // ~60fps
-    
+
     const timer = setInterval(() => {
       start += increment;
       if (start >= targetNum) {
@@ -176,6 +178,12 @@ const AboutUs = () => {
 
   return (
     <div className="about-us-container">
+      <SEO
+        title={`About Us | ${COMPANY_INFO.name}`}
+        description={`${COMPANY_INFO.seoDescription}`}
+        keywords={`${COMPANY_INFO.seoKeywords}`}
+        image="/images/logo.png"
+      />
       {/* ─── 1. Hero Company Vision Section ──────────────────────────────── */}
       <section className="vision-hero">
         <div className="vision-content">
@@ -413,7 +421,7 @@ const AboutUs = () => {
         <span className="section-tag">Visionary Leadership</span>
         <h2 className="section-title">Meet The Minds Behind</h2>
         <div className="team-grid">
-          {teamMembers.filter(m => !m.isDeleted).sort((a,b) => a.order - b.order).map((member) => {
+          {teamMembers.filter(m => !m.isDeleted).sort((a, b) => a.order - b.order).map((member) => {
             const photo = member.photo || 'assets/images/agent/agent-1.jpg';
             const fullPhotoPath = photo.startsWith('http') || photo.startsWith('assets') ? photo : `${API_BASE_URL}/${photo}`;
             return (

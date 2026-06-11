@@ -120,12 +120,9 @@ module.exports = [
       },
     ]
   },
+
   {
-    title: 'Home Loans', link: '#', itemType: 'nav', menuType: null, badge: 'NEW', order: 4,
-    children: []
-  },
-  {
-    title: 'Home Interiors', link: '#', itemType: 'nav', menuType: 'sub', badge: 'NEW', order: 5,
+    title: 'Home Interiors', link: '#', itemType: 'nav', menuType: 'sub', badge: 'NEW', order: 4,
     children: [
       { title: 'Explore our services', link: '#', itemType: 'section', order: 1, children: [] },
       { title: 'Home Interior Design Services', link: '/home-interiors', itemType: 'link', order: 2, children: [] },
@@ -135,7 +132,7 @@ module.exports = [
     ]
   },
   {
-    title: 'Help', link: '#', itemType: 'nav', menuType: 'sub', badge: null, order: 6,
+    title: 'Help', link: '#', itemType: 'nav', menuType: 'sub', badge: null, order: 5,
     children: [
       { title: 'Help Center', link: '#', itemType: 'link', order: 1, children: [] },
       { title: 'Sales Enquiry', link: '/share-requirement', itemType: 'link', order: 2, children: [] },
@@ -143,11 +140,11 @@ module.exports = [
     ]
   },
   {
-    title: 'About Us', link: '/about', itemType: 'nav', menuType: null, badge: null, order: 7,
+    title: 'About Us', link: '/about', itemType: 'nav', menuType: null, badge: null, order: 6,
     children: []
   },
   {
-    title: 'Contact Us', link: '/contact', itemType: 'nav', menuType: null, badge: null, order: 8,
+    title: 'Contact Us', link: '/contact', itemType: 'nav', menuType: null, badge: null, order: 7,
     children: []
   },
 ];

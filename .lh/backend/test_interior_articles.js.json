@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/test_interior_articles.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781078508023,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781078508023,
+            "name": "Commit-0",
+            "content": "const http = require('http');\r\n\r\n// Test /api/interior-articles endpoint\r\nconst url = 'http://localhost:3000/api/interior-articles?limit=12&category=Interiors%20%26%20Decor';\r\n\r\nhttp.get(url, res => {\r\n    let data = '';\r\n    res.on('data', chunk => data += chunk);\r\n    res.on('end', () => {\r\n        try {\r\n            const parsed = JSON.parse(data);\r\n            console.log('✅ /api/interior-articles Status:', res.statusCode);\r\n            console.log('Total Articles:', parsed.totalCount || parsed.articles?.length);\r\n            console.log('Articles Returned:', (parsed.articles || parsed.data || []).length);\r\n            \r\n            if ((parsed.articles || parsed.data || []).length > 0) {\r\n                const first = (parsed.articles || parsed.data)[0];\r\n                console.log('\\n📰 First Article:');\r\n                console.log('  Title:', first.title);\r\n                console.log('  Category:', first.category);\r\n                console.log('  Author:', first.author);\r\n                console.log('  ReadTime:', first.readTime);\r\n                console.log('  Published:', new Date(first.publishedAt).toLocaleDateString());\r\n            }\r\n            \r\n            // Verify all articles are \"Interiors & Decor\"\r\n            const articles = parsed.articles || parsed.data || [];\r\n            const allInteriors = articles.every(a => a.category === 'Interiors & Decor');\r\n            console.log('\\n✅ All articles filtered as Interiors & Decor:', allInteriors);\r\n            \r\n        } catch (e) {\r\n            console.log('❌ Error parsing JSON:', e.message);\r\n            console.log('Raw:', data.substring(0, 300));\r\n        }\r\n    });\r\n}).on('error', e => console.error('❌ Request error:', e.message));\r\n"
+        }
+    ]
+}

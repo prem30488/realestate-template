@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/test_endpoints.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781034281609,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781034281609,
+            "name": "Commit-0",
+            "content": "const http = require('http');\r\n\r\nconst paths = [\r\n  '/api/public/localities',\r\n  '/api/localities',\r\n  '/api/public/interior-designers'\r\n];\r\n\r\nasync function testPath(path) {\r\n  return new Promise((resolve) => {\r\n    const options = {\r\n      hostname: 'localhost',\r\n      port: 3000,\r\n      path: path,\r\n      method: 'GET'\r\n    };\r\n\r\n    const req = http.request(options, (res) => {\r\n      let data = '';\r\n      res.on('data', (chunk) => { data += chunk; });\r\n      res.on('end', () => {\r\n        resolve({\r\n          path: path,\r\n          status: res.statusCode,\r\n          hasData: data.length > 0,\r\n          dataPreview: data.substring(0, 100)\r\n        });\r\n      });\r\n    });\r\n\r\n    req.on('error', (e) => {\r\n      resolve({\r\n        path: path,\r\n        status: 'ERROR',\r\n        error: e.message\r\n      });\r\n    });\r\n\r\n    req.end();\r\n  });\r\n}\r\n\r\nasync function main() {\r\n  console.log('Testing API endpoints...\\n');\r\n  for (const path of paths) {\r\n    const result = await testPath(path);\r\n    console.log(`${result.path}: ${result.status}`);\r\n    if (result.error) console.log(`  Error: ${result.error}`);\r\n    if (result.hasData) console.log(`  Data: ${result.dataPreview}...`);\r\n  }\r\n}\r\n\r\nmain();\r\n"
+        }
+    ]
+}

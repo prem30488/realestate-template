@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/test_all_routes.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781034420671,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781034420671,
+            "name": "Commit-0",
+            "content": "const http = require('http');\r\n\r\nasync function test(path, description) {\r\n  return new Promise((resolve) => {\r\n    const options = {\r\n      hostname: 'localhost',\r\n      port: 3000,\r\n      path: path,\r\n      method: 'GET'\r\n    };\r\n\r\n    const req = http.request(options, (res) => {\r\n      let data = '';\r\n      res.on('data', (chunk) => { data += chunk; });\r\n      res.on('end', () => {\r\n        console.log(`\\n${description}`);\r\n        console.log(`Path: ${path}`);\r\n        console.log(`Status: ${res.statusCode}`);\r\n        try {\r\n          const json = JSON.parse(data);\r\n          if (json.data && Array.isArray(json.data)) {\r\n            console.log(`Records: ${json.data.length}`);\r\n            if (json.data.length > 0) {\r\n              console.log(`First record keys: ${Object.keys(json.data[0]).join(', ').substring(0, 80)}...`);\r\n            }\r\n          }\r\n        } catch (e) {\r\n          console.log(`Data (first 100 chars): ${data.substring(0, 100)}`);\r\n        }\r\n        resolve();\r\n      });\r\n    });\r\n\r\n    req.on('error', (e) => {\r\n      console.error(`ERROR: ${e.message}`);\r\n      resolve();\r\n    });\r\n\r\n    req.end();\r\n  });\r\n}\r\n\r\nasync function main() {\r\n  await test('/api/public/localities?limit=2', '✅ LOCALITIES (WORKING)');\r\n  await test('/api/public/interior-designers?limit=2', '❓ INTERIOR DESIGNERS (TESTING)');\r\n  await test('/api/public/interior-articles?limit=2', '❓ INTERIOR ARTICLES (TESTING)');\r\n}\r\n\r\nmain().then(() => process.exit(0));\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/check_routes.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781079417331,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781079417331,
+            "name": "Commit-0",
+            "content": "const http = require('http');\r\n\r\nconst host = 'http://localhost:3000';\r\nconst endpoints = [\r\n  '/api/interior-designers?limit=5&sort=rating',\r\n  '/api/interior-designers?limit=5&sort=name',\r\n  '/api/interior-designers?limit=5&sort=experience',\r\n  '/api/interior-designers?limit=5&sort=projects',\r\n  '/api/interior-designers?limit=5&sort=featured',\r\n  '/api/interior-designers/top?limit=5&sort=rating',\r\n  '/api/interior-designers/top?limit=5&sort=name',\r\n  '/api/public/interior-designers',\r\n  '/api/public/interior-articles'\r\n];\r\n\r\nfunction get(path) {\r\n  return new Promise((resolve) => {\r\n    const req = http.get(host + path, (res) => {\r\n      let body = '';\r\n      res.setEncoding('utf8');\r\n      res.on('data', (c) => { body += c; if (body.length > 2000) body = body.slice(0,2000); });\r\n      res.on('end', () => resolve({ path, status: res.statusCode, body: body.slice(0,1200) }));\r\n    });\r\n    req.on('error', (err) => resolve({ path, error: String(err) }));\r\n    req.setTimeout(8000, () => { req.abort(); resolve({ path, error: 'timeout' }); });\r\n  });\r\n}\r\n\r\n(async () => {\r\n  for (const p of endpoints) {\r\n    const r = await get(p);\r\n    console.log('---', r.path);\r\n    if (r.error) console.log('ERROR:', r.error);\r\n    else {\r\n      console.log('Status:', r.status);\r\n      console.log('Body sample:\\n', r.body || '(empty)');\r\n    }\r\n    console.log('\\n');\r\n  }\r\n})();\r\n"
+        }
+    ]
+}

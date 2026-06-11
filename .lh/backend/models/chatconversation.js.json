@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/models/chatconversation.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781178940275,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781178940275,
+            "name": "Commit-0",
+            "content": "module.exports = (sequelize, DataTypes) => {\r\n  const ChatConversation = sequelize.define('ChatConversation', {\r\n    title: { type: DataTypes.STRING, allowNull: true },\r\n    userId: { type: DataTypes.INTEGER, allowNull: true }\r\n  }, {\r\n    tableName: 'ChatConversations'\r\n  });\r\n\r\n  ChatConversation.associate = function(models) {\r\n    ChatConversation.hasMany(models.ChatMessage, { as: 'messages', foreignKey: 'conversationId' });\r\n  };\r\n\r\n  return ChatConversation;\r\n};\r\n"
+        }
+    ]
+}

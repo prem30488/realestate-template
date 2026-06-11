@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/test_models.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781034168210,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781034168210,
+            "name": "Commit-0",
+            "content": "try {\r\n  const { InteriorDesigner, InteriorArticle } = require('./models');\r\n  console.log('✅ InteriorDesigner model:', typeof InteriorDesigner);\r\n  console.log('✅ InteriorArticle model:', typeof InteriorArticle);\r\n} catch (e) {\r\n  console.error('❌ Error loading models:');\r\n  console.error(e.message);\r\n  console.error(e.stack);\r\n}\r\n"
+        }
+    ]
+}

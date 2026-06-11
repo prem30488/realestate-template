@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/test_interior_debug.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781034083757,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781034083757,
+            "name": "Commit-0",
+            "content": "const http = require('http');\r\n\r\nconst options = {\r\n    hostname: 'localhost',\r\n    port: 3000,\r\n    path: '/api/public/interior-designers?limit=3',\r\n    method: 'GET'\r\n};\r\n\r\nconst req = http.request(options, (res) => {\r\n    let data = '';\r\n\r\n    res.on('data', (chunk) => {\r\n        data += chunk;\r\n    });\r\n\r\n    res.on('end', () => {\r\n        console.log('Status:', res.statusCode);\r\n        console.log('Headers:', res.headers);\r\n        console.log('\\nResponse (first 500 chars):');\r\n        console.log(data.substring(0, 500));\r\n    });\r\n});\r\n\r\nreq.on('error', (e) => {\r\n    console.error(`Error: ${e.message}`);\r\n});\r\n\r\nreq.end();\r\n"
+        }
+    ]
+}

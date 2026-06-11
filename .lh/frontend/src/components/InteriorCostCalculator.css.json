@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/src/components/InteriorCostCalculator.css",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781175709533,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781175709533,
+            "name": "Commit-0",
+            "content": ".icc-page {\r\n  padding: 96px 28px 48px;\r\n  background: linear-gradient(180deg,#fbfdff,#ffffff);\r\n  min-height: calc(100vh - 96px);\r\n  color: #0b1220;\r\n  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;\r\n}\r\n\r\n.icc-hero {\r\n  margin-bottom: 20px;\r\n}\r\n.icc-hero-inner {\r\n  display:flex;\r\n  justify-content:space-between;\r\n  align-items:center;\r\n  gap:20px;\r\n  background: linear-gradient(90deg, rgba(14,165,233,0.06), rgba(99,102,241,0.03));\r\n  border-radius: 12px;\r\n  padding: 24px;\r\n  box-shadow: 0 10px 30px rgba(2,6,23,0.06);\r\n}\r\n.icc-hero h1 { margin: 0; font-size: 30px; }\r\n.icc-sub { margin:6px 0 0; color:#475569 }\r\n.icc-hero-cta .icc-primary { padding:10px 16px; border-radius:8px }\r\n\r\n.icc-main { display:grid; grid-template-columns: 1fr 360px; gap:28px; align-items:start }\r\n.icc-left .icc-card { background:#fff; padding:18px; border-radius:10px; box-shadow:0 8px 24px rgba(2,6,23,0.04); border:1px solid rgba(15,23,42,0.03); margin-bottom:18px }\r\n.icc-card h2 { margin:0 0 12px }\r\n.icc-label { display:block; margin-top:12px; color:#374151; font-weight:600 }\r\n.icc-input, .icc-select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6eef6; margin-top:6px }\r\n\r\n.icc-levels { display:flex; gap:10px; margin-top:8px }\r\n.icc-level { background:#f8fafc; border:1px solid #e6eef6; padding:8px 12px; border-radius:8px; cursor:pointer }\r\n.icc-level.active { background:linear-gradient(90deg,#06b6d4,#0ea5a4); color:#fff; box-shadow:0 8px 20px rgba(6,182,212,0.12) }\r\n\r\n.icc-addons { display:flex; flex-direction:column; gap:8px; margin-top:8px }\r\n.icc-addon { display:flex; gap:10px; align-items:center }\r\n\r\n.icc-breakdown .icc-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eef2f7 }\r\n.icc-total { display:flex; justify-content:space-between; padding:12px 0; margin-top:8px; align-items:center }\r\n.icc-total-amount { font-size:20px; font-weight:700; color:#0b1220 }\r\n.icc-note { color:#64748b; margin-top:8px }\r\n\r\n.icc-right .icc-summary { background:linear-gradient(180deg,#ffffff,#fbfdff); padding:18px; border-radius:10px; box-shadow:0 8px 24px rgba(2,6,23,0.04); border:1px solid rgba(15,23,42,0.03) }\r\n.icc-right ul { padding-left:18px }\r\n.icc-side-cta { margin-top:12px }\r\n.icc-primary { background:linear-gradient(90deg,#0ea5a4,#06b6d4); color:#fff; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600 }\r\n\r\n@media (max-width:980px) {\r\n  .icc-page { padding-top:80px }\r\n  .icc-main { grid-template-columns: 1fr }\r\n}\r\n"
+        }
+    ]
+}

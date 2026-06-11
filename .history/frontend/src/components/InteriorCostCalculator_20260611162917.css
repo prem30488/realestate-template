@@ -1,0 +1,52 @@
+.icc-page {
+  padding: 96px 28px 48px;
+  background: linear-gradient(180deg,#fbfdff,#ffffff);
+  min-height: calc(100vh - 96px);
+  color: #0b1220;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.icc-hero {
+  margin-bottom: 20px;
+}
+.icc-hero-inner {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  background: linear-gradient(90deg, rgba(14,165,233,0.06), rgba(99,102,241,0.03));
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.06);
+}
+.icc-hero h1 { margin: 0; font-size: 30px; }
+.icc-sub { margin:6px 0 0; color:#475569 }
+.icc-hero-cta .icc-primary { padding:10px 16px; border-radius:8px }
+
+.icc-main { display:grid; grid-template-columns: 1fr 360px; gap:28px; align-items:start }
+.icc-left .icc-card { background:#fff; padding:18px; border-radius:10px; box-shadow:0 8px 24px rgba(2,6,23,0.04); border:1px solid rgba(15,23,42,0.03); margin-bottom:18px }
+.icc-card h2 { margin:0 0 12px }
+.icc-label { display:block; margin-top:12px; color:#374151; font-weight:600 }
+.icc-input, .icc-select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6eef6; margin-top:6px }
+
+.icc-levels { display:flex; gap:10px; margin-top:8px }
+.icc-level { background:#f8fafc; border:1px solid #e6eef6; padding:8px 12px; border-radius:8px; cursor:pointer }
+.icc-level.active { background:linear-gradient(90deg,#06b6d4,#0ea5a4); color:#fff; box-shadow:0 8px 20px rgba(6,182,212,0.12) }
+
+.icc-addons { display:flex; flex-direction:column; gap:8px; margin-top:8px }
+.icc-addon { display:flex; gap:10px; align-items:center }
+
+.icc-breakdown .icc-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eef2f7 }
+.icc-total { display:flex; justify-content:space-between; padding:12px 0; margin-top:8px; align-items:center }
+.icc-total-amount { font-size:20px; font-weight:700; color:#0b1220 }
+.icc-note { color:#64748b; margin-top:8px }
+
+.icc-right .icc-summary { background:linear-gradient(180deg,#ffffff,#fbfdff); padding:18px; border-radius:10px; box-shadow:0 8px 24px rgba(2,6,23,0.04); border:1px solid rgba(15,23,42,0.03) }
+.icc-right ul { padding-left:18px }
+.icc-side-cta { margin-top:12px }
+.icc-primary { background:linear-gradient(90deg,#0ea5a4,#06b6d4); color:#fff; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600 }
+
+@media (max-width:980px) {
+  .icc-page { padding-top:80px }
+  .icc-main { grid-template-columns: 1fr }
+}

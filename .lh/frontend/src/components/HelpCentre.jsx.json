@@ -1,0 +1,22 @@
+{
+    "sourceFile": "frontend/src/components/HelpCentre.jsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1781178277033,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1781178940297,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,25 +1,32 @@\n import React from 'react';\r\n import { ChatBox } from '@mui/x-chat';\r\n \r\n const adapter = {\r\n-  async sendMessage({ message, signal }) {\r\n-    const res = await fetch('/api/chat', {\r\n-      method: 'POST',\r\n-      headers: { 'Content-Type': 'application/json' },\r\n-      body: JSON.stringify({ message }),\r\n-      signal,\r\n-    });\r\n-    return res.body; // ReadableStream<ChatMessageChunk>\r\n-  },\r\n+    async sendMessage({ message, conversation, signal }) {\r\n+        const token = localStorage.getItem('token');\r\n+        const headers = { 'Content-Type': 'application/json' };\r\n+        if (token) headers['Authorization'] = `Bearer ${token}`;\r\n+\r\n+        const body = { message };\r\n+        if (conversation && conversation.id) body.conversationId = conversation.id;\r\n+\r\n+        const res = await fetch('/api/chat', {\r\n+            method: 'POST',\r\n+            headers,\r\n+            body: JSON.stringify(body),\r\n+            signal,\r\n+        });\r\n+        return res.body; // ReadableStream<ChatMessageChunk>\r\n+    },\r\n };\r\n \r\n export default function App() {\r\n-  return (\r\n-    <ChatBox\r\n-      adapter={adapter}\r\n-      initialConversations={[{ id: 'main', title: 'Assistant' }]}\r\n-      initialActiveConversationId=\"main\"\r\n-      sx={{ height: 500 }}\r\n-    />\r\n-  );\r\n+    return (\r\n+        <ChatBox\r\n+            adapter={adapter}\r\n+            initialConversations={[{ id: 'main', title: 'Assistant' }]}\r\n+            initialActiveConversationId=\"main\"\r\n+            sx={{ height: 500 }}\r\n+        />\r\n+    );\r\n }\r\n"
+                }
+            ],
+            "date": 1781178277033,
+            "name": "Commit-0",
+            "content": "import React from 'react';\r\nimport { ChatBox } from '@mui/x-chat';\r\n\r\nconst adapter = {\r\n  async sendMessage({ message, signal }) {\r\n    const res = await fetch('/api/chat', {\r\n      method: 'POST',\r\n      headers: { 'Content-Type': 'application/json' },\r\n      body: JSON.stringify({ message }),\r\n      signal,\r\n    });\r\n    return res.body; // ReadableStream<ChatMessageChunk>\r\n  },\r\n};\r\n\r\nexport default function App() {\r\n  return (\r\n    <ChatBox\r\n      adapter={adapter}\r\n      initialConversations={[{ id: 'main', title: 'Assistant' }]}\r\n      initialActiveConversationId=\"main\"\r\n      sx={{ height: 500 }}\r\n    />\r\n  );\r\n}\r\n"
+        }
+    ]
+}

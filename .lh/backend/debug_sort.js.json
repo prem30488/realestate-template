@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/debug_sort.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781079124432,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781079124432,
+            "name": "Commit-0",
+            "content": "const { InteriorDesigner, sequelize } = require('./models');\r\n\r\nasync function test() {\r\n  await sequelize.authenticate();\r\n  const where = { isDeleted: false };\r\n  const orders = {\r\n    rating: [['rating','DESC'], ['reviewCount','DESC']],\r\n    name: [['name','ASC']],\r\n    experience: [['yearsExperience','DESC']],\r\n    projects: [['projectsCompleted','DESC']],\r\n    featured: [['isFeatured','DESC'], ['rating','DESC']]\r\n  };\r\n\r\n  for (const key of Object.keys(orders)) {\r\n    console.log('\\n--- SORT:', key);\r\n    const rows = await InteriorDesigner.findAll({ where, limit: 20, order: orders[key], logging: console.log });\r\n    console.log(rows.map(r => r.name).slice(0,20).join('\\n'));\r\n  }\r\n  process.exit(0);\r\n}\r\n\r\ntest().catch(e => { console.error(e); process.exit(1); });\r\n"
+        }
+    ]
+}

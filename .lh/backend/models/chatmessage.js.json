@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/models/chatmessage.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781178940274,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781178940274,
+            "name": "Commit-0",
+            "content": "module.exports = (sequelize, DataTypes) => {\r\n  const ChatMessage = sequelize.define('ChatMessage', {\r\n    conversationId: { type: DataTypes.INTEGER, allowNull: false },\r\n    userId: { type: DataTypes.INTEGER, allowNull: true },\r\n    sender: { type: DataTypes.ENUM('user','assistant'), allowNull: false },\r\n    message: { type: DataTypes.TEXT, allowNull: false },\r\n    meta: { type: DataTypes.JSONB, allowNull: true }\r\n  }, {\r\n    tableName: 'ChatMessages'\r\n  });\r\n\r\n  ChatMessage.associate = function(models) {\r\n    ChatMessage.belongsTo(models.ChatConversation, { as: 'conversation', foreignKey: 'conversationId' });\r\n    ChatMessage.belongsTo(models.User, { as: 'user', foreignKey: 'userId' });\r\n  };\r\n\r\n  return ChatMessage;\r\n};\r\n"
+        }
+    ]
+}

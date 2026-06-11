@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/scripts/update_menu_links.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781176058516,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781176058516,
+            "name": "Commit-0",
+            "content": "const path = require('path');\r\nconst db = require(path.join(__dirname, '..', 'models'));\r\n\r\nasync function run() {\r\n  try {\r\n    await db.sequelize.authenticate();\r\n    console.log('DB connected');\r\n\r\n    const updates = [\r\n      { title: 'Design Consultation', link: '/design-consultation' },\r\n      { title: 'Full Home Interior Cost Calculator', link: '/interior-cost-calculator' },\r\n      { title: 'Kitchen/Wardrobe Calculator', link: '/kitchen-wardrobe-calculator' },\r\n    ];\r\n\r\n    for (const u of updates) {\r\n      const [count] = await db.MenuItem.update(\r\n        { link: u.link },\r\n        { where: { title: u.title } }\r\n      );\r\n      console.log(`Updated ${count} rows for title='${u.title}'`);\r\n    }\r\n\r\n    // Also update any menu items where link is '#' but title mentions these keywords\r\n    const keywordMaps = [\r\n      { keywords: ['full home interior', 'cost calculator'], link: '/interior-cost-calculator' },\r\n      { keywords: ['design consultation'], link: '/design-consultation' },\r\n      { keywords: ['kitchen', 'wardrobe'], link: '/kitchen-wardrobe-calculator' },\r\n    ];\r\n\r\n    const items = await db.MenuItem.findAll({ where: { link: '#' } });\r\n    for (const it of items) {\r\n      const title = (it.title || '').toLowerCase();\r\n      for (const km of keywordMaps) {\r\n        if (km.keywords.some(k => title.includes(k))) {\r\n          it.link = km.link;\r\n          await it.save();\r\n          console.log(`Patched item id=${it.id} title='${it.title}' -> ${km.link}`);\r\n          break;\r\n        }\r\n      }\r\n    }\r\n\r\n    console.log('Done');\r\n    process.exit(0);\r\n  } catch (err) {\r\n    console.error('Error:', err);\r\n    process.exit(1);\r\n  }\r\n}\r\n\r\nrun();\r\n"
+        }
+    ]
+}

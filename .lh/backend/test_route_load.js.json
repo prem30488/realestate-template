@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/test_route_load.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781034107919,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781034107919,
+            "name": "Commit-0",
+            "content": "try {\r\n  const routes = require('./routes/interiorRoutesPublic');\r\n  console.log('✅ Module loaded successfully');\r\n  console.log('Router:', typeof routes);\r\n  console.log('Keys:', Object.keys(routes || {}));\r\n} catch (e) {\r\n  console.error('❌ Error loading module:');\r\n  console.error(e.message);\r\n  console.error(e.stack);\r\n}\r\n"
+        }
+    ]
+}

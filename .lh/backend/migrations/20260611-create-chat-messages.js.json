@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/migrations/20260611-create-chat-messages.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1781178940275,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1781178940275,
+            "name": "Commit-0",
+            "content": "\"use strict\";\r\n\r\nmodule.exports = {\r\n  async up(queryInterface, Sequelize) {\r\n    await queryInterface.createTable('ChatMessages', {\r\n      id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },\r\n      conversationId: { type: Sequelize.INTEGER, allowNull: false, references: { model: 'ChatConversations', key: 'id' }, onDelete: 'CASCADE' },\r\n      userId: { type: Sequelize.INTEGER, allowNull: true, references: { model: 'Users', key: 'id' }, onDelete: 'SET NULL' },\r\n      sender: { type: Sequelize.ENUM('user','assistant'), allowNull: false },\r\n      message: { type: Sequelize.TEXT, allowNull: false },\r\n      meta: { type: Sequelize.JSONB, allowNull: true },\r\n      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('NOW') },\r\n      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('NOW') }\r\n    });\r\n  },\r\n  async down(queryInterface, Sequelize) {\r\n    await queryInterface.dropTable('ChatMessages');\r\n  }\r\n};\r\n"
+        }
+    ]
+}

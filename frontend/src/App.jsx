@@ -62,7 +62,21 @@ import CompareLocalities from './components/CompareLocalities';
 import HomeInteriors from './components/HomeInteriors';
 import InteriorCostCalculator from './components/InteriorCostCalculator';
 import KitchenWardrobeCalculator from './components/KitchenWardrobeCalculator';
+import HelpCentre from './components/HelpCentre';
+import SEO from './common/SEO';
+import { COMPANY_INFO } from './constants/companyInfo';
+import { ChatBox } from '@mui/x-chat';
 
+const adapter = {
+  async sendMessage({ message, signal }) {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+      signal,
+    });
+    return res.body; // ReadableStream<ChatMessageChunk>
+  },
+};
 
 
 function App() {
@@ -129,7 +143,12 @@ function App() {
         containerStyle={{ zIndex: 999999 }}
         toastOptions={{ duration: 5000 }}
       />
-
+      <SEO
+        title={`Home | ${COMPANY_INFO.name}`}
+        description={`${COMPANY_INFO.seoDescription}`}
+        keywords={`${COMPANY_INFO.seoKeywords}`}
+        image="/images/logo.png"
+      />
       <Routes>
         {/* Main Website Routes */}
         <Route path="/" element={
@@ -338,6 +357,15 @@ function App() {
           <>
             <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
             <DesignConsultation />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/help-centre" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <HelpCentre />
             <Footer />
             <WhatsAppButton />
           </>

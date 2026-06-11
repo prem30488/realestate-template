@@ -26,6 +26,7 @@ const resolveMenuLink = (item) => {
   if (title.includes('home interior') || title.includes('home interiors')) return '/home-interiors';
   if (title.includes('full home interior') || title.includes('cost calculator')) return '/interior-cost-calculator';
   if (title.includes('kitchen') || title.includes('wardrobe')) return '/kitchen-wardrobe-calculator';
+  if (title.includes('help center') || title.includes('help centre')) return '/help-centre';
 
   // otherwise return the raw link (could be external or '#')
   return raw || '#';
@@ -288,7 +289,6 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
       </div>
     </li>
 
-    <li><a href="#">Home Loans <span className="badge-new">NEW</span> <i className="pe-7s-angle-down" /></a></li>
 
     <li className="has-sub-menu"><a href="#">Home Interiors <span className="badge-new">NEW</span> <i className="pe-7s-angle-down" /></a>
       <ul className="sub-menu">
@@ -305,7 +305,7 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
 
     <li className="has-sub-menu"><a href="#">Help <i className="pe-7s-angle-down" /></a>
       <ul className="sub-menu">
-        <li><a href="#">Help Center</a></li>
+        <li><Link to="/help-centre">Help Center</Link></li>
         <li><Link to="/share-requirement">Sales Enquiry</Link></li>
         <li><a href="https://api.whatsapp.com/send/?phone=919624259046&text=Hi%21&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">Chat with Us</a></li>
       </ul>
