@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import './App.css'
+import { API_BASE_URL } from './constants';
 import Header from './components/Header'
 import Footer from './components/Footer'
 import NewsDetail from './components/NewsDetail'
@@ -69,8 +70,9 @@ import { ChatBox } from '@mui/x-chat';
 
 const adapter = {
   async sendMessage({ message, signal }) {
-    const res = await fetch('/api/chat', {
+    const res = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message }),
       signal,
     });
