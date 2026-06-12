@@ -116,28 +116,3 @@
         top: auto;
     }
 }
-
-font-weight: 600;
-}
-
-.dc-cta {
-    margin-top: 18px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.dc-btn {
-    background: #111827;
-    color: #fff;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-@media (max-width: 980px) {
-    .dc-main {
-        grid-template-columns: 1fr;
-    }
-}
