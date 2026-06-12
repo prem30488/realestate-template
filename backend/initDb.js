@@ -11,24 +11,28 @@ async function initDb() {
 
   const dbUrlObj = new URL(dbUrl);
   const dbName = dbUrlObj.pathname.split('/')[1];
-  
+
   // Connection config for the server (connecting to 'postgres' default db first)
   const serverConfig = {
     user: dbUrlObj.username,
     password: dbUrlObj.password,
     host: dbUrlObj.hostname,
     port: dbUrlObj.port || 5432,
-    database: 'postgres' // Connect to default postgres db to create the new one
+    database: 'postgres', // Connect to default postgres db to create the new one
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
   };
 
   const client = new Client(serverConfig);
 
   try {
     await client.connect();
-    
+
     // Check if database exists
     const res = await client.query(`SELECT 1 FROM pg_database WHERE datname = '${dbName}'`);
-    
+
     if (res.rowCount === 0) {
       console.log(`Database "${dbName}" does not exist. Creating...`);
       await client.query(`CREATE DATABASE "${dbName}"`);
