@@ -19,6 +19,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
 const allowedOrigins = [
   'https://realestate-template-ruby.vercel.app',
+  'https://realestate-template-nj.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:4173',
@@ -3215,19 +3216,25 @@ console.log('✅ projectsRoutes mounted at /api');
 app.use('/api', interiorRoutesPublic);
 console.log('✅ interiorRoutesPublic mounted at /api');
 
-// Initialize database and start server
+// Initialize database (runs on every cold start in Vercel, and on startup locally)
 initDb()
   .then(() => ensureInteriorData())
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      // Train valuation model on startup
-      trainModel();
-    });
+    // Train valuation model after DB is ready
+    trainModel();
+    // Only start HTTP server when running locally (not on Vercel serverless)
+    if (!process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+    }
   })
   .catch(err => {
     console.error('Failed to initialize database:', err);
-    process.exit(1);
+    // Don't exit on Vercel — log the error and let the export still serve requests
+    if (!process.env.VERCEL) process.exit(1);
   });
 
+// Export app as the Vercel serverless handler
 module.exports = app;
+
