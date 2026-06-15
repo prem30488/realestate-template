@@ -67,7 +67,7 @@ import HelpCentre from './components/HelpCentre';
 import SEO from './common/SEO';
 import { COMPANY_INFO } from './constants/companyInfo';
 import { ChatBox } from '@mui/x-chat';
-
+import FloatingSocials from "./common/socialIconsFloating";
 const adapter = {
   async sendMessage({ message, signal }) {
     const res = await fetch(`${API_BASE_URL}/api/chat`, {
@@ -145,6 +145,7 @@ function App() {
         containerStyle={{ zIndex: 999999 }}
         toastOptions={{ duration: 5000 }}
       />
+      <FloatingSocials />
       <SEO
         title={`Home | ${COMPANY_INFO.name}`}
         description={`${COMPANY_INFO.seoDescription}`}

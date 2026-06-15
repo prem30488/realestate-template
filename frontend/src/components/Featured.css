@@ -1,0 +1,421 @@
+/* ═══════════════════════════════════════════════════════
+   Featured Properties Section — Premium Enhancement CSS
+   Scoped entirely to .featured-section; won't bleed out.
+   ═══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ──────────────────────────────────────────────────────
+   Section shell
+   ────────────────────────────────────────────────────── */
+.featured-section {
+    position: relative;
+    overflow: hidden;
+    background: #060d1a !important;
+    padding-top: 100px !important;
+    padding-bottom: 100px !important;
+    font-family: 'Inter', 'Outfit', sans-serif;
+}
+
+/* Multi-layer atmospheric glow */
+.featured-section::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    left: -120px;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.13) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: fs-glow-shift 14s ease-in-out infinite alternate;
+}
+
+.featured-section::after {
+    content: '';
+    position: absolute;
+    bottom: -120px;
+    right: -80px;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.11) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: fs-glow-shift 18s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes fs-glow-shift {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+
+    100% {
+        transform: scale(1.25) translate(30px, -30px);
+    }
+}
+
+/* Top accent line */
+.featured-section .container::before {
+    content: '';
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5) 30%, rgba(139, 92, 246, 0.5) 70%, transparent);
+    margin-bottom: 56px;
+    border-radius: 2px;
+}
+
+/* ──────────────────────────────────────────────────────
+   Section header
+   ────────────────────────────────────────────────────── */
+.featured-section .row.mb-50 {
+    margin-bottom: 48px !important;
+}
+
+/* Label pill above heading */
+.featured-section .col-12.text-center {
+    position: relative;
+}
+
+.featured-section .col-12.text-center::before {
+    content: '✦ Handpicked for You ✦';
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #60a5fa;
+    margin-bottom: 14px;
+    opacity: 0.9;
+}
+
+/* Heading override */
+.featured-section .premium-heading {
+    font-family: 'Inter', sans-serif !important;
+    font-size: clamp(32px, 5vw, 52px) !important;
+    font-weight: 900 !important;
+    letter-spacing: -1.5px;
+    background: linear-gradient(135deg, #f1f5f9 0%, #93c5fd 50%, #c4b5fd 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    line-height: 1.1;
+    margin-bottom: 18px !important;
+}
+
+/* Divider */
+.featured-section .premium-heading-divider {
+    width: 80px !important;
+    height: 3px !important;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6) !important;
+    margin: 0 auto 22px !important;
+    border-radius: 999px !important;
+    position: relative;
+}
+
+.featured-section .premium-heading-divider::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #8b5cf6;
+}
+
+/* Sub-heading */
+.featured-section .premium-subheading {
+    font-size: 16px !important;
+    line-height: 1.7;
+    color: #94a3b8 !important;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+/* ──────────────────────────────────────────────────────
+   Carousel wrapper & swiper nav
+   ────────────────────────────────────────────────────── */
+.featured-section .featured-carousel-wrapper {
+    padding: 0 4px 0;
+    position: relative;
+}
+
+.featured-section .featured-swiper {
+    padding-bottom: 52px !important;
+}
+
+/* Nav buttons */
+.featured-section .featured-swiper .swiper-button-next,
+.featured-section .featured-swiper .swiper-button-prev {
+    width: 52px !important;
+    height: 52px !important;
+    background: rgba(15, 23, 42, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 50% !important;
+    color: #60a5fa !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    transition: all 0.25s ease !important;
+}
+
+.featured-section .featured-swiper .swiper-button-next:after,
+.featured-section .featured-swiper .swiper-button-prev:after {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+}
+
+.featured-section .featured-swiper .swiper-button-next:hover,
+.featured-section .featured-swiper .swiper-button-prev:hover {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 0 28px rgba(59, 130, 246, 0.45) !important;
+    transform: scale(1.08);
+}
+
+/* Pagination bullets */
+.featured-section .featured-swiper .swiper-pagination-bullet {
+    background: rgba(148, 163, 184, 0.45) !important;
+    opacity: 1 !important;
+    width: 8px !important;
+    height: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.featured-section .featured-swiper .swiper-pagination-bullet-active {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6) !important;
+    width: 28px !important;
+    border-radius: 999px !important;
+    opacity: 1 !important;
+}
+
+/* ──────────────────────────────────────────────────────
+   Property Cards — scoped to .featured-section
+   ────────────────────────────────────────────────────── */
+.featured-section .premium-card {
+    background: rgba(15, 23, 42, 0.72) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 22px !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    backdrop-filter: blur(20px) !important;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45) !important;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease !important;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Subtle top gradient on each card */
+.featured-section .premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #3b82f6 40%, #8b5cf6 60%, transparent);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    z-index: 2;
+}
+
+.featured-section .premium-card:hover::before {
+    opacity: 1;
+}
+
+.featured-section .premium-card:hover {
+    transform: translateY(-12px) scale(1.012) !important;
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(59, 130, 246, 0.18) !important;
+    border-color: rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Image wrapper */
+.featured-section .premium-card-image-wrapper {
+    height: 220px;
+    overflow: hidden;
+    border-radius: 22px 22px 0 0;
+    position: relative;
+}
+
+.featured-section .premium-card-image-wrapper img,
+.featured-section .premium-carousel-img {
+    transition: transform 0.55s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.featured-section .premium-card:hover .premium-carousel-img {
+    transform: scale(1.07) !important;
+}
+
+/* Badges */
+.featured-section .badge {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.8px !important;
+    padding: 5px 12px !important;
+    border-radius: 999px !important;
+}
+
+.featured-section .badge.for-sale {
+    background: rgba(59, 130, 246, 0.88) !important;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4) !important;
+}
+
+.featured-section .badge.featured-badge {
+    background: rgba(245, 158, 11, 0.9) !important;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35) !important;
+}
+
+/* Card body */
+.featured-section .premium-card-body {
+    padding: 22px 22px 20px !important;
+}
+
+.featured-section .price-tag {
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px !important;
+}
+
+.featured-section .property-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.35;
+    margin-bottom: 6px !important;
+}
+
+.featured-section .property-title a {
+    color: #e2e8f0 !important;
+    transition: color 0.2s ease !important;
+}
+
+.featured-section .property-title a:hover {
+    color: #93c5fd !important;
+}
+
+.featured-section .property-location {
+    font-size: 13.5px !important;
+    color: #64748b !important;
+    margin-bottom: 18px !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.featured-section .property-location i {
+    color: #3b82f6 !important;
+}
+
+/* Amenities strip */
+.featured-section .property-amenities {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    margin-bottom: 18px !important;
+    padding-bottom: 16px !important;
+    display: flex;
+    justify-content: space-around;
+}
+
+.featured-section .amenity {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-direction: column;
+}
+
+.featured-section .amenity i {
+    font-size: 17px !important;
+    color: #93c5fd !important;
+}
+
+.featured-section .amenity span {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+    font-weight: 500;
+}
+
+/* Card footer */
+.featured-section .premium-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.featured-section .agent-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    border: 2px solid rgba(59, 130, 246, 0.55) !important;
+}
+
+.featured-section .agent-name {
+    font-size: 13px !important;
+    color: #94a3b8 !important;
+}
+
+/* Details button */
+.featured-section .premium-btn.primary-btn {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+    box-shadow: 0 4px 18px rgba(59, 130, 246, 0.35) !important;
+    border-radius: 10px !important;
+    padding: 9px 20px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    transition: all 0.25s ease !important;
+}
+
+.featured-section .premium-btn.primary-btn:hover {
+    box-shadow: 0 8px 28px rgba(59, 130, 246, 0.55) !important;
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+/* ──────────────────────────────────────────────────────
+   "View All Properties" CTA row
+   ────────────────────────────────────────────────────── */
+.featured-section .row.mt-20 {
+    margin-top: 40px !important;
+}
+
+.featured-section .secondary-btn.outline-glow {
+    border: 2px solid rgba(59, 130, 246, 0.55) !important;
+    color: #93c5fd !important;
+    border-radius: 12px !important;
+    padding: 14px 36px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+    transition: all 0.25s ease !important;
+    background: transparent !important;
+}
+
+.featured-section .secondary-btn.outline-glow:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 28px rgba(59, 130, 246, 0.3), inset 0 0 12px rgba(59, 130, 246, 0.05) !important;
+    color: #bfdbfe !important;
+}
+
+/* ──────────────────────────────────────────────────────
+   Responsive
+   ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .featured-section {
+        padding-top: 72px !important;
+        padding-bottom: 72px !important;
+    }
+
+    .featured-section .premium-heading {
+        font-size: 28px !important;
+    }
+
+    .featured-section .featured-swiper .swiper-button-next,
+    .featured-section .featured-swiper .swiper-button-prev {
+        display: none !important;
+    }
+}

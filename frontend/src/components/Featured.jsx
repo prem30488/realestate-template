@@ -1,6 +1,8 @@
 import React from 'react';
 import PremiumCard from './PremiumCard';
 import './PremiumStyles.css';
+import './Featured.css';
+
 import { useHome } from '../context/HomeContext';
 
 // Import Swiper React components
@@ -29,7 +31,7 @@ const Featured = () => {
             <p className="premium-subheading">Discover our curated selection of exclusive real estate with modern architecture and breathtaking views.</p>
           </div>
         </div>
-        
+
         <div className="featured-carousel-wrapper">
           <Swiper
             slidesPerView={1}

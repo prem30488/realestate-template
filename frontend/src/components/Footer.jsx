@@ -55,10 +55,8 @@ const Footer = () => {
             <div className="footer-widget col-lg-3 col-md-6 col-12 mb-40">
               <h4 className="title"><span className="text">Useful links</span><span className="shape"></span></h4>
               <ul>
-                <li><a href="#">Rental Builidngs</a></li>
-                <li><a href="#">Browe all Categories</a></li>
-                <li><a href="#">Top Mortagages Rates</a></li>
-                <li><a href="#">RentalTerms of use</a></li>
+                <li><a href="#">Terms & Conditions</a></li>
+                <li><a href="#">Rental Terms of use</a></li>
                 <li><a href="#">Privacy Policy</a></li>
               </ul>
             </div>
@@ -69,11 +67,11 @@ const Footer = () => {
               <p>Subscribe our newsletter and get all latest news about our latest properties, promotions, offers and discount</p>
 
               <form id="mc-form" className="mc-form footer-newsletter" onSubmit={handleSubscribe}>
-                <input 
-                  id="mc-email" 
-                  type="email" 
-                  autoComplete="off" 
-                  placeholder="Email Here.." 
+                <input
+                  id="mc-email"
+                  type="email"
+                  autoComplete="off"
+                  placeholder="Email Here.."
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
@@ -97,7 +95,7 @@ const Footer = () => {
           <div className="row">
             <div className="col-12">
               <div className="copyright text-center">
-                <p>Copyright &copy;2025 <a href="/">{COMPANY_INFO.name}</a>. All rights reserved.</p>
+                <p>Copyright &copy;{new Date().getFullYear()} <a href="/">{COMPANY_INFO.name}</a>. All rights reserved.</p>
               </div>
             </div>
           </div>
