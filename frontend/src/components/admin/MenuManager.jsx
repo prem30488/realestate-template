@@ -20,11 +20,12 @@ import {
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { API_BASE_URL } from '../../constants';
 
-const API = 'http://localhost:3000/api/admin/menu';
+const API = `${API_BASE_URL}/api/admin/menu`;
 
 const BADGE_COLORS = { NEW: 'success', FREE: 'warning', ADMIN: 'error', null: 'default' };
-const TYPE_COLORS  = { nav: 'primary', section: 'secondary', link: 'default' };
+const TYPE_COLORS = { nav: 'primary', section: 'secondary', link: 'default' };
 
 // ─── Add/Edit Dialog ────────────────────────────────────────────────────────
 function ItemDialog({ open, onClose, onSave, initial, parentOptions }) {
@@ -33,11 +34,11 @@ function ItemDialog({ open, onClose, onSave, initial, parentOptions }) {
   useEffect(() => {
     if (initial) {
       setForm({
-        title:    initial.title    || '',
-        link:     initial.link     || '#',
+        title: initial.title || '',
+        link: initial.link || '#',
         itemType: initial.itemType || 'link',
         menuType: initial.menuType || '',
-        badge:    initial.badge    || '',
+        badge: initial.badge || '',
         parentId: initial.parentId != null ? String(initial.parentId) : ''
       });
     } else {
@@ -53,7 +54,7 @@ function ItemDialog({ open, onClose, onSave, initial, parentOptions }) {
       ...form,
       parentId: form.parentId ? Number(form.parentId) : null,
       menuType: form.menuType || null,
-      badge:    form.badge || null
+      badge: form.badge || null
     });
   };
 
@@ -72,7 +73,7 @@ function ItemDialog({ open, onClose, onSave, initial, parentOptions }) {
           <TextField
             label="Link / URL" fullWidth value={form.link}
             onChange={e => set('link', e.target.value)}
-            InputProps={{ 
+            InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <LinkIcon sx={{ color: 'text.secondary' }} />
@@ -136,8 +137,8 @@ function MenuItemRow({ item, index, depth, allItems, onEdit, onDelete, onToggle,
   const bgColor = item.isDeleted
     ? 'rgba(0,0,0,0.03)'
     : depth === 0 ? '#f0f4ff'
-    : depth === 1 ? '#f8faff'
-    : 'white';
+      : depth === 1 ? '#f8faff'
+        : 'white';
 
   return (
     <Draggable draggableId={String(item.id)} index={index}>
@@ -251,10 +252,10 @@ function MenuItemRow({ item, index, depth, allItems, onEdit, onDelete, onToggle,
 
 // ─── Main MenuManager ────────────────────────────────────────────────────────
 export default function MenuManager() {
-  const [tree, setTree]           = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [tree, setTree] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editItem, setEditItem]   = useState(null);       // null = add new
+  const [editItem, setEditItem] = useState(null);       // null = add new
   const [addParent, setAddParent] = useState(null);       // pre-filled parent
 
   const fetchMenu = useCallback(async () => {

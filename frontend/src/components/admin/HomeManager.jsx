@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { API_BASE_URL } from '../../constants';
 
 // Components that are layout shell (not inner page sections)
 const SHELL_COMPONENTS = new Set(['Header', 'Footer', 'WhatsAppButton']);
@@ -33,7 +34,7 @@ const HomeManager = () => {
   const fetchComponents = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3000/api/admin/home-components');
+      const response = await axios.get(`${API_BASE_URL}/api/admin/home-components`);
       setComponents(response.data);
     } catch (error) {
       toast.error('Error fetching components');
@@ -48,7 +49,7 @@ const HomeManager = () => {
 
   const handleToggleDeleted = async (id, currentStatus) => {
     try {
-      await axios.patch(`http://localhost:3000/api/admin/home-components/${id}/toggle-deleted`, {
+      await axios.patch(`${API_BASE_URL}/api/admin/home-components/${id}/toggle-deleted`, {
         is_deleted: !currentStatus
       });
       toast.success('Status updated');
@@ -73,7 +74,7 @@ const HomeManager = () => {
     setComponents(updatedWithOrder);
 
     try {
-      await axios.put('http://localhost:3000/api/admin/home-components/reorder', {
+      await axios.put(`${API_BASE_URL}/api/admin/home-components/reorder`, {
         components: updatedWithOrder.map(c => ({ id: c.id, order: c.order }))
       });
       toast.success('Order updated');
@@ -86,7 +87,7 @@ const HomeManager = () => {
   const handleReset = async () => {
     if (window.confirm('Reset all components to default order and visibility?')) {
       try {
-        await axios.post('http://localhost:3000/api/admin/home-components/reset');
+        await axios.post(`${API_BASE_URL}/api/admin/home-components/reset`);
         toast.success('Components reset to defaults');
         fetchComponents();
       } catch (error) {

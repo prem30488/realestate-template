@@ -14,6 +14,8 @@ import LatestNews from './LatestNews';
 import Testimonials from './Testimonials';
 import OurBrands from './OurBrands';
 
+import { API_BASE_URL } from '../constants';
+
 const componentMap = {
   HeroSlider,
   Search,
@@ -34,7 +36,7 @@ const Home = ({ onSelectNews }) => {
   const [components, setComponents] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/home-components')
+    axios.get(`${API_BASE_URL}/api/home-components`)
       .then(res => setComponents(res.data))
       .catch(err => console.error('Error fetching home components:', err));
   }, []);
@@ -64,9 +66,9 @@ const Home = ({ onSelectNews }) => {
       {components.map(comp => {
         const Component = componentMap[comp.name];
         if (!Component) return null;
-        
+
         const props = comp.name === 'LatestNews' ? { onSelectNews } : {};
-        
+
         return <Component key={comp.id} {...props} />;
       })}
     </>
