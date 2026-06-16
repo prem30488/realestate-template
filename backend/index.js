@@ -11,6 +11,7 @@ const localitiesRoutes = require('./routes/localitiesRoutes');
 const projectsRoutes = require('./routes/projectsRoutes');
 const interiorRoutesPublic = require('./routes/interiorRoutesPublic');
 const { predictValuation, trainModel } = require('./ml/valuation');
+const { sendEmail } = require('./lib/mailer');
 
 
 const app = express();
@@ -138,6 +139,74 @@ app.post('/api/register', async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Forgot Password Route
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      // Generate a temporary random password
+      const tempPassword = Math.random().toString(36).slice(-8);
+
+      // Hash and update the user's password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(tempPassword, salt);
+      await user.update({ password: hashedPassword });
+
+      // Send email
+      await sendEmail({
+        to: email,
+        subject: 'Password Reset - Real Estate Platform',
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #ff5e14;">Password Reset Request</h2>
+            <p>Hello <strong>${user.username}</strong>,</p>
+            <p>We received a request to reset your password. We have generated a temporary password for you:</p>
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+              <code style="font-size: 24px; color: #1e293b; font-weight: bold; letter-spacing: 2px;">${tempPassword}</code>
+            </div>
+            <p>Please use this password to log in and change it immediately from your profile settings.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
+            <p style="font-size: 12px; color: #888;">This is an automated message, please do not reply.</p>
+          </div>
+        `,
+        text: `Hello ${user.username}, Your temporary password is: ${tempPassword}. Please log in and change it as soon as possible.`
+      });
+
+      console.log(`Password reset email sent to: ${email}`);
+    }
+
+    // Always return success for security (prevent email enumeration)
+    res.json({ message: 'If an account exists with that email, reset instructions have been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Diagnostic route for email config - remove in production
+app.get('/api/test-email-config', async (req, res) => {
+  try {
+    const success = await sendEmail({
+      to: process.env.GMAIL_USER || 'test@example.com',
+      subject: 'Diagnostic Email Test',
+      text: 'This is a diagnostic email to test the configuration.',
+      html: '<b>Diagnostic Email Test</b>'
+    });
+
+    if (success) {
+      res.json({ message: 'Email config is working!', sentTo: process.env.GMAIL_USER });
+    } else {
+      res.status(500).json({ message: 'Email config FAILED. Check server logs.' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Error testing email config', error: err.message });
   }
 });
 

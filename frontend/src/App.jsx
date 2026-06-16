@@ -67,6 +67,7 @@ import HelpCentre from './components/HelpCentre';
 import TermsAndConditions from './components/TermsAndConditions';
 import RentalTerms from './components/RentalTerms';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import ForgotPassword from './components/ForgotPassword';
 import SEO from './common/SEO';
 import { COMPANY_INFO } from './constants/companyInfo';
 import { ChatBox } from '@mui/x-chat';
@@ -426,6 +427,15 @@ function App() {
           <>
             <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
             <PrivacyPolicy />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/forgot-password" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <ForgotPassword onLoginClick={() => setIsLoginOpen(true)} />
             <Footer />
             <WhatsAppButton />
           </>

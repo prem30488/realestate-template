@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../constants';
 import './Login.css';
 
 const Login = ({ isOpen, onClose, onLoginSuccess }) => {
+    const navigate = useNavigate();
     const [isRegistering, setIsRegistering] = useState(false);
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -21,7 +23,7 @@ const Login = ({ isOpen, onClose, onLoginSuccess }) => {
         setLoading(true);
 
         const endpoint = isRegistering ? '/api/register' : '/api/login';
-        const payload = isRegistering 
+        const payload = isRegistering
             ? { username, email, password, phoneNumber }
             : { email, password };
 
@@ -70,7 +72,7 @@ const Login = ({ isOpen, onClose, onLoginSuccess }) => {
 
                 <form className="login-form" onSubmit={handleSubmit}>
                     {error && <div className="login-error">{error}</div>}
-                    
+
                     {isRegistering && (
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
@@ -129,7 +131,17 @@ const Login = ({ isOpen, onClose, onLoginSuccess }) => {
                                 <input type="checkbox" />
                                 <span>Remember me</span>
                             </label>
-                            <a href="#" className="forgot-password">Forgot Password?</a>
+                            <a
+                                href="/forgot-password"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    onClose();
+                                    navigate('/forgot-password');
+                                }}
+                                className="forgot-password"
+                            >
+                                Forgot Password?
+                            </a>
                         </div>
                     )}
 
