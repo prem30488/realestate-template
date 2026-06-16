@@ -61,14 +61,9 @@ const FloatingSocials = () => {
                     transform: scale(1.2) rotate(360deg);
                 }
 
-                @media (max-width: 768px) {
-                    .floating-social-link {
-                        width: 40px;
-                        height: 40px;
-                        font-size: 18px;
-                    }
-                    .floating-social-link:hover {
-                        width: 45px;
+                @media (max-width: 991px) {
+                    .floating-socials-container {
+                        display: none;
                     }
                 }
                 `}

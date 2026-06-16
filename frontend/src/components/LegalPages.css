@@ -1,0 +1,129 @@
+/* Legal Pages — Premium Refined Styling */
+.legal-page-container {
+    padding: 140px 0 80px;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.legal-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+    padding: 60px;
+    max-width: 1000px;
+    margin: 0 auto;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.legal-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.legal-header h1 {
+    font-size: 42px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 15px;
+    letter-spacing: -0.5px;
+}
+
+.last-updated {
+    color: #94a3b8;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+}
+
+.legal-content-section {
+    margin-bottom: 35px;
+}
+
+.legal-content-section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.legal-content-section h2::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: var(--color-primary, #ff5e14);
+    border-radius: 4px;
+}
+
+.legal-content-section p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #64748b;
+    margin-bottom: 15px;
+}
+
+.legal-content-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.legal-content-section ul li {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #64748b;
+    margin-bottom: 10px;
+    padding-left: 25px;
+    position: relative;
+}
+
+.legal-content-section ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary, #ff5e14);
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .legal-page-container {
+        padding: 100px 15px 50px;
+    }
+
+    .legal-card {
+        padding: 30px;
+        border-radius: 16px;
+    }
+
+    .legal-header h1 {
+        font-size: 32px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .legal-page-container {
+        background: #0f172a;
+    }
+
+    .legal-card {
+        background: #1e293b;
+        border-color: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .legal-header h1 {
+        color: #f1f5f9;
+    }
+
+    .legal-content-section h2 {
+        color: #e2e8f0;
+    }
+
+    .legal-content-section p,
+    .legal-content-section ul li {
+        color: #94a3b8;
+    }
+}

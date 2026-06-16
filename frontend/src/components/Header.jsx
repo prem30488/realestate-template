@@ -313,56 +313,103 @@ const StaticNav = ({ selectedCity, user, onLogout, onLoginClick }) => (
   </>
 );
 
+// ── Mobile Nav Item (Accordion style) ──────────────────────────────────────
+const MobileNavItem = ({ item, city, onLinkClick }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+  const link = interpolate(item.link, city);
+  const isInternal = link.startsWith('/');
+
+  const handleLinkClick = (e) => {
+    if (link === '#') {
+      e.preventDefault();
+      if (hasChildren) setIsOpen(!isOpen);
+    } else {
+      onLinkClick();
+    }
+  };
+
+  const titleContent = (
+    <>
+      {interpolate(item.title, city)}
+      {item.badge && <span className={`badge-${item.badge.toLowerCase()}`}>{item.badge}</span>}
+    </>
+  );
+
+  return (
+    <li className={`mobile-nav-item ${isOpen ? 'open' : ''}`}>
+      <div className="mobile-nav-link-wrapper">
+        {isInternal ? (
+          <Link to={link === '#' ? '#' : link} onClick={handleLinkClick}>
+            {titleContent}
+          </Link>
+        ) : (
+          <a href={link} target="_blank" rel="noopener noreferrer" onClick={handleLinkClick}>
+            {titleContent}
+          </a>
+        )}
+        {hasChildren && (
+          <button className="submenu-toggle" onClick={() => setIsOpen(!isOpen)}>
+            <i className={`pe-7s-angle-${isOpen ? 'up' : 'down'}`} />
+          </button>
+        )}
+      </div>
+
+      {hasChildren && (
+        <ul className="mobile-submenu">
+          {(item.children || []).map(child => {
+            const isSection = child.itemType === 'section';
+            const subItems = child.children && child.children.length > 0 ? child.children : [child];
+
+            return (
+              <li key={child.id} className="mobile-submenu-group">
+                {isSection && <div className="mobile-section-title">{interpolate(child.title, city)}</div>}
+                <ul className="mobile-sub-list">
+                  {subItems.map(sub => {
+                    // Skip the section itself if it's just a header
+                    if (isSection && sub === child && !sub.link) return null;
+
+                    const subLink = interpolate(sub.link, city);
+                    const isSubInternal = subLink.startsWith('/');
+                    return (
+                      <li key={sub.id}>
+                        {isSubInternal ? (
+                          <Link to={subLink} onClick={onLinkClick}>
+                            {interpolate(sub.title, city)}
+                            {sub.badge && <span className={`badge-${sub.badge.toLowerCase()}`}>{sub.badge}</span>}
+                          </Link>
+                        ) : (
+                          <a href={subLink} target="_blank" rel="noopener noreferrer" onClick={onLinkClick}>
+                            {interpolate(sub.title, city)}
+                            {sub.badge && <span className={`badge-${sub.badge.toLowerCase()}`}>{sub.badge}</span>}
+                          </a>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </li>
+  );
+};
+
 // ── Main Header component ────────────────────────────────────────────────────
 const Header = ({ onLoginClick, user, onLogout }) => {
   const { selectedCity } = useCity();
   const location = useLocation();
   const [isSticky, setIsSticky] = useState(false);
   const [menuItems, setMenuItems] = useState(null); // null = loading, [] = failed/empty
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   // Close mobile menu on route change
   useEffect(() => {
-    const closeMenu = () => {
-      // Use a tiny delay to ensure navigation is initiated before closing
-      setTimeout(() => {
-        const meanMenuReveal = document.querySelector('.meanmenu-reveal');
-        if (meanMenuReveal && meanMenuReveal.querySelector('.menu-close')) {
-          meanMenuReveal.click();
-        }
-      }, 100);
-    };
-
-    const handleMenuClick = (e) => {
-      // If the clicked element is a link inside the mobile menu and NOT an expansion toggle
-      const link = e.target.closest('.mean-nav a');
-      if (link && !link.classList.contains('mean-expand')) {
-        // If link is a placeholder ('#') map by visible text to internal routes
-        try {
-          const href = link.getAttribute('href');
-          const txt = (link.textContent || '').trim().toLowerCase();
-          if (href === '#' && txt) {
-            if (txt.includes('design consultation')) {
-              navigate('/design-consultation');
-            } else if (txt.includes('full home interior') || txt.includes('cost calculator')) {
-              navigate('/interior-cost-calculator');
-            } else if (txt.includes('kitchen') || txt.includes('wardrobe')) {
-              navigate('/kitchen-wardrobe-calculator');
-            }
-          }
-        } catch (err) {
-          // ignore
-        }
-        closeMenu();
-      }
-    };
-
-    // Also close on location change as a fallback
-    closeMenu();
-
-    document.addEventListener('click', handleMenuClick);
-    return () => document.removeEventListener('click', handleMenuClick);
-  }, [location]);
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // Sticky scroll
   useEffect(() => {
@@ -380,6 +427,20 @@ const Header = ({ onLoginClick, user, onLogout }) => {
 
   const useDynamic = menuItems && menuItems.length > 0;
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (!isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    document.body.style.overflow = 'auto';
+  };
+
   return (
     <>
       <header className={`header header-sticky ${isSticky ? 'is-sticky' : ''}`} style={{ width: '100%' }}>
@@ -394,7 +455,7 @@ const Header = ({ onLoginClick, user, onLogout }) => {
                 </div>
               </div>
 
-              {/* Navigation */}
+              {/* Navigation (Desktop) */}
               <div className="col d-none d-lg-flex justify-content-center">
                 <nav className="main-menu">
                   <ul className="d-flex align-items-center">
@@ -407,7 +468,7 @@ const Header = ({ onLoginClick, user, onLogout }) => {
                       : <StaticNav selectedCity={selectedCity} user={user} onLogout={onLogout} onLoginClick={onLoginClick} />
                     }
 
-                    {/* Admin Panel (always shown for admins regardless of menu DB) */}
+                    {/* Admin Panel (Desktop) */}
                     {(user?.role === 'admin' || user?.role === 'superadmin') && (
                       <li className="has-mega-menu admin-menu">
                         <a href="#" className="admin-link">
@@ -455,7 +516,7 @@ const Header = ({ onLoginClick, user, onLogout }) => {
                 </nav>
               </div>
 
-              {/* User account */}
+              {/* User account (Desktop) */}
               <div className="col-auto ms-auto pe-0 d-none d-lg-block" style={{ float: 'right' }}>
                 <div className="header-user">
                   {user ? (
@@ -500,11 +561,102 @@ const Header = ({ onLoginClick, user, onLogout }) => {
                   )}
                 </div>
               </div>
+
+              {/* Mobile Hamburger Toggle Only */}
+              <div className="col-auto d-flex d-lg-none align-items-center">
+                <button className={`hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'open' : ''}`} onClick={closeMobileMenu}>
+          <div className="mobile-menu-content" onClick={e => e.stopPropagation()}>
+            <div className="mobile-menu-header">
+              <div className="logo">
+                <img src={COMPANY_INFO.logoUrl} alt={COMPANY_INFO.name} />
+              </div>
+              <button className="close-btn" onClick={closeMobileMenu}>
+                <i className="pe-7s-close" />
+              </button>
             </div>
 
-            <div className="row">
-              <div className="col-12 d-flex d-lg-none">
-                <div className="mobile-menu" />
+            <div className="mobile-menu-body">
+              <div className="mobile-city-selector">
+                <CitySelector />
+              </div>
+
+              <nav className="mobile-nav">
+                <ul>
+                  {useDynamic
+                    ? menuItems.map(item => (
+                      <MobileNavItem key={item.id} item={item} city={selectedCity} onLinkClick={closeMobileMenu} />
+                    ))
+                    : (
+                      <>
+                        {/* Static Mobile Fallback */}
+                        <MobileNavItem city={selectedCity} onLinkClick={closeMobileMenu} item={{
+                          title: 'Buy',
+                          link: '/properties?status=Sell',
+                          children: [
+                            { id: 'b1', title: 'Ready to Move', link: `/properties?status=Sell&city=${selectedCity}` },
+                            { id: 'b2', title: 'Owner Properties', link: `/properties?status=Sell&postedBy=owner&city=${selectedCity}` },
+                            { id: 'b3', title: 'Budget Homes', link: `/properties?status=Sell&maxPrice=5000000&city=${selectedCity}` }
+                          ]
+                        }} />
+                        <MobileNavItem city={selectedCity} onLinkClick={closeMobileMenu} item={{
+                          title: 'Rent',
+                          link: '/properties?status=Rent',
+                          children: [
+                            { id: 'r1', title: 'Owner Properties', link: `/properties?status=Rent&postedBy=owner&city=${selectedCity}` },
+                            { id: 'r2', title: 'Verified Properties', link: `/properties?status=Rent&city=${selectedCity}` }
+                          ]
+                        }} />
+                        <li><Link to="/about" onClick={closeMobileMenu}>About Us</Link></li>
+                        <li><Link to="/contact" onClick={closeMobileMenu}>Contact Us</Link></li>
+                        <li><Link to="/help-centre" onClick={closeMobileMenu}>Help Center</Link></li>
+                      </>
+                    )
+                  }
+
+                  {/* Mobile Admin Link */}
+                  {(user?.role === 'admin' || user?.role === 'superadmin') && (
+                    <li className="mobile-nav-item">
+                      <Link to="/admin" onClick={closeMobileMenu} className="mobile-admin-link">
+                        Admin Dashboard <span className="badge-admin">ADMIN</span>
+                      </Link>
+                    </li>
+                  )}
+                </ul>
+              </nav>
+
+              <div className="mobile-user-area">
+                {user ? (
+                  <div className="mobile-account-info">
+                    <div className="user-profile">
+                      <div className="profile-photo">{user.username.charAt(0).toUpperCase()}</div>
+                      <div className="user-details">
+                        <span className="name">{user.username}</span>
+                        <span className="role">{user.role}</span>
+                      </div>
+                    </div>
+                    <ul className="mobile-account-links">
+                      <li><Link to="/dashboard" onClick={closeMobileMenu}><i className="pe-7s-graph1" /> Dashboard</Link></li>
+                      <li><Link to="/profile" onClick={closeMobileMenu}><i className="pe-7s-id" /> My Profile</Link></li>
+                      <li><Link to="/settings" onClick={closeMobileMenu}><i className="pe-7s-config" /> Settings</Link></li>
+                      <li className="logout-li"><a href="#" onClick={e => { e.preventDefault(); onLogout(); closeMobileMenu(); }}><i className="pe-7s-power" /> Logout</a></li>
+                    </ul>
+                  </div>
+                ) : (
+                  <button className="mobile-login-btn" onClick={() => { onLoginClick(); closeMobileMenu(); }}>
+                    <i className="pe-7s-user" /> Login or Register
+                  </button>
+                )}
               </div>
             </div>
           </div>

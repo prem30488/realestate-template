@@ -64,6 +64,9 @@ import HomeInteriors from './components/HomeInteriors';
 import InteriorCostCalculator from './components/InteriorCostCalculator';
 import KitchenWardrobeCalculator from './components/KitchenWardrobeCalculator';
 import HelpCentre from './components/HelpCentre';
+import TermsAndConditions from './components/TermsAndConditions';
+import RentalTerms from './components/RentalTerms';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import SEO from './common/SEO';
 import { COMPANY_INFO } from './constants/companyInfo';
 import { ChatBox } from '@mui/x-chat';
@@ -396,6 +399,33 @@ function App() {
           <>
             <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
             <GuideDetail />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/terms" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <TermsAndConditions />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/rental-terms" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <RentalTerms />
+            <Footer />
+            <WhatsAppButton />
+          </>
+        } />
+
+        <Route path="/privacy-policy" element={
+          <>
+            <Header onLoginClick={() => setIsLoginOpen(true)} user={user} onLogout={handleLogout} />
+            <PrivacyPolicy />
             <Footer />
             <WhatsAppButton />
           </>

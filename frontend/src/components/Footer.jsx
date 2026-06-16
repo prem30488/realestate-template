@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL } from '../constants';
@@ -55,9 +56,9 @@ const Footer = () => {
             <div className="footer-widget col-lg-3 col-md-6 col-12 mb-40">
               <h4 className="title"><span className="text">Useful links</span><span className="shape"></span></h4>
               <ul>
-                <li><a href="#">Terms & Conditions</a></li>
-                <li><a href="#">Rental Terms of use</a></li>
-                <li><a href="#">Privacy Policy</a></li>
+                <li><Link to="/terms">Terms & Conditions</Link></li>
+                <li><Link to="/rental-terms">Rental Terms of use</Link></li>
+                <li><Link to="/privacy-policy">Privacy Policy</Link></li>
               </ul>
             </div>
 
