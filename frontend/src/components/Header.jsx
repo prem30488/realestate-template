@@ -478,35 +478,35 @@ const Header = ({ onLoginClick, user, onLogout }) => {
                           <div className="mega-menu-column">
                             <h6>Core Management</h6>
                             <ul>
-                              <li><a href="/admin/home"><i className="pe-7s-home" /> Home Manager</a></li>
-                              <li><a href="/admin/menu"><i className="pe-7s-menu" /> Menu Manager</a></li>
-                              <li><a href="/admin/slider"><i className="pe-7s-photo-gallery" /> Slider Manager</a></li>
-                              <li><a href="/admin/search"><i className="pe-7s-search" /> Search Manager</a></li>
+                              <li><Link to="/admin/home"><i className="pe-7s-home" /> Home Manager</Link></li>
+                              <li><Link to="/admin/menu"><i className="pe-7s-menu" /> Menu Manager</Link></li>
+                              <li><Link to="/admin/slider"><i className="pe-7s-photo-gallery" /> Slider Manager</Link></li>
+                              <li><Link to="/admin/search"><i className="pe-7s-search" /> Search Manager</Link></li>
                             </ul>
                           </div>
                           <div className="mega-menu-column">
                             <h6>Content Management</h6>
                             <ul>
-                              <li><a href="/admin/properties"><i className="pe-7s-map-marker" /> Properties Manager</a></li>
-                              <li><a href="/admin/services"><i className="pe-7s-tools" /> Our Service Manager</a></li>
-                              <li><a href="/admin/funfacts"><i className="pe-7s-graph1" /> FunFact Manager</a></li>
-                              <li><a href="/admin/brokers"><i className="pe-7s-users" /> Broker Manager</a></li>
+                              <li><Link to="/admin/properties"><i className="pe-7s-map-marker" /> Properties Manager</Link></li>
+                              <li><Link to="/admin/services"><i className="pe-7s-tools" /> Our Service Manager</Link></li>
+                              <li><Link to="/admin/funfacts"><i className="pe-7s-graph1" /> FunFact Manager</Link></li>
+                              <li><Link to="/admin/brokers"><i className="pe-7s-users" /> Broker Manager</Link></li>
                             </ul>
                           </div>
                           <div className="mega-menu-column">
                             <h6>Social &amp; Feedback</h6>
                             <ul>
-                              <li><a href="/admin/insta"><i className="pe-7s-video" /> Insta Video Manager</a></li>
-                              <li><a href="/admin/news"><i className="pe-7s-news-paper" /> News Manager</a></li>
-                              <li><a href="/admin/testimonials"><i className="pe-7s-comment" /> Testimonials Manager</a></li>
-                              <li><a href="/admin/brands"><i className="pe-7s-medal" /> Brand Manager</a></li>
+                              <li><Link to="/admin/insta"><i className="pe-7s-video" /> Insta Video Manager</Link></li>
+                              <li><Link to="/admin/news-manager"><i className="pe-7s-news-paper" /> News Manager</Link></li>
+                              <li><Link to="/admin/testimonials"><i className="pe-7s-comment" /> Testimonials Manager</Link></li>
+                              <li><Link to="/admin/brands"><i className="pe-7s-medal" /> Brand Manager</Link></li>
                             </ul>
                           </div>
                           <div className="mega-menu-column">
                             <h6>System</h6>
                             <ul>
-                              <li><a href="/admin/users"><i className="pe-7s-id" /> Privilege/User Manager</a></li>
-                              <li><a href="/admin/settings"><i className="pe-7s-config" /> System Settings</a></li>
+                              <li><Link to="/admin/users"><i className="pe-7s-id" /> Privilege/User Manager</Link></li>
+                              <li><Link to="/admin/settings"><i className="pe-7s-config" /> System Settings</Link></li>
                             </ul>
                           </div>
                         </div>
